@@ -21,8 +21,8 @@ export default function RootLayout({
     <html lang="zh-CN">
       <body className="antialiased">
         <Navbar
-          showActivity={showInternalPages}
-          showDiary={showInternalPages}
+          showActivity
+          showDiary
           showLogs={showInternalPages}
           showMemory={showInternalPages}
         />

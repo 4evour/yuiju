@@ -5,7 +5,6 @@ import {
   createChatPlanChangesProposalTool,
   createToolCallLoggingHooks,
   diarySearchTool,
-  flashModel,
   generateStructuredOutput,
   getCharacterCardPrompt,
   getPersonMemoryTool,
@@ -14,6 +13,7 @@ import {
   NICKNAME,
   queryStateTool,
   queryStaticGuideTool,
+  strongModel,
   todayEventSearchTool,
 } from "@yuiju/utils";
 import { Output, stepCountIs } from "ai";
@@ -182,7 +182,7 @@ export class LLMManager {
 
     try {
       const result = await generateStructuredOutput({
-        model: flashModel,
+        model: strongModel,
         providerOptions: {
           flash: {
             enable_thinking: false,
@@ -273,7 +273,7 @@ export class LLMManager {
     ].join("\n\n");
 
     const result = await generateStructuredOutput({
-      model: flashModel,
+      model: strongModel,
       providerOptions: {
         flash: {
           enable_thinking: false,

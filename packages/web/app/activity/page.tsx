@@ -12,12 +12,16 @@ function ActivityPageFallback() {
 }
 
 export default function ActivityPage() {
-  const showCareCard = !isPublicDeployment();
+  const publicDeployment = isPublicDeployment();
+  const showCareCard = !publicDeployment;
 
   return (
     <main className="max-w-[1200px] mx-auto px-[18px] pt-[18px] pb-[36px]">
       <Suspense fallback={<ActivityPageFallback />}>
-        <ActivityClientShell showCareCard={showCareCard} />
+        <ActivityClientShell
+          showCareCard={showCareCard}
+          showConversationFilter={!publicDeployment}
+        />
       </Suspense>
     </main>
   );

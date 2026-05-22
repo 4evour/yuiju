@@ -47,7 +47,14 @@ const parseTriggerFilter = (value: string | null): ActivityTriggerFilter => {
   return DEFAULT_ACTIVITY_QUERY_FILTERS.trigger;
 };
 
-const parseEpisodeTypeFilter = (value: string | null): ActivityEpisodeTypeFilter => {
+const parseEpisodeTypeFilter = (
+  value: string | null,
+  showConversationFilter: boolean,
+): ActivityEpisodeTypeFilter => {
+  if (value === "conversation" && !showConversationFilter) {
+    return DEFAULT_ACTIVITY_QUERY_FILTERS.episodeType;
+  }
+
   if (
     value === "behavior" ||
     value === "conversation" ||
@@ -64,6 +71,7 @@ const parseEpisodeTypeFilter = (value: string | null): ActivityEpisodeTypeFilter
 
 type ActivityClientShellProps = {
   showCareCard: boolean;
+  showConversationFilter: boolean;
 };
 
 /**
@@ -73,7 +81,10 @@ type ActivityClientShellProps = {
  * - 查询页码统一写入 URL，便于刷新、分享和前进后退；
  * - 页面数据完全依赖 nodejs API，避免客户端直接接触数据库模型。
  */
-export function ActivityClientShell({ showCareCard }: ActivityClientShellProps) {
+export function ActivityClientShell({
+  showCareCard,
+  showConversationFilter,
+}: ActivityClientShellProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -83,10 +94,10 @@ export function ActivityClientShell({ showCareCard }: ActivityClientShellProps) 
       startDate: parseDateParam(searchParams.get("startDate")),
       endDate: parseDateParam(searchParams.get("endDate")),
       trigger: parseTriggerFilter(searchParams.get("trigger")),
-      episodeType: parseEpisodeTypeFilter(searchParams.get("episodeType")),
+      episodeType: parseEpisodeTypeFilter(searchParams.get("episodeType"), showConversationFilter),
       keyword: searchParams.get("keyword")?.trim() ?? "",
     }),
-    [searchParams],
+    [searchParams, showConversationFilter],
   );
 
   const apiPath = useMemo(() => {
@@ -161,6 +172,7 @@ export function ActivityClientShell({ showCareCard }: ActivityClientShellProps) 
         pagination={pagination}
         filters={filters}
         selectedId={selectedEvent?.id ?? null}
+        showConversationFilter={showConversationFilter}
         onSelect={setSelectedId}
         onFilterSubmit={handleFilterSubmit}
         onPageChange={handlePageChange}

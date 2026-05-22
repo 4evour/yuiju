@@ -122,6 +122,10 @@ export async function countRecentMemoryEpisodes(
 }
 
 async function syncMemoryEpisodeDocument(episode: IMemoryEpisode): Promise<void> {
+  if (episode.source === "chat") {
+    return;
+  }
+
   if (!hasSyncMongoUri()) {
     return;
   }

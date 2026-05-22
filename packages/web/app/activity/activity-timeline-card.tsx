@@ -40,6 +40,7 @@ interface ActivityTimelineCardProps {
   isLoading: boolean;
   errorMessage?: string;
   selectedId?: string | null;
+  showConversationFilter: boolean;
   onSelect?: (id: string) => void;
   onFilterSubmit: (filters: ActivityQueryFilters) => void;
   onPageChange: (page: number) => void;
@@ -78,6 +79,7 @@ export function ActivityTimelineCard({
   isLoading,
   errorMessage,
   selectedId,
+  showConversationFilter,
   onSelect,
   onFilterSubmit,
   onPageChange,
@@ -189,7 +191,9 @@ export function ActivityTimelineCard({
               <SelectContent>
                 <SelectItem value="all">全部</SelectItem>
                 <SelectItem value="behavior">behavior</SelectItem>
-                <SelectItem value="conversation">conversation</SelectItem>
+                {showConversationFilter ? (
+                  <SelectItem value="conversation">conversation</SelectItem>
+                ) : null}
                 <SelectItem value="plan_created">plan_created</SelectItem>
                 <SelectItem value="plan_updated">plan_updated</SelectItem>
                 <SelectItem value="plan_completed">plan_completed</SelectItem>
