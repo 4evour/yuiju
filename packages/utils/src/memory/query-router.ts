@@ -18,6 +18,9 @@ export interface DiarySearchInput {
   startTime?: string;
   endTime?: string;
   timeSort?: MemoryQueryTimeSort;
+  /**
+   * 默认2
+   */
   limit?: number;
 }
 
@@ -70,7 +73,7 @@ export async function searchEpisodes(input: EpisodeSearchInput): Promise<Episode
  * - 返回结果只保留 LLM 真正需要的时间和正文。
  */
 export async function searchDiaries(input: DiarySearchInput): Promise<DiarySearchResult[]> {
-  const limit = input.limit ?? 5;
+  const limit = input.limit ?? 2;
   const timeSort = input.timeSort ?? "desc";
   const parsedStartTime = parseProjectTime(input.startTime?.trim() ?? "", "YYYY-MM-DD HH:mm:ss");
   const parsedEndTime = parseProjectTime(input.endTime?.trim() ?? "", "YYYY-MM-DD HH:mm:ss");

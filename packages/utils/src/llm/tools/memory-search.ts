@@ -17,7 +17,7 @@ const todayEventSearchInputSchema = z.strictObject({
 });
 
 const diarySearchInputSchema = z.strictObject({
-  limit: z.number().int().min(1).max(20).optional().describe("返回结果上限，默认 5。"),
+  limit: z.number().int().min(1).max(20).optional().describe("返回结果上限，默认 2。"),
   startDate: z.string().optional().describe("开始日期，格式 YYYY-MM-DD。"),
   endDate: z.string().optional().describe("结束日期，格式 YYYY-MM-DD。"),
 });
