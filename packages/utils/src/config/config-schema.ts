@@ -103,7 +103,7 @@ export interface YuijuLlmModelConfig {
 export type YuijuLlmModelSourcesConfig = [YuijuLlmModelConfig, ...YuijuLlmModelConfig[]];
 
 export interface YuijuLlmModelsConfig {
-  small: YuijuLlmModelSourcesConfig;
+  chat: YuijuLlmModelSourcesConfig;
   strong: YuijuLlmModelSourcesConfig;
   flash: YuijuLlmModelSourcesConfig;
   vision: YuijuLlmModelSourcesConfig;

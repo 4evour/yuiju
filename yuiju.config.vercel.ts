@@ -16,7 +16,7 @@ const config = defineYuijuConfig({
     deepseekApiKey: "",
     siliconflowApiKey: "",
     models: {
-      small: [
+      chat: [
         {
           baseUrl: "",
           apiKey: "",

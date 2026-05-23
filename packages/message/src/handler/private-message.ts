@@ -71,6 +71,9 @@ export async function privateMessageHandler(session: Session) {
 
     llmManager.recordPrivateMessage(storedMessage, sessionLabel);
     const chatResult = await llmManager.chatWithLLM(storedMessage);
+    if (chatResult.status === "failed") {
+      return;
+    }
 
     if (!chatResult.shouldReply) {
       logger.info("[message.reply.private] 不回复", {

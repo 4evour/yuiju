@@ -42,6 +42,7 @@ function createFallbackModel(
 
             logger.error("[llm] 模型来源调用失败，切换到备用来源", {
               modelType: name,
+              modelName: sources[index]?.model,
               failedSourceIndex: index,
             });
           }
@@ -74,9 +75,9 @@ function createFallbackModel(
 }
 
 /**
- * 用于低成本判断、裁决等轻量任务的小模型。
+ * 用于复杂决策、长链路思考的强模型。
  */
-export const smallModel = createFallbackModel("small", config.llm.models.small);
+export const chatModel = createFallbackModel("chat", config.llm.models.chat);
 
 /**
  * 用于复杂决策、长链路思考的强模型。

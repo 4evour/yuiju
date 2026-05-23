@@ -1,6 +1,7 @@
 import {
   buildChatPlanProposalPrompt,
   buildMessageHistoryUserPrompt,
+  chatModel,
   chatReplyRulesPrompt,
   createChatPlanChangesProposalTool,
   createToolCallLoggingHooks,
@@ -13,7 +14,6 @@ import {
   NICKNAME,
   queryStateTool,
   queryStaticGuideTool,
-  strongModel,
   todayEventSearchTool,
 } from "@yuiju/utils";
 import { Output, stepCountIs } from "ai";
@@ -56,14 +56,22 @@ export type GroupChatResult =
       noReplyReason: string;
     }
   | {
+      status: "failed";
+    }
+  | {
       status: "cancelled";
     };
 
-export type PrivateChatResult = {
-  shouldReply: boolean;
-  reply: string;
-  noReplyReason: string;
-};
+export type PrivateChatResult =
+  | {
+      status: "completed";
+      shouldReply: boolean;
+      reply: string;
+      noReplyReason: string;
+    }
+  | {
+      status: "failed";
+    };
 
 export class LLMManager {
   private privateSession: AbstractChatSessionManager<StoredSatoriPrivateMessage>;
@@ -182,10 +190,10 @@ export class LLMManager {
 
     try {
       const result = await generateStructuredOutput({
-        model: strongModel,
+        model: chatModel,
         providerOptions: {
-          flash: {
-            enable_thinking: false,
+          chat: {
+            enable_thinking: true,
           },
         },
         system: systemPrompt,
@@ -243,11 +251,17 @@ export class LLMManager {
         reply: result.output.reply,
         noReplyReason: result.output.noReplyReason,
       };
-    } catch (error) {
+    } catch (error: any) {
       if (controller.signal.aborted) {
         return { status: "cancelled" };
       }
-      throw error;
+      logger.error("[message.llm.group] 群聊 LLM 调用失败", {
+        groupName: getGroupDisplayName(message),
+        sessionId: sessionKey,
+        requestId,
+        error: error?.message,
+      });
+      return { status: "failed" };
     } finally {
       const activeTask = this.activeGroupChatTaskBySessionId.get(sessionKey);
       if (activeTask?.requestId === requestId) {
@@ -272,57 +286,71 @@ export class LLMManager {
       buildChatPlanProposalPrompt(),
     ].join("\n\n");
 
-    const result = await generateStructuredOutput({
-      model: strongModel,
-      providerOptions: {
-        flash: {
-          enable_thinking: false,
+    try {
+      const result = await generateStructuredOutput({
+        model: chatModel,
+        providerOptions: {
+          chat: {
+            enable_thinking: true,
+          },
         },
-      },
-      system: systemPrompt,
-      messages: [
-        {
-          role: "user",
-          content: buildMessageHistoryUserPrompt({
+        system: systemPrompt,
+        messages: [
+          {
+            role: "user",
+            content: buildMessageHistoryUserPrompt({
+              summary,
+              historyJson,
+            }),
+          },
+        ],
+        tools: {
+          todayEventSearch: todayEventSearchTool,
+          diarySearch: diarySearchTool,
+          listPersonMemories: listPersonMemoriesTool,
+          getPersonMemory: getPersonMemoryTool,
+          queryStateTool: queryStateTool,
+          queryStaticGuide: queryStaticGuideTool,
+          proposePlanChanges: createChatPlanChangesProposalTool({
+            scene: "private",
             summary,
             historyJson,
           }),
         },
-      ],
-      tools: {
-        todayEventSearch: todayEventSearchTool,
-        diarySearch: diarySearchTool,
-        listPersonMemories: listPersonMemoriesTool,
-        getPersonMemory: getPersonMemoryTool,
-        queryStateTool: queryStateTool,
-        queryStaticGuide: queryStaticGuideTool,
-        proposePlanChanges: createChatPlanChangesProposalTool({
-          scene: "private",
-          summary,
-          historyJson,
+        stopWhen: stepCountIs(20),
+        ...createToolCallLoggingHooks({
+          scene: "message.llm.private",
         }),
-      },
-      stopWhen: stepCountIs(20),
-      ...createToolCallLoggingHooks({
-        scene: "message.llm.private",
-      }),
-      output: Output.object({
-        schema: z.object({
-          shouldReply: z.boolean().describe("是否回复"),
-          reply: z.string().describe("回复内容，shouldReply为false时，这个字段应该是空字符"),
-          noReplyReason: z.string().describe("不回复的简短原因"),
+        output: Output.object({
+          schema: z.object({
+            shouldReply: z.boolean().describe("是否回复"),
+            reply: z.string().describe("回复内容，shouldReply为false时，这个字段应该是空字符"),
+            noReplyReason: z.string().describe("不回复的简短原因"),
+          }),
         }),
-      }),
-    });
+      });
 
-    logger.info("[message.llm.private] LLM 返回私聊决策", {
-      sessionLabel,
-      shouldReply: result.output.shouldReply,
-      reply: result.output.reply,
-      noReplyReason: result.output.noReplyReason,
-    });
+      logger.info("[message.llm.private] LLM 返回私聊决策", {
+        sessionLabel,
+        shouldReply: result.output.shouldReply,
+        reply: result.output.reply,
+        noReplyReason: result.output.noReplyReason,
+      });
 
-    return result.output satisfies PrivateChatResult;
+      return {
+        status: "completed",
+        shouldReply: result.output.shouldReply,
+        reply: result.output.reply,
+        noReplyReason: result.output.noReplyReason,
+      };
+    } catch (error: any) {
+      logger.error("[message.llm.private] 私聊 LLM 调用失败", {
+        sessionId,
+        sessionLabel,
+        error: error?.message,
+      });
+      return { status: "failed" };
+    }
   }
 }
 

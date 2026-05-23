@@ -71,6 +71,9 @@ export async function groupMessageHandler(session: Session) {
       });
       return;
     }
+    if (groupChatResult.status === "failed") {
+      return;
+    }
 
     if (!llmManager.isLatestGroupChatRequest(storedMessage.sessionId, groupChatResult.requestId)) {
       logger.info("[message.reply.group] 群聊回复结果已过期，不发送消息", {

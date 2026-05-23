@@ -1,9 +1,9 @@
 import {
   buildMessageSummaryPrompt,
   emitMemoryEpisode,
+  flashModel,
   getTimeWithWeekday,
   isDev,
-  smallModel,
   summarizeConversationMessages,
 } from "@yuiju/utils";
 import { generateText } from "ai";
@@ -385,7 +385,12 @@ export class BaseChatSessionManager<
     const transcript = JSON.stringify(this.buildHistoryItems(input.messages), null, 2);
 
     const result = await generateText({
-      model: smallModel,
+      model: flashModel,
+      providerOptions: {
+        flash: {
+          enable_thinking: false,
+        },
+      },
       prompt: buildMessageSummaryPrompt({
         sessionLabel: input.sessionLabel,
         previousSummary: input.previousSummary,
