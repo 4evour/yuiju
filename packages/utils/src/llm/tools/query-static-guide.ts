@@ -6,16 +6,22 @@ import {
   worldGuidePlaceIntroductions,
   worldGuideTopics,
 } from "../../prompt/world-guide";
-import { worldMapDsl } from "../../prompt/world-map";
+import { getWorldMapMajorPlaceId, worldMapDsl } from "../../prompt/world-map";
+import { initCharacterStateData } from "../../redis";
 import { CAFE_COFFEES } from "../../types/cafe";
 import { SHOP_PRODUCTS } from "../../types/shop";
 
 const staticGuideResultByTopic = {
-  worldMap: () => ({
-    topic: "worldMap",
-    title: "星见町世界地图",
-    dsl: worldMapDsl,
-  }),
+  worldMap: async () => {
+    const characterState = await initCharacterStateData();
+    const major = getWorldMapMajorPlaceId(characterState.location.major);
+
+    return {
+      topic: "worldMap",
+      title: "星见町世界地图",
+      dsl: worldMapDsl(major),
+    };
+  },
   shopProducts: () => ({
     topic: "shopProducts",
     title: "小町商店售卖商品",
@@ -36,7 +42,7 @@ const staticGuideResultByTopic = {
     title: "星见町地点介绍",
     places: worldGuidePlaceIntroductions,
   }),
-} satisfies Record<WorldGuideTopic, () => unknown>;
+} satisfies Record<WorldGuideTopic, () => unknown | Promise<unknown>>;
 
 export const queryStaticGuideTool = tool({
   description: "查询静态资料条目",
@@ -53,7 +59,7 @@ export const queryStaticGuideTool = tool({
 `),
   }),
   execute: async ({ topics }) => {
-    const results = topics.map((topic) => staticGuideResultByTopic[topic]());
+    const results = await Promise.all(topics.map((topic) => staticGuideResultByTopic[topic]()));
 
     return {
       results,

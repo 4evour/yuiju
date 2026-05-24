@@ -1,22 +1,30 @@
 import {
+  type ActionContext,
   ActionId,
   type ActionMetadata,
   allTrue,
+  BusinessDistrictSubScene,
   CAFE_COFFEES,
   type CafeCoffee,
   type CafeCoffeeName,
   type ChoiceOption,
+  CoastAreaSubScene,
+  HomeSubScene,
   MajorScene,
   planManager,
+  SchoolSubScene,
 } from "@yuiju/utils";
 import { chooseCafeCoffeeAgent } from "@/llm/agent";
 import { logger } from "@/utils/logger";
-import { buildFoodMetadata } from "../utils/food-utils";
+import { buildFoodMetadata } from "../../utils/food-utils";
 
 const CAFE_MIN_PRICE = Math.min(...CAFE_COFFEES.map((p) => p.price));
 
-function isAtCafe(major: MajorScene) {
-  return major === MajorScene.Cafe;
+function isAtCafe(context: ActionContext) {
+  return (
+    context.characterState.location.major === MajorScene.BusinessDistrict &&
+    context.characterState.location.minor === BusinessDistrictSubScene.Cafe
+  );
 }
 
 function formatCoffeeDescription(coffee: CafeCoffee) {
@@ -72,7 +80,7 @@ export const cafeAction: ActionMetadata[] = [
     },
     precondition(context) {
       return allTrue([
-        () => isAtCafe(context.characterState.location.major),
+        () => isAtCafe(context),
         () => context.characterState.money >= CAFE_MIN_PRICE,
       ]);
     },
@@ -235,7 +243,7 @@ export const cafeAction: ActionMetadata[] = [
     },
     precondition(context) {
       return allTrue([
-        () => isAtCafe(context.characterState.location.major),
+        () => isAtCafe(context),
         () => isCafeWorkTimeWithAtLeastOneHourLeft(context.worldState.time),
       ]);
     },
@@ -263,11 +271,14 @@ export const cafeAction: ActionMetadata[] = [
     action: ActionId.Go_Home_From_Cafe,
     description: "从薄暮咖啡回家。[体力-5][饱腹-3][耗时20分钟]",
     precondition(context) {
-      return isAtCafe(context.characterState.location.major);
+      return isAtCafe(context);
     },
     async executor(context) {
       await context.characterState.setAction(ActionId.Go_Home_From_Cafe);
-      await context.characterState.setLocation({ major: MajorScene.Home });
+      await context.characterState.setLocation({
+        major: MajorScene.Home,
+        minor: HomeSubScene.House,
+      });
       await context.characterState.changeStamina(-5);
       await context.characterState.changeSatiety(-3);
     },
@@ -277,14 +288,51 @@ export const cafeAction: ActionMetadata[] = [
     action: ActionId.Go_To_School_From_Cafe,
     description: "从薄暮咖啡去星见丘高校。[体力-3][饱腹-2][耗时10分钟]",
     precondition(context) {
-      return isAtCafe(context.characterState.location.major);
+      return isAtCafe(context);
     },
     async executor(context) {
       await context.characterState.setAction(ActionId.Go_To_School_From_Cafe);
-      await context.characterState.setLocation({ major: MajorScene.School });
+      await context.characterState.setLocation({
+        major: MajorScene.School,
+        minor: SchoolSubScene.Campus,
+      });
       await context.characterState.changeStamina(-3);
       await context.characterState.changeSatiety(-2);
     },
     durationMin: 10,
+  },
+  {
+    action: ActionId.Go_To_Shop_From_Cafe,
+    description: "从薄暮咖啡前往小町商店。[体力-1][饱腹-1][耗时5分钟]",
+    precondition(context) {
+      return isAtCafe(context);
+    },
+    async executor(context) {
+      await context.characterState.setAction(ActionId.Go_To_Shop_From_Cafe);
+      await context.characterState.setLocation({
+        major: MajorScene.BusinessDistrict,
+        minor: BusinessDistrictSubScene.Shop,
+      });
+      await context.characterState.changeStamina(-1);
+      await context.characterState.changeSatiety(-1);
+    },
+    durationMin: 5,
+  },
+  {
+    action: ActionId.Go_To_Coast_From_Cafe,
+    description: "从薄暮咖啡前往月汐海岸。[体力-7][饱腹-5][耗时30分钟]",
+    precondition(context) {
+      return isAtCafe(context);
+    },
+    async executor(context) {
+      await context.characterState.setAction(ActionId.Go_To_Coast_From_Cafe);
+      await context.characterState.setLocation({
+        major: MajorScene.CoastArea,
+        minor: CoastAreaSubScene.Beach,
+      });
+      await context.characterState.changeStamina(-7);
+      await context.characterState.changeSatiety(-5);
+    },
+    durationMin: 30,
   },
 ];

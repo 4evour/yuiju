@@ -2,10 +2,15 @@ import dayjs from "dayjs";
 import { isDev } from "../../env";
 import {
   ActionId,
+  BusinessDistrictSubScene,
   type CharacterStateData,
+  CoastAreaSubScene,
+  HomeSubScene,
   type Location,
   MajorScene,
+  ParkAreaSubScene,
   type RunningActionState,
+  SchoolSubScene,
 } from "../../types";
 import { safeParseJson } from "../../utils";
 import { getRedis, type RedisReadSource, syncRedisStateWrite } from "../client";
@@ -16,7 +21,7 @@ export const REDIS_KEY_CHARACTER_STATE = isDev()
 
 const DEFAULT_CHARACTER_STATE_DATA: CharacterStateData = {
   action: ActionId.Idle,
-  location: { major: MajorScene.Home },
+  location: { major: MajorScene.Home, minor: HomeSubScene.House },
   stamina: 100,
   satiety: 70,
   mood: 60,
@@ -34,8 +39,30 @@ const isActionId = (value: string): value is ActionId => {
   return (Object.values(ActionId) as string[]).includes(value);
 };
 
-const isMajorScene = (value: unknown): value is MajorScene => {
-  return typeof value === "string" && (Object.values(MajorScene) as string[]).includes(value);
+const isLocation = (value: unknown): value is Location => {
+  if (!value || typeof value !== "object" || !("major" in value) || !("minor" in value)) {
+    return false;
+  }
+
+  const location = value as { major: unknown; minor: unknown };
+
+  if (location.major === MajorScene.Home) {
+    return (Object.values(HomeSubScene) as unknown[]).includes(location.minor);
+  }
+  if (location.major === MajorScene.School) {
+    return (Object.values(SchoolSubScene) as unknown[]).includes(location.minor);
+  }
+  if (location.major === MajorScene.BusinessDistrict) {
+    return (Object.values(BusinessDistrictSubScene) as unknown[]).includes(location.minor);
+  }
+  if (location.major === MajorScene.ParkArea) {
+    return (Object.values(ParkAreaSubScene) as unknown[]).includes(location.minor);
+  }
+  if (location.major === MajorScene.CoastArea) {
+    return (Object.values(CoastAreaSubScene) as unknown[]).includes(location.minor);
+  }
+
+  return false;
 };
 
 const isValidIsoDateString = (value: unknown): value is string => {
@@ -134,13 +161,8 @@ export const initCharacterStateData = async (
 
   if (raw.location) {
     const parsedLocation = safeParseJson<unknown>(raw.location);
-    if (
-      parsedLocation &&
-      typeof parsedLocation === "object" &&
-      "major" in parsedLocation &&
-      isMajorScene((parsedLocation as any).major)
-    ) {
-      state.location = parsedLocation as Location;
+    if (isLocation(parsedLocation)) {
+      state.location = parsedLocation;
     }
   }
 

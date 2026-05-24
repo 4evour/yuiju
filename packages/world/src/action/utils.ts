@@ -1,12 +1,10 @@
 import { type ActionContext, ActionId } from "@yuiju/utils";
 import { anywhereAction } from "./anywhere";
-import { cafeAction } from "./cafe";
-import { coastAction } from "./coast";
+import { businessDistrictAction } from "./business-district";
+import { coastAction } from "./coast-area";
 import { homeAction } from "./home";
-import { parkAction } from "./park";
+import { parkAreaAction } from "./park-area";
 import { schoolAction } from "./school";
-import { shopAction } from "./shop";
-import { shrineAction } from "./shrine";
 
 export const PrecheckActionMap: Record<string, ActionId[]> = {
   [ActionId.Sleep]: [ActionId.Wake_Up, ActionId.Sleep_For_A_Little],
@@ -32,11 +30,9 @@ export const getActionById = (action: ActionId) => {
     ...anywhereAction,
     ...homeAction,
     ...schoolAction,
-    ...shopAction,
-    ...cafeAction,
+    ...businessDistrictAction,
     ...coastAction,
-    ...parkAction,
-    ...shrineAction,
+    ...parkAreaAction,
   ].find((item) => item.action === action)!;
 };
 

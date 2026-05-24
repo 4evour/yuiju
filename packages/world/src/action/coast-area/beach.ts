@@ -1,4 +1,12 @@
-import { type ActionAgentDecision, ActionId, type ActionMetadata, MajorScene } from "@yuiju/utils";
+import {
+  type ActionAgentDecision,
+  type ActionContext,
+  ActionId,
+  type ActionMetadata,
+  BusinessDistrictSubScene,
+  CoastAreaSubScene,
+  MajorScene,
+} from "@yuiju/utils";
 
 type CoastWalkTier = {
   durationMin: number;
@@ -27,8 +35,11 @@ const DEFAULT_COAST_WALK_TIER = COAST_WALK_TIERS[1];
  *
  * @param major 当前角色所在的大地点枚举值
  */
-function isAtCoast(major: MajorScene) {
-  return major === MajorScene.Coast;
+function isAtCoast(context: ActionContext) {
+  return (
+    context.characterState.location.major === MajorScene.CoastArea &&
+    context.characterState.location.minor === CoastAreaSubScene.Beach
+  );
 }
 
 /**
@@ -57,7 +68,7 @@ export const coastAction: ActionMetadata[] = [
       enabled: true,
     },
     precondition(context) {
-      return isAtCoast(context.characterState.location.major);
+      return isAtCoast(context);
     },
     async executor(context, selectedAction) {
       const selectedTier = resolveCoastWalkTier(selectedAction.durationMinute);
@@ -91,11 +102,31 @@ export const coastAction: ActionMetadata[] = [
     action: ActionId.Go_To_Shop_From_Coast,
     description: "从月汐海岸回到小町商店，路程较远。[体力-7][饱腹-5][耗时30分钟]",
     precondition(context) {
-      return isAtCoast(context.characterState.location.major);
+      return isAtCoast(context);
     },
     async executor(context) {
       await context.characterState.setAction(ActionId.Go_To_Shop_From_Coast);
-      await context.characterState.setLocation({ major: MajorScene.Shop });
+      await context.characterState.setLocation({
+        major: MajorScene.BusinessDistrict,
+        minor: BusinessDistrictSubScene.Shop,
+      });
+      await context.characterState.changeStamina(-7);
+      await context.characterState.changeSatiety(-5);
+    },
+    durationMin: 30,
+  },
+  {
+    action: ActionId.Go_To_Cafe_From_Coast,
+    description: "从月汐海岸回到薄暮咖啡，路程较远。[体力-7][饱腹-5][耗时30分钟]",
+    precondition(context) {
+      return isAtCoast(context);
+    },
+    async executor(context) {
+      await context.characterState.setAction(ActionId.Go_To_Cafe_From_Coast);
+      await context.characterState.setLocation({
+        major: MajorScene.BusinessDistrict,
+        minor: BusinessDistrictSubScene.Cafe,
+      });
       await context.characterState.changeStamina(-7);
       await context.characterState.changeSatiety(-5);
     },

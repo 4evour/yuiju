@@ -1,5 +1,21 @@
-import { ActionId, type ActionMetadata, allTrue, MajorScene } from "@yuiju/utils";
-import { isAfternoon, isNight, isWeekday } from "./utils";
+import {
+  type ActionContext,
+  ActionId,
+  type ActionMetadata,
+  allTrue,
+  BusinessDistrictSubScene,
+  HomeSubScene,
+  MajorScene,
+  SchoolSubScene,
+} from "@yuiju/utils";
+import { isAfternoon, isNight, isWeekday } from "../utils";
+
+function isAtSchoolCampus(context: ActionContext) {
+  return (
+    context.characterState.location.major === MajorScene.School &&
+    context.characterState.location.minor === SchoolSubScene.Campus
+  );
+}
 
 export const schoolAction: ActionMetadata[] = [
   {
@@ -11,6 +27,7 @@ export const schoolAction: ActionMetadata[] = [
     },
     precondition(context) {
       return allTrue([
+        () => isAtSchoolCampus(context),
         () => {
           // 上课时间：9点-12点、14点-16点
           const hour = context.worldState.time.hour();
@@ -45,12 +62,17 @@ export const schoolAction: ActionMetadata[] = [
     action: ActionId.Go_Home_From_School,
     description: "从星见丘高校回家。[体力-7][饱腹-5][耗时30分钟]",
     precondition(context) {
-      return allTrue([context.characterState.stamina >= 10, isAfternoon(context)]);
+      return allTrue([
+        () => isAtSchoolCampus(context),
+        context.characterState.stamina >= 10,
+        isAfternoon(context),
+      ]);
     },
     async executor(context) {
       await context.characterState.setAction(ActionId.Go_Home_From_School);
       await context.characterState.setLocation({
         major: MajorScene.Home,
+        minor: HomeSubScene.House,
       });
 
       await context.characterState.changeStamina(-7);
@@ -62,12 +84,17 @@ export const schoolAction: ActionMetadata[] = [
     action: ActionId.Go_To_Shop_From_School,
     description: "从星见丘高校前往小町商店。[体力-3][饱腹-2][耗时10分钟]",
     precondition(context) {
-      return context.characterState.stamina >= 5 && !isNight(context);
+      return allTrue([
+        () => isAtSchoolCampus(context),
+        context.characterState.stamina >= 5,
+        !isNight(context),
+      ]);
     },
     async executor(context) {
       await context.characterState.setAction(ActionId.Go_To_Shop_From_School);
       await context.characterState.setLocation({
-        major: MajorScene.Shop,
+        major: MajorScene.BusinessDistrict,
+        minor: BusinessDistrictSubScene.Shop,
       });
 
       await context.characterState.changeStamina(-3);
@@ -79,12 +106,17 @@ export const schoolAction: ActionMetadata[] = [
     action: ActionId.Go_To_Cafe_From_School,
     description: "从星见丘高校去薄暮咖啡。[体力-3][饱腹-2][耗时10分钟]",
     precondition(context) {
-      return allTrue([context.characterState.stamina >= 5, !isNight(context)]);
+      return allTrue([
+        () => isAtSchoolCampus(context),
+        context.characterState.stamina >= 5,
+        !isNight(context),
+      ]);
     },
     async executor(context) {
       await context.characterState.setAction(ActionId.Go_To_Cafe_From_School);
       await context.characterState.setLocation({
-        major: MajorScene.Cafe,
+        major: MajorScene.BusinessDistrict,
+        minor: BusinessDistrictSubScene.Cafe,
       });
 
       await context.characterState.changeStamina(-3);

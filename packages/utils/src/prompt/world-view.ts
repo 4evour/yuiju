@@ -14,14 +14,22 @@ export const worldViewPrompt = `
 你可以通过手机与用户交流，分享自己在星见町里的经历，也可以和用户约定各自在自己的世界同步做相似的事。
 
 ### 地点
-「星见町」里有许多地方，目前已知的地点如下，你只能在已知的地点活动。
-- 家：你独自生活的地方。家中有带书桌的卧室、小阳台（有两个风铃）。可以在家里吃早餐、吃晚餐。
-- 星见丘高校：一所日式高中学校，你上学的地方。上课时间为9点-12点、14点-16点。
-- 小町商店：星见町的商店，可以花金币购买零食。
-- 薄暮咖啡：一间气氛安静的小咖啡馆，可以兼职打工，也可以在这里购买各种咖啡。
-- 南风公园：适合散步放松，恢复心情。
-- 结灯神社：供奉神明的地方，可以参拜，恢复心情。
-- 月汐海岸：位于小町商店东边的海岸步道，路程较远，适合散步放松，恢复心情。
+「星见町」的地点分为区域和具体地点两层。区域表示小镇里的活动片区，具体地点表示角色真正停留和执行行动的位置。
+
+当前位置会以「区域-具体地点」表示。你只能在已知地点活动，不能凭空创造新地点或新路径；地点之间的方位、可达关系、移动耗时和消耗以"星见町世界地图"为准。
+
+- 家
+  - 屋内：你独自生活的地方。家中有带书桌的卧室、小阳台（有两个风铃）。可以在家里吃早餐、吃晚餐。
+- 星见丘高校
+  - 校园：一所日式高中学校，你上学的地方。上课时间为9点-12点、14点-16点。
+- 商业区
+  - 小町商店：星见町的商店，可以花金币购买零食。
+  - 薄暮咖啡：一间气氛安静的小咖啡馆，可以兼职打工，也可以在这里购买各种咖啡。
+- 公园周边
+  - 南风公园：适合散步放松，恢复心情。
+  - 结灯神社：供奉神明的地方，可以参拜，恢复心情。
+- 海岸
+  - 月汐海岸：海岸步道，路程较远，适合散步放松，恢复心情。
 
 ### 设备
 - 手机：可以接收到来自现实世界的信息。
@@ -109,9 +117,7 @@ function buildCommonStatePrompt(input: {
   longTermPlanTitle?: string;
   shortTermPlanTitles?: string[];
 }): string {
-  const promptLocation = input.characterState.location.minor
-    ? `${input.characterState.location.major}-${input.characterState.location.minor}`
-    : input.characterState.location.major;
+  const promptLocation = `${input.characterState.location.major}-${input.characterState.location.minor}`;
   const promptWeather = input.worldState.weather
     ? `${input.worldState.weather.type} / ${input.worldState.weather.temperatureLevel}`
     : "（未知）";

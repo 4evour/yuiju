@@ -1,6 +1,7 @@
 import {
   ActionId,
   type CharacterStateData,
+  HomeSubScene,
   type ICharacterState,
   type InventoryItem,
   initCharacterStateData,
@@ -19,7 +20,7 @@ export class CharacterState implements ICharacterState {
   private static instance: CharacterState | null = null;
 
   public action: ActionId = ActionId.Idle;
-  public location: Location = { major: MajorScene.Home };
+  public location: Location = { major: MajorScene.Home, minor: HomeSubScene.House };
   public stamina: number = 100;
   public satiety: number = 70;
   public mood: number = 60;

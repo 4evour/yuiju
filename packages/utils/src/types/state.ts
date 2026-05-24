@@ -6,42 +6,45 @@ import type { WeatherSnapshot } from "./weather";
 export enum MajorScene {
   Home = "家",
   School = "星见丘高校",
-  Shop = "小町商店",
-  Cafe = "薄暮咖啡",
-  Park = "南风公园",
-  Shrine = "结灯神社",
-  Coast = "月汐海岸",
+  BusinessDistrict = "商业区",
+  ParkArea = "公园周边",
+  CoastArea = "海岸",
 }
 
 // 家的小场景
 export enum HomeSubScene {
-  House = "house",
+  House = "屋内",
 }
 
 // 星见丘高校的小场景
-export enum SchoolSubScene {}
+export enum SchoolSubScene {
+  Campus = "校园",
+}
 
-// 小町商店的小场景（预留）
-export enum ShopSubScene {}
+// 商业区的小场景
+export enum BusinessDistrictSubScene {
+  Shop = "小町商店",
+  Cafe = "薄暮咖啡",
+}
 
-// 南风公园的小场景（预留）
-export enum ParkSubScene {}
+// 公园周边的小场景
+export enum ParkAreaSubScene {
+  Park = "南风公园",
+  Shrine = "结灯神社",
+}
 
-// 结灯神社的小场景（预留）
-export enum ShrineSubScene {}
-
-// 海岸的小场景（预留）
-export enum CoastSubScene {}
+// 海岸的小场景
+export enum CoastAreaSubScene {
+  Beach = "月汐海岸",
+}
 
 // 位置类型（判别联合）
 export type Location =
-  | { major: MajorScene.Home; minor?: HomeSubScene }
-  | { major: MajorScene.School; minor?: SchoolSubScene }
-  | { major: MajorScene.Shop; minor?: ShopSubScene }
-  | { major: MajorScene.Cafe; minor?: undefined }
-  | { major: MajorScene.Park; minor?: ParkSubScene }
-  | { major: MajorScene.Shrine; minor?: ShrineSubScene }
-  | { major: MajorScene.Coast; minor?: CoastSubScene };
+  | { major: MajorScene.Home; minor: HomeSubScene }
+  | { major: MajorScene.School; minor: SchoolSubScene }
+  | { major: MajorScene.BusinessDistrict; minor: BusinessDistrictSubScene }
+  | { major: MajorScene.ParkArea; minor: ParkAreaSubScene }
+  | { major: MajorScene.CoastArea; minor: CoastAreaSubScene };
 
 /**
  * 食物元数据

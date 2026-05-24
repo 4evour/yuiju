@@ -1,11 +1,14 @@
 import {
   type ActionAgentDecision,
+  type ActionContext,
   ActionId,
   type ActionMetadata,
   allTrue,
+  HomeSubScene,
   MajorScene,
+  ParkAreaSubScene,
 } from "@yuiju/utils";
-import { isNight } from "./utils";
+import { isNight } from "../utils";
 
 type ParkWalkTier = {
   durationMin: number;
@@ -28,8 +31,11 @@ const PARK_WALK_TIERS: ParkWalkTier[] = [
 
 const DEFAULT_PARK_WALK_TIER = PARK_WALK_TIERS[1];
 
-function isAtPark(major: MajorScene) {
-  return major === MajorScene.Park;
+function isAtPark(context: ActionContext) {
+  return (
+    context.characterState.location.major === MajorScene.ParkArea &&
+    context.characterState.location.minor === ParkAreaSubScene.Park
+  );
 }
 
 /**
@@ -60,7 +66,7 @@ export const parkAction: ActionMetadata[] = [
       enabled: true,
     },
     precondition(context) {
-      return isAtPark(context.characterState.location.major);
+      return isAtPark(context);
     },
     async executor(context, selectedAction) {
       const selectedTier = resolveParkWalkTier(selectedAction.durationMinute);
@@ -93,11 +99,14 @@ export const parkAction: ActionMetadata[] = [
     action: ActionId.Go_Home_From_Park,
     description: "从南风公园回家。[体力-3][饱腹-2][耗时10分钟]",
     precondition(context) {
-      return isAtPark(context.characterState.location.major);
+      return isAtPark(context);
     },
     async executor(context) {
       await context.characterState.setAction(ActionId.Go_Home_From_Park);
-      await context.characterState.setLocation({ major: MajorScene.Home });
+      await context.characterState.setLocation({
+        major: MajorScene.Home,
+        minor: HomeSubScene.House,
+      });
       await context.characterState.changeStamina(-3);
       await context.characterState.changeSatiety(-2);
     },
@@ -107,14 +116,14 @@ export const parkAction: ActionMetadata[] = [
     action: ActionId.Go_To_Shrine_From_Park,
     description: "从南风公园前往结灯神社。[体力-3][饱腹-2][耗时10分钟]",
     precondition(context) {
-      return allTrue([
-        () => isAtPark(context.characterState.location.major),
-        () => !isNight(context),
-      ]);
+      return allTrue([() => isAtPark(context), () => !isNight(context)]);
     },
     async executor(context) {
       await context.characterState.setAction(ActionId.Go_To_Shrine_From_Park);
-      await context.characterState.setLocation({ major: MajorScene.Shrine });
+      await context.characterState.setLocation({
+        major: MajorScene.ParkArea,
+        minor: ParkAreaSubScene.Shrine,
+      });
       await context.characterState.changeStamina(-3);
       await context.characterState.changeSatiety(-2);
     },

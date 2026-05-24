@@ -40,6 +40,8 @@ export enum ActionId {
   Go_Home_From_Shop = "从商店回家",
   /** 从商店去学校 */
   Go_To_School_From_Shop = "从商店去学校",
+  /** 从商店去咖啡店 */
+  Go_To_Cafe_From_Shop = "从商店去咖啡店",
 
   /** 在商店购买物品 */
   Buy_Item_At_Shop = "在商店购买物品",
@@ -52,6 +54,10 @@ export enum ActionId {
   Go_Home_From_Cafe = "从咖啡店回家",
   /** 从咖啡店去学校 */
   Go_To_School_From_Cafe = "从咖啡店去学校",
+  /** 从咖啡店去商店 */
+  Go_To_Shop_From_Cafe = "从咖啡店去商店",
+  /** 从咖啡店去月汐海岸 */
+  Go_To_Coast_From_Cafe = "从咖啡店去月汐海岸",
 
   /** 点单 */
   Order_Coffee = "点单",
@@ -69,15 +75,21 @@ export enum ActionId {
 
   /** 从公园去神社 */
   Go_To_Shrine_From_Park = "从公园去神社",
+  /** 从家去神社 */
+  Go_To_Shrine_From_Home = "从家去神社",
   /** 在神社参拜 */
   Pray_At_Shrine = "参拜",
   /** 从神社回公园 */
   Go_To_Park_From_Shrine = "从神社回公园",
+  /** 从神社回家 */
+  Go_Home_From_Shrine = "从神社回家",
 
   /** 从商店去月汐海岸 */
   Go_To_Coast_From_Shop = "从商店去月汐海岸",
   /** 从月汐海岸回商店 */
   Go_To_Shop_From_Coast = "从月汐海岸去商店",
+  /** 从月汐海岸回咖啡店 */
+  Go_To_Cafe_From_Coast = "从月汐海岸去咖啡店",
   /** 在月汐海岸散步 */
   Walk_In_Coast = "在月汐海岸散步",
 }

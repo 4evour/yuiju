@@ -1,21 +1,29 @@
 import {
+  type ActionContext,
   ActionId,
   type ActionMetadata,
   allTrue,
+  BusinessDistrictSubScene,
   type ChoiceOption,
+  CoastAreaSubScene,
+  HomeSubScene,
   MajorScene,
   planManager,
+  SchoolSubScene,
   SHOP_PRODUCTS,
   type ShopProduct,
 } from "@yuiju/utils";
 import { chooseShopProductAgent } from "@/llm/agent";
 import { logger } from "@/utils/logger";
-import { buildFoodMetadata } from "../utils/food-utils";
+import { buildFoodMetadata } from "../../utils/food-utils";
 
 const SHOP_MIN_PRICE = Math.min(...SHOP_PRODUCTS.map((p) => p.price));
 
-function isAtShop(major: MajorScene) {
-  return major === MajorScene.Shop;
+function isAtShop(context: ActionContext) {
+  return (
+    context.characterState.location.major === MajorScene.BusinessDistrict &&
+    context.characterState.location.minor === BusinessDistrictSubScene.Shop
+  );
 }
 
 function formatProductDescription(product: ShopProduct) {
@@ -44,7 +52,7 @@ export const shopAction: ActionMetadata[] = [
     },
     precondition(context) {
       return allTrue([
-        () => isAtShop(context.characterState.location.major),
+        () => isAtShop(context),
         () => context.characterState.money >= SHOP_MIN_PRICE,
       ]);
     },
@@ -156,11 +164,14 @@ export const shopAction: ActionMetadata[] = [
     action: ActionId.Go_Home_From_Shop,
     description: "从小町商店回家。[体力-5][饱腹-3][耗时20分钟]",
     precondition(context) {
-      return isAtShop(context.characterState.location.major);
+      return isAtShop(context);
     },
     async executor(context) {
       await context.characterState.setAction(ActionId.Go_Home_From_Shop);
-      await context.characterState.setLocation({ major: MajorScene.Home });
+      await context.characterState.setLocation({
+        major: MajorScene.Home,
+        minor: HomeSubScene.House,
+      });
       await context.characterState.changeStamina(-5);
       await context.characterState.changeSatiety(-3);
     },
@@ -170,25 +181,48 @@ export const shopAction: ActionMetadata[] = [
     action: ActionId.Go_To_School_From_Shop,
     description: "从小町商店前往星见丘高校。[体力-3][饱腹-2][耗时10分钟]",
     precondition(context) {
-      return isAtShop(context.characterState.location.major);
+      return isAtShop(context);
     },
     async executor(context) {
       await context.characterState.setAction(ActionId.Go_To_School_From_Shop);
-      await context.characterState.setLocation({ major: MajorScene.School });
+      await context.characterState.setLocation({
+        major: MajorScene.School,
+        minor: SchoolSubScene.Campus,
+      });
       await context.characterState.changeStamina(-3);
       await context.characterState.changeSatiety(-2);
     },
     durationMin: 10,
   },
   {
+    action: ActionId.Go_To_Cafe_From_Shop,
+    description: "从小町商店前往薄暮咖啡。[体力-1][饱腹-1][耗时5分钟]",
+    precondition(context) {
+      return isAtShop(context);
+    },
+    async executor(context) {
+      await context.characterState.setAction(ActionId.Go_To_Cafe_From_Shop);
+      await context.characterState.setLocation({
+        major: MajorScene.BusinessDistrict,
+        minor: BusinessDistrictSubScene.Cafe,
+      });
+      await context.characterState.changeStamina(-1);
+      await context.characterState.changeSatiety(-1);
+    },
+    durationMin: 5,
+  },
+  {
     action: ActionId.Go_To_Coast_From_Shop,
     description: "从小町商店前往月汐海岸。[体力-7][饱腹-5][耗时30分钟]",
     precondition(context) {
-      return isAtShop(context.characterState.location.major);
+      return isAtShop(context);
     },
     async executor(context) {
       await context.characterState.setAction(ActionId.Go_To_Coast_From_Shop);
-      await context.characterState.setLocation({ major: MajorScene.Coast });
+      await context.characterState.setLocation({
+        major: MajorScene.CoastArea,
+        minor: CoastAreaSubScene.Beach,
+      });
       await context.characterState.changeStamina(-7);
       await context.characterState.changeSatiety(-5);
     },

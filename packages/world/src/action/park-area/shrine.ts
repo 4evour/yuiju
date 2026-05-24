@@ -1,13 +1,25 @@
-import { ActionId, type ActionMetadata, allTrue, MajorScene, planManager } from "@yuiju/utils";
+import {
+  type ActionContext,
+  ActionId,
+  type ActionMetadata,
+  allTrue,
+  HomeSubScene,
+  MajorScene,
+  ParkAreaSubScene,
+  planManager,
+} from "@yuiju/utils";
 import { chooseShrinePrayerAgent } from "@/llm/agent";
-import { isNight } from "./utils";
+import { isNight } from "../utils";
 
 const SHRINE_OFFERING_COST = 5;
 const SHRINE_PRAY_MOOD_GAIN = 4;
 const SHRINE_OFFERING_MOOD_GAIN = 8;
 
-function isAtShrine(major: MajorScene) {
-  return major === MajorScene.Shrine;
+function isAtShrine(context: ActionContext) {
+  return (
+    context.characterState.location.major === MajorScene.ParkArea &&
+    context.characterState.location.minor === ParkAreaSubScene.Shrine
+  );
 }
 
 export const shrineAction: ActionMetadata[] = [
@@ -19,10 +31,7 @@ export const shrineAction: ActionMetadata[] = [
       enabled: true,
     },
     precondition(context) {
-      return allTrue([
-        () => isAtShrine(context.characterState.location.major),
-        () => !isNight(context),
-      ]);
+      return allTrue([() => isAtShrine(context), () => !isNight(context)]);
     },
     async executor(context, selectedAction) {
       await context.characterState.setAction(ActionId.Pray_At_Shrine);
@@ -90,11 +99,31 @@ export const shrineAction: ActionMetadata[] = [
     action: ActionId.Go_To_Park_From_Shrine,
     description: "从结灯神社回到南风公园。[体力-3][饱腹-2][耗时10分钟]",
     precondition(context) {
-      return isAtShrine(context.characterState.location.major);
+      return isAtShrine(context);
     },
     async executor(context) {
       await context.characterState.setAction(ActionId.Go_To_Park_From_Shrine);
-      await context.characterState.setLocation({ major: MajorScene.Park });
+      await context.characterState.setLocation({
+        major: MajorScene.ParkArea,
+        minor: ParkAreaSubScene.Park,
+      });
+      await context.characterState.changeStamina(-3);
+      await context.characterState.changeSatiety(-2);
+    },
+    durationMin: 10,
+  },
+  {
+    action: ActionId.Go_Home_From_Shrine,
+    description: "从结灯神社回家。[体力-3][饱腹-2][耗时10分钟]",
+    precondition(context) {
+      return isAtShrine(context);
+    },
+    async executor(context) {
+      await context.characterState.setAction(ActionId.Go_Home_From_Shrine);
+      await context.characterState.setLocation({
+        major: MajorScene.Home,
+        minor: HomeSubScene.House,
+      });
       await context.characterState.changeStamina(-3);
       await context.characterState.changeSatiety(-2);
     },

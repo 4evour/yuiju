@@ -1,79 +1,175 @@
-import { MajorScene } from "../types/state";
+import {
+  BusinessDistrictSubScene,
+  CoastAreaSubScene,
+  HomeSubScene,
+  MajorScene,
+  ParkAreaSubScene,
+  SchoolSubScene,
+} from "../types/state";
 
-export type WorldMapPlaceId = "HOME" | "SCHOOL" | "SHOP" | "CAFE" | "PARK" | "SHRINE" | "COAST";
+export type WorldMapMajorPlaceId =
+  | "HOME"
+  | "SCHOOL"
+  | "BUSINESS_DISTRICT"
+  | "PARK_AREA"
+  | "COAST_AREA";
 
-export interface WorldMapPlace {
-  id: WorldMapPlaceId;
+export type WorldMapMinorPlaceId =
+  | "HOUSE"
+  | "CAMPUS"
+  | "SHOP"
+  | "CAFE"
+  | "PARK"
+  | "SHRINE"
+  | "BEACH";
+
+export interface WorldMapPlace<TPlaceId extends string> {
+  id: TPlaceId;
   name: string;
 }
 
-export interface WorldMapLink {
-  from: WorldMapPlaceId;
-  to: WorldMapPlaceId;
+export interface WorldMapLink<TPlaceId extends string> {
+  from: TPlaceId;
+  to: TPlaceId;
   timeMinutes: number;
   stamina: number;
   satiety?: number;
   dir: "N" | "NE" | "E" | "SE" | "S" | "SW" | "W" | "NW";
 }
 
-/**
- * 星见町的结构化地图数据。
- *
- * 说明：
- * - 这里作为地图事实源，被 prompt 与 function tool 共同复用；
- * - 行为实现中的移动时间/消耗应尽量与这里保持一致，避免模型获取到互相矛盾的地图信息。
- */
-export const worldMapPlaces: WorldMapPlace[] = [
+export const worldMapMajorPlaces: WorldMapPlace<WorldMapMajorPlaceId>[] = [
   { id: "HOME", name: MajorScene.Home },
   { id: "SCHOOL", name: MajorScene.School },
-  { id: "SHOP", name: MajorScene.Shop },
-  { id: "CAFE", name: MajorScene.Cafe },
-  { id: "PARK", name: MajorScene.Park },
-  { id: "SHRINE", name: MajorScene.Shrine },
-  { id: "COAST", name: MajorScene.Coast },
+  { id: "BUSINESS_DISTRICT", name: MajorScene.BusinessDistrict },
+  { id: "PARK_AREA", name: MajorScene.ParkArea },
+  { id: "COAST_AREA", name: MajorScene.CoastArea },
 ];
 
-export const worldMapLinks: WorldMapLink[] = [
+const worldMapMajorPlaceIdByScene = {
+  [MajorScene.Home]: "HOME",
+  [MajorScene.School]: "SCHOOL",
+  [MajorScene.BusinessDistrict]: "BUSINESS_DISTRICT",
+  [MajorScene.ParkArea]: "PARK_AREA",
+  [MajorScene.CoastArea]: "COAST_AREA",
+} satisfies Record<MajorScene, WorldMapMajorPlaceId>;
+
+export const worldMapMajorLinks: WorldMapLink<WorldMapMajorPlaceId>[] = [
   { from: "HOME", to: "SCHOOL", timeMinutes: 30, stamina: -7, satiety: -4, dir: "N" },
   { from: "SCHOOL", to: "HOME", timeMinutes: 30, stamina: -7, satiety: -4, dir: "S" },
 
-  { from: "HOME", to: "SHOP", timeMinutes: 20, stamina: -5, satiety: -3, dir: "NE" },
-  { from: "SHOP", to: "HOME", timeMinutes: 20, stamina: -5, satiety: -3, dir: "SW" },
+  { from: "HOME", to: "BUSINESS_DISTRICT", timeMinutes: 20, stamina: -5, satiety: -3, dir: "NE" },
+  { from: "BUSINESS_DISTRICT", to: "HOME", timeMinutes: 20, stamina: -5, satiety: -3, dir: "SW" },
 
-  { from: "HOME", to: "CAFE", timeMinutes: 20, stamina: -5, satiety: -3, dir: "NW" },
-  { from: "CAFE", to: "HOME", timeMinutes: 20, stamina: -3, dir: "SE" },
+  { from: "SCHOOL", to: "BUSINESS_DISTRICT", timeMinutes: 10, stamina: -3, satiety: -2, dir: "E" },
+  { from: "BUSINESS_DISTRICT", to: "SCHOOL", timeMinutes: 10, stamina: -3, satiety: -2, dir: "W" },
 
-  { from: "SCHOOL", to: "SHOP", timeMinutes: 10, stamina: -3, satiety: -2, dir: "E" },
-  { from: "SHOP", to: "SCHOOL", timeMinutes: 10, stamina: -3, satiety: -2, dir: "W" },
+  { from: "HOME", to: "PARK_AREA", timeMinutes: 10, stamina: -3, satiety: -2, dir: "S" },
+  { from: "PARK_AREA", to: "HOME", timeMinutes: 10, stamina: -3, satiety: -2, dir: "N" },
 
-  { from: "SCHOOL", to: "CAFE", timeMinutes: 10, stamina: -3, satiety: -2, dir: "W" },
-  { from: "CAFE", to: "SCHOOL", timeMinutes: 10, stamina: -3, dir: "E" },
-
-  { from: "HOME", to: "PARK", timeMinutes: 10, stamina: -2, satiety: -1, dir: "S" },
-  { from: "PARK", to: "HOME", timeMinutes: 10, stamina: -2, satiety: -1, dir: "N" },
-
-  { from: "PARK", to: "SHRINE", timeMinutes: 10, stamina: -2, satiety: -1, dir: "S" },
-  { from: "SHRINE", to: "PARK", timeMinutes: 10, stamina: -2, satiety: -1, dir: "N" },
-
-  // 月汐海岸位于小町商店正东侧，作为一条更适合放松散步的外沿路线。
-  { from: "SHOP", to: "COAST", timeMinutes: 30, stamina: -2, satiety: -1, dir: "E" },
-  { from: "COAST", to: "SHOP", timeMinutes: 30, stamina: -2, satiety: -1, dir: "W" },
+  {
+    from: "BUSINESS_DISTRICT",
+    to: "COAST_AREA",
+    timeMinutes: 30,
+    stamina: -7,
+    satiety: -5,
+    dir: "E",
+  },
+  {
+    from: "COAST_AREA",
+    to: "BUSINESS_DISTRICT",
+    timeMinutes: 30,
+    stamina: -7,
+    satiety: -5,
+    dir: "W",
+  },
 ];
 
-export const worldMapDsl = [
-  ...worldMapPlaces.map((place) => `place ${place.id} "${place.name}"`),
-  "",
-  ...worldMapLinks.map((link) => {
-    const details = [
-      `timeMinutes=${link.timeMinutes}`,
-      `stamina=${link.stamina}`,
-      ...(link.satiety !== undefined ? [`satiety=${link.satiety}`] : []),
-      `dir=${link.dir}`,
-    ];
+export const worldMapMinorPlacesByMajor: Record<
+  WorldMapMajorPlaceId,
+  WorldMapPlace<WorldMapMinorPlaceId>[]
+> = {
+  HOME: [{ id: "HOUSE", name: HomeSubScene.House }],
+  SCHOOL: [{ id: "CAMPUS", name: SchoolSubScene.Campus }],
+  BUSINESS_DISTRICT: [
+    { id: "SHOP", name: BusinessDistrictSubScene.Shop },
+    { id: "CAFE", name: BusinessDistrictSubScene.Cafe },
+  ],
+  PARK_AREA: [
+    { id: "PARK", name: ParkAreaSubScene.Park },
+    { id: "SHRINE", name: ParkAreaSubScene.Shrine },
+  ],
+  COAST_AREA: [{ id: "BEACH", name: CoastAreaSubScene.Beach }],
+};
 
-    return `link ${link.from} -> ${link.to} (${details.join(", ")})`;
-  }),
-].join("\n");
+export const worldMapMinorLinksByMajor: Record<
+  WorldMapMajorPlaceId,
+  WorldMapLink<WorldMapMinorPlaceId>[]
+> = {
+  HOME: [],
+  SCHOOL: [],
+  BUSINESS_DISTRICT: [
+    { from: "SHOP", to: "CAFE", timeMinutes: 5, stamina: -1, satiety: -1, dir: "W" },
+    { from: "CAFE", to: "SHOP", timeMinutes: 5, stamina: -1, satiety: -1, dir: "E" },
+  ],
+  PARK_AREA: [
+    { from: "PARK", to: "SHRINE", timeMinutes: 10, stamina: -3, satiety: -2, dir: "S" },
+    { from: "SHRINE", to: "PARK", timeMinutes: 10, stamina: -3, satiety: -2, dir: "N" },
+  ],
+  COAST_AREA: [],
+};
+
+function buildWorldMapDsl<TPlaceId extends string>(
+  places: WorldMapPlace<TPlaceId>[],
+  links: WorldMapLink<TPlaceId>[],
+) {
+  return [
+    ...places.map((place) => `place ${place.id} "${place.name}"`),
+    "",
+    ...links.map((link) => {
+      const details = [
+        `timeMinutes=${link.timeMinutes}`,
+        `stamina=${link.stamina}`,
+        ...(link.satiety !== undefined ? [`satiety=${link.satiety}`] : []),
+        `dir=${link.dir}`,
+      ];
+
+      return `link ${link.from} -> ${link.to} (${details.join(", ")})`;
+    }),
+  ].join("\n");
+}
+
+export const worldMapDslGuide = `
+地图说明：
+- major map 表示小镇区域之间的移动关系。
+- minor map 表示当前区域内部具体地点之间的移动关系。
+- link A -> B 表示可以从 A 直接移动到 B。
+- dir 表示从 A 到 B 的方向。
+- timeMinutes 表示移动耗时。
+- stamina 和 satiety 表示移动后的数值变化。
+- 移动行为只能在候选 action 中选择，不能自行创造路径。
+`.trim();
+
+export const worldMapMajorDsl = buildWorldMapDsl(worldMapMajorPlaces, worldMapMajorLinks);
+
+export function getWorldMapMinorDsl(major: WorldMapMajorPlaceId) {
+  return buildWorldMapDsl(worldMapMinorPlacesByMajor[major], worldMapMinorLinksByMajor[major]);
+}
+
+export function getWorldMapMajorPlaceId(major: MajorScene) {
+  return worldMapMajorPlaceIdByScene[major];
+}
+
+export function worldMapDsl(major: WorldMapMajorPlaceId) {
+  return `
+${worldMapDslGuide}
+
+major map:
+${worldMapMajorDsl}
+
+minor map in ${major}:
+${getWorldMapMinorDsl(major)}
+`.trim();
+}
 
 /**
  * 给人看的，不是给 LLM 看的
@@ -83,21 +179,21 @@ export const worldMapTerminalUi = `
              │ 星见丘高校 │
              └─────┬──────┘
                    │
-      ┌────────────┼────────────────────────────┐
-  ┌───┴────────┐   │                  ┌─────────┴───┐──────┌──────────┐
-  │ 薄暮咖啡    │   │                  │   小町商店   │      │ 月汐海岸   │
-  └───┬────────┘   │                  └─────────┬───┘──────└──────────┘
-      └────────────┼────────────────────────────┘
+                   │
+               ┌───┴────┐
+               │ 商业区  │──────┌────────┐
+               │商店/咖啡│      │  海岸  │
+               └───┬────┘──────└────────┘
                    │
                ┌───┴────┐
                │   家   │
                └───┬────┘
                    │
                ┌───┴────┐
-               │ 南风公园 │
-               └───┬────┘
-                   │
-               ┌───┴────┐
-               │ 结灯神社 │
-               └─────────┘
+               │公园周边 │
+               │公园/神社│
+               └────────┘
 `.trim();
+
+export const worldMapPlaces = worldMapMajorPlaces;
+export const worldMapLinks = worldMapMajorLinks;

@@ -3,16 +3,20 @@ import {
   ActionId,
   type ActionMetadata,
   allTrue,
+  BusinessDistrictSubScene,
   type ChoiceOption,
   type FoodMetadata,
+  HomeSubScene,
   isDev,
   MajorScene,
+  ParkAreaSubScene,
   planManager,
+  SchoolSubScene,
 } from "@yuiju/utils";
 import { chooseFoodAgent } from "@/llm/agent";
 import { generateDiaryForDate, resolveDiaryDateForSleep } from "@/memory/diary";
 import { logger } from "@/utils/logger";
-import { resolveFoodRecoveryPerUnit } from "../utils/food-utils";
+import { resolveFoodRecoveryPerUnit } from "../../utils/food-utils";
 import {
   isAfternoon,
   isEvening,
@@ -21,7 +25,7 @@ import {
   isWeekday,
   isWeekend,
   notDoneToday,
-} from "./utils";
+} from "../utils";
 
 type CookingIngredientSnapshot = {
   name: string;
@@ -32,6 +36,13 @@ type CookingIngredientSnapshot = {
 type CookingStartContext = {
   ingredients: CookingIngredientSnapshot[];
 };
+
+function isAtHomeHouse(context: ActionContext) {
+  return (
+    context.characterState.location.major === MajorScene.Home &&
+    context.characterState.location.minor === HomeSubScene.House
+  );
+}
 
 function getAvailableCookingIngredientOptions(context: ActionContext): ChoiceOption[] {
   const inventory = context.characterState.inventory || [];
@@ -131,7 +142,11 @@ export const homeAction: ActionMetadata[] = [
       enabled: true,
     },
     precondition(context) {
-      return allTrue([isMorning(context), () => notDoneToday(context, ActionId.Eat_Breakfast)]);
+      return allTrue([
+        () => isAtHomeHouse(context),
+        isMorning(context),
+        () => notDoneToday(context, ActionId.Eat_Breakfast),
+      ]);
     },
     async executor(context) {
       await context.characterState.setAction(ActionId.Eat_Breakfast);
@@ -148,12 +163,13 @@ export const homeAction: ActionMetadata[] = [
     action: ActionId.Go_To_School_From_Home,
     description: "前往星见丘高校。[体力-7][饱腹-5][耗时30分钟]",
     precondition(context) {
-      return allTrue([isWeekday(context), isMorning(context)]);
+      return allTrue([() => isAtHomeHouse(context), isWeekday(context), isMorning(context)]);
     },
     async executor(context) {
       await context.characterState.setAction(ActionId.Go_To_School_From_Home);
       await context.characterState.setLocation({
         major: MajorScene.School,
+        minor: SchoolSubScene.Campus,
       });
       await context.characterState.changeStamina(-7);
       await context.characterState.changeSatiety(-5);
@@ -164,12 +180,17 @@ export const homeAction: ActionMetadata[] = [
     action: ActionId.Go_To_Shop_From_Home,
     description: "从家前往小町商店。[体力-5][饱腹-3][耗时20分钟]",
     precondition(context) {
-      return context.characterState.stamina >= 5 && !isNight(context);
+      return allTrue([
+        () => isAtHomeHouse(context),
+        context.characterState.stamina >= 5,
+        !isNight(context),
+      ]);
     },
     async executor(context) {
       await context.characterState.setAction(ActionId.Go_To_Shop_From_Home);
       await context.characterState.setLocation({
-        major: MajorScene.Shop,
+        major: MajorScene.BusinessDistrict,
+        minor: BusinessDistrictSubScene.Shop,
       });
       await context.characterState.changeStamina(-5);
       await context.characterState.changeSatiety(-3);
@@ -180,12 +201,17 @@ export const homeAction: ActionMetadata[] = [
     action: ActionId.Go_To_Cafe_From_Home,
     description: "从家去薄暮咖啡。[体力-5][饱腹-3][耗时20分钟]",
     precondition(context) {
-      return allTrue([context.characterState.stamina >= 5, !isNight(context)]);
+      return allTrue([
+        () => isAtHomeHouse(context),
+        context.characterState.stamina >= 5,
+        !isNight(context),
+      ]);
     },
     async executor(context) {
       await context.characterState.setAction(ActionId.Go_To_Cafe_From_Home);
       await context.characterState.setLocation({
-        major: MajorScene.Cafe,
+        major: MajorScene.BusinessDistrict,
+        minor: BusinessDistrictSubScene.Cafe,
       });
       await context.characterState.changeStamina(-5);
       await context.characterState.changeSatiety(-3);
@@ -196,12 +222,38 @@ export const homeAction: ActionMetadata[] = [
     action: ActionId.Go_To_Park_From_Home,
     description: "从家前往南风公园。[体力-3][饱腹-2][耗时10分钟]",
     precondition(context) {
-      return context.characterState.stamina >= 3 && !isNight(context);
+      return allTrue([
+        () => isAtHomeHouse(context),
+        context.characterState.stamina >= 3,
+        !isNight(context),
+      ]);
     },
     async executor(context) {
       await context.characterState.setAction(ActionId.Go_To_Park_From_Home);
       await context.characterState.setLocation({
-        major: MajorScene.Park,
+        major: MajorScene.ParkArea,
+        minor: ParkAreaSubScene.Park,
+      });
+      await context.characterState.changeStamina(-3);
+      await context.characterState.changeSatiety(-2);
+    },
+    durationMin: 10,
+  },
+  {
+    action: ActionId.Go_To_Shrine_From_Home,
+    description: "从家前往结灯神社。[体力-3][饱腹-2][耗时10分钟]",
+    precondition(context) {
+      return allTrue([
+        () => isAtHomeHouse(context),
+        context.characterState.stamina >= 3,
+        !isNight(context),
+      ]);
+    },
+    async executor(context) {
+      await context.characterState.setAction(ActionId.Go_To_Shrine_From_Home);
+      await context.characterState.setLocation({
+        major: MajorScene.ParkArea,
+        minor: ParkAreaSubScene.Shrine,
       });
       await context.characterState.changeStamina(-3);
       await context.characterState.changeSatiety(-2);
@@ -215,7 +267,11 @@ export const homeAction: ActionMetadata[] = [
       enabled: true,
     },
     precondition(context) {
-      return allTrue([isEvening(context), () => notDoneToday(context, ActionId.Eat_Dinner)]);
+      return allTrue([
+        () => isAtHomeHouse(context),
+        isEvening(context),
+        () => notDoneToday(context, ActionId.Eat_Dinner),
+      ]);
     },
     async executor(context) {
       await context.characterState.setAction(ActionId.Eat_Dinner);
@@ -379,6 +435,10 @@ export const homeAction: ActionMetadata[] = [
       enabled: true,
     },
     precondition(context) {
+      if (!isAtHomeHouse(context)) {
+        return false;
+      }
+
       if (isWeekend(context)) {
         return true;
       } else {
@@ -397,7 +457,7 @@ export const homeAction: ActionMetadata[] = [
     action: ActionId.Sleep,
     description: "睡觉。[耗时动态]",
     precondition(context) {
-      return allTrue([isNight(context)]);
+      return allTrue([() => isAtHomeHouse(context), isNight(context)]);
     },
     async executor(context) {
       await context.characterState.setAction(ActionId.Sleep);
