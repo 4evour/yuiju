@@ -5,6 +5,7 @@ import {
   allTrue,
   type ChoiceOption,
   type FoodMetadata,
+  InventoryItemCategory,
   planManager,
 } from "@yuiju/utils";
 import { chooseFoodAgent } from "@/llm/agent";
@@ -14,7 +15,9 @@ import { notDoneToday } from "./utils";
 
 function getAvailableFoodOptions(context: ActionContext): ChoiceOption[] {
   const inventory = context.characterState.inventory || [];
-  const availableFood = inventory.filter((item) => item.category === "food" && item.quantity! > 0);
+  const availableFood = inventory.filter(
+    (item) => item.category === InventoryItemCategory.Food && item.quantity! > 0,
+  );
 
   return availableFood.map((food) => {
     return {

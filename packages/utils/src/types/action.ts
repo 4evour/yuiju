@@ -67,8 +67,6 @@ export enum ActionId {
   /** 从咖啡店去月汐海岸 */
   Go_To_Coast_From_Cafe = "从咖啡店去月汐海岸",
 
-  /** 点单 */
-  Order_Coffee = "点单",
   /** 喝咖啡 */
   Drink_Coffee = "喝咖啡",
   /** 打工 */

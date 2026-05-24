@@ -1,4 +1,4 @@
-import type { ActionContext } from "@yuiju/utils";
+import { type ActionContext, InventoryItemCategory } from "@yuiju/utils";
 import { tool } from "ai";
 import z from "zod";
 
@@ -9,7 +9,7 @@ export const queryAvailableFood = (context: ActionContext) =>
     execute: async () => {
       const inventory = context.characterState.inventory || [];
       const availableFood = inventory.filter(
-        (item) => item.category === "food" && item.quantity > 0,
+        (item) => item.category === InventoryItemCategory.Food && item.quantity > 0,
       );
 
       if (availableFood.length === 0) {

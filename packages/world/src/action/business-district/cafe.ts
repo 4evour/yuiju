@@ -16,7 +16,6 @@ import {
 } from "@yuiju/utils";
 import { chooseCafeCoffeeAgent } from "@/llm/agent";
 import { logger } from "@/utils/logger";
-import { buildFoodMetadata } from "../../utils/food-utils";
 
 const CAFE_MIN_PRICE = Math.min(...CAFE_COFFEES.map((p) => p.price));
 
@@ -47,34 +46,10 @@ function isCafeWorkTimeWithAtLeastOneHourLeft(time: { hour: () => number; minute
   return minutesSinceMidnight >= 10 * 60 && minutesSinceMidnight <= 16 * 60;
 }
 
-/**
- * 判断字符串是否为薄暮咖啡的合法咖啡名。
- *
- * 说明：
- * - 背包 item.name 的类型是 string（来源可能很多），这里通过清单做一次收窄；
- * - 这样后续 find/消费逻辑可以使用 CafeCoffeeName 的强类型。
- */
-function isCafeCoffeeName(name: string): name is CafeCoffeeName {
-  return CAFE_COFFEES.some((coffee) => coffee.name === name);
-}
-
-/**
- * 从背包中找出“可以喝的咖啡名”列表（强类型）。
- */
-function getAvailableCafeCoffeeNames(context: {
-  characterState: { inventory?: Array<{ name: string; category: string; quantity: number }> };
-}): CafeCoffeeName[] {
-  const inventory = context.characterState.inventory || [];
-  return inventory
-    .filter((item) => item.category === "food" && item.quantity > 0)
-    .map((item) => item.name)
-    .filter(isCafeCoffeeName);
-}
-
 export const cafeAction: ActionMetadata[] = [
   {
-    action: ActionId.Order_Coffee,
-    description: "在薄暮咖啡点单。[金币-?][耗时10分钟]",
+    action: ActionId.Drink_Coffee,
+    description: "在薄暮咖啡点咖啡并店内饮用。[金币-?][体力+?][饱腹+?][心情+?][耗时30分钟]",
     proactiveShare: {
       enabled: true,
     },
@@ -85,7 +60,7 @@ export const cafeAction: ActionMetadata[] = [
       ]);
     },
     async executor(context) {
-      await context.characterState.setAction(ActionId.Order_Coffee);
+      await context.characterState.setAction(ActionId.Drink_Coffee);
 
       const coffeeList: ChoiceOption[] = CAFE_COFFEES.map((coffee) => {
         return {
@@ -102,112 +77,40 @@ export const cafeAction: ActionMetadata[] = [
         await planManager.getState(),
       );
       if (!selectedCoffee) {
-        logger.error("[Order_Coffee] 没有选择咖啡");
+        logger.error("[Drink_Coffee] 没有选择咖啡");
         return { executionResult: "点单失败，没有选择咖啡。" };
       }
 
       const coffee = CAFE_COFFEES.find((p) => p.name === selectedCoffee.value);
       if (!coffee) {
-        logger.error(`[Order_Coffee] 未找到咖啡: ${selectedCoffee.value}`);
+        logger.error(`[Drink_Coffee] 未找到咖啡: ${selectedCoffee.value}`);
         return { executionResult: "点单失败，未找到咖啡。" };
       }
 
       const cost = coffee.price;
       if (context.characterState.money < cost) {
         logger.info(
-          `[Order_Coffee] 余额不足，跳过点单: ${coffee.name}（单价${coffee.price}元，余额${context.characterState.money}元）`,
+          `[Drink_Coffee] 余额不足，跳过点单: ${coffee.name}（单价${coffee.price}元，余额${context.characterState.money}元）`,
         );
         return { executionResult: "点单失败，余额不足。" };
       }
 
       await context.characterState.changeMoney(-cost);
 
-      logger.info(`[Order_Coffee] 点单成功: ${coffee.name}，花费${cost}元`);
+      logger.info(`[Drink_Coffee] 点单成功: ${coffee.name}，花费${cost}元`);
 
       return {
-        executionResult: `点了${coffee.name}，花费${cost}元`,
+        executionResult: `在薄暮咖啡点了${coffee.name}，花费${cost}元`,
         startContext: {
           coffeeName: coffee.name,
-          description: coffee.description,
-          stamina: coffee.stamina,
-          satiety: coffee.satiety,
-          mood: coffee.mood,
+          stamina: coffee.stamina ?? 0,
+          satiety: coffee.satiety ?? 0,
+          mood: coffee.mood ?? 0,
         },
       };
     },
-    durationMin: 10,
     async completionEvent(context, runningAction) {
       const coffeeContext = runningAction.startContext as {
-        coffeeName: CafeCoffeeName;
-        description: string;
-        stamina?: number;
-        satiety?: number;
-        mood?: number;
-      };
-
-      await context.characterState.addItem(
-        {
-          name: coffeeContext.coffeeName,
-          description: coffeeContext.description,
-          category: "food",
-          metadata: buildFoodMetadata({
-            stamina: coffeeContext.stamina,
-            satiety: coffeeContext.satiety,
-            mood: coffeeContext.mood,
-            fallbackSatiety: 2,
-          }),
-        },
-        1,
-      );
-
-      return {
-        completionContext: {
-          producedItem: {
-            name: coffeeContext.coffeeName,
-            quantity: 1,
-          },
-        },
-        eventDescription: `${coffeeContext.coffeeName}制作完成`,
-      };
-    },
-  },
-  {
-    action: ActionId.Drink_Coffee,
-    description: "喝咖啡。[体力+?][饱腹+?][心情+?][耗时30分钟]",
-    proactiveShare: {
-      enabled: true,
-    },
-    precondition(_context) {
-      return false;
-    },
-    async executor(context) {
-      await context.characterState.setAction(ActionId.Drink_Coffee);
-
-      const availableCoffeeNames = getAvailableCafeCoffeeNames(context);
-      const coffeeName = availableCoffeeNames[0];
-      if (!coffeeName) {
-        return { executionResult: "没有咖啡可以喝。" };
-      }
-
-      const consumed = await context.characterState.consumeItem(coffeeName, 1);
-      if (!consumed) {
-        return { executionResult: `喝咖啡失败，没有喝到${coffeeName}。` };
-      }
-
-      const coffee = CAFE_COFFEES.find((item) => item.name === coffeeName);
-
-      return {
-        executionResult: `开始喝${coffeeName}`,
-        startContext: {
-          coffeeName,
-          stamina: coffee?.stamina ?? 0,
-          satiety: coffee?.satiety ?? 0,
-          mood: coffee?.mood ?? 0,
-        },
-      };
-    },
-    async completionEvent(context, runningAction) {
-      const drinkContext = runningAction.startContext as {
         coffeeName: CafeCoffeeName;
         stamina: number;
         satiety: number;
@@ -215,22 +118,22 @@ export const cafeAction: ActionMetadata[] = [
       };
 
       const result: string[] = [];
-      if (drinkContext.stamina !== 0) {
-        await context.characterState.changeStamina(drinkContext.stamina);
-        result.push(`[体力+${drinkContext.stamina}]`);
+      if (coffeeContext.stamina !== 0) {
+        await context.characterState.changeStamina(coffeeContext.stamina);
+        result.push(`[体力+${coffeeContext.stamina}]`);
       }
-      if (drinkContext.satiety !== 0) {
-        await context.characterState.changeSatiety(drinkContext.satiety);
-        result.push(`[饱腹+${drinkContext.satiety}]`);
+      if (coffeeContext.satiety !== 0) {
+        await context.characterState.changeSatiety(coffeeContext.satiety);
+        result.push(`[饱腹+${coffeeContext.satiety}]`);
       }
-      if (drinkContext.mood !== 0) {
-        await context.characterState.changeMood(drinkContext.mood);
-        result.push(`[心情+${drinkContext.mood}]`);
+      if (coffeeContext.mood !== 0) {
+        await context.characterState.changeMood(coffeeContext.mood);
+        result.push(`[心情+${coffeeContext.mood}]`);
       }
 
       return {
-        completionContext: drinkContext,
-        eventDescription: `喝完了${drinkContext.coffeeName}${result.join(",")}`,
+        completionContext: coffeeContext,
+        eventDescription: `在薄暮咖啡喝完了${coffeeContext.coffeeName}${result.join(",")}`,
       };
     },
     durationMin: 30,

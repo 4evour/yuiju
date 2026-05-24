@@ -3,8 +3,6 @@
 - 继续改造 message 模块，采用 satori XHTML 形式的消息体内容
 - 群聊消息也存一下 redis，用于服务重启时可以恢复消息记录，如果时间过长的话直接丢弃
 - Action 模块能力拓展
-- 调研一下 b 站直播的接入
-  - [blive-message-listener](https://github.com/ddiu8081/blive-message-listener)
 - 最新的消息测回时，应该取消当前的 LLM 调用，重新执行
 
 ### World 模型增强

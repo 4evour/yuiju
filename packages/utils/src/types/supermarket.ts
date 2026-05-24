@@ -33,7 +33,7 @@ export type SupermarketProduct = {
  *
  * 说明：
  * - 该清单会被用于 LLM 的购买选择，以及购买后写入背包的 item.name；
- * - 食材以 material 类别写入背包，后续由做饭 Action 解释用途。
+ * - 食材以 ingredient 类别写入背包，后续由做饭 Action 解释用途。
  */
 export const SUPERMARKET_PRODUCTS: SupermarketProduct[] = [
   {

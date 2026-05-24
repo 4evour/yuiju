@@ -7,6 +7,7 @@ import {
   type ChoiceOption,
   type FoodMetadata,
   HomeSubScene,
+  InventoryItemCategory,
   isDev,
   MajorScene,
   ParkAreaSubScene,
@@ -47,7 +48,7 @@ function isAtHomeHouse(context: ActionContext) {
 function getAvailableCookingIngredientOptions(context: ActionContext): ChoiceOption[] {
   const inventory = context.characterState.inventory || [];
   return inventory
-    .filter((item) => item.category === "food" && item.quantity > 0)
+    .filter((item) => item.category === InventoryItemCategory.Ingredient && item.quantity > 0)
     .map((item): ChoiceOption => {
       return {
         value: item.name,
@@ -451,7 +452,7 @@ export const homeAction: ActionMetadata[] = [
         {
           name: producedName,
           description: `用${ingredientNames.join("、")}做出的料理。`,
-          category: "food",
+          category: InventoryItemCategory.Food,
           metadata,
         },
         1,

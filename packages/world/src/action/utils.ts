@@ -8,7 +8,6 @@ import { schoolAction } from "./school";
 
 export const PrecheckActionMap: Record<string, ActionId[]> = {
   [ActionId.Sleep]: [ActionId.Wake_Up, ActionId.Sleep_For_A_Little],
-  [ActionId.Order_Coffee]: [ActionId.Drink_Coffee],
 };
 
 export function precheckAction(context: ActionContext) {

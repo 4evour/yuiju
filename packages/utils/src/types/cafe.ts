@@ -1,8 +1,8 @@
 /**
- * 咖啡店可点单/可消费的咖啡名称枚举。
+ * 咖啡店可消费的咖啡名称枚举。
  *
  * 说明：
- * - 枚举值使用“展示用中文名”，确保落到背包 item.name 的字符串稳定一致。
+ * - 枚举值使用“展示用中文名”，确保 LLM 选择结果和配置清单稳定一致。
  * - 使用 enum 目的是让 world/web/message 等跨包代码对“可用名称集合”有强类型约束。
  */
 export enum CafeCoffeeName {
@@ -19,7 +19,7 @@ export enum CafeCoffeeName {
  *
  * 说明：
  * - stamina/satiety/mood 均为“饮用时”的恢复值；
- * - name 必须来自 CafeCoffeeName，避免出现拼写不一致导致库存匹配失败。
+ * - name 必须来自 CafeCoffeeName，避免出现拼写不一致导致点单结果匹配失败。
  */
 export type CafeCoffee = {
   name: CafeCoffeeName;
@@ -37,7 +37,7 @@ export type CafeCoffee = {
  * 咖啡店商品清单（资源数据）。
  *
  * 说明：
- * - 该清单会被用于 LLM 的点单选择，以及背包消费逻辑；
+ * - 该清单会被用于 LLM 的点单选择，以及咖啡店消费结算；
  * - 修改这里会影响行为数值与测试断言，请同步更新相关单测。
  */
 export const CAFE_COFFEES: CafeCoffee[] = [

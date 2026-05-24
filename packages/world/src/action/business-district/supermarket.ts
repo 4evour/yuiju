@@ -7,6 +7,7 @@ import {
   type ChoiceOption,
   CoastAreaSubScene,
   HomeSubScene,
+  InventoryItemCategory,
   MajorScene,
   planManager,
   SchoolSubScene,
@@ -114,7 +115,7 @@ export const supermarketAction: ActionMetadata[] = [
         {
           name: purchaseContext.productName,
           description: purchaseContext.description,
-          category: "material",
+          category: InventoryItemCategory.Ingredient,
           metadata: {},
         },
         purchaseContext.quantity,

@@ -7,6 +7,7 @@ import {
   type ChoiceOption,
   CoastAreaSubScene,
   HomeSubScene,
+  InventoryItemCategory,
   MajorScene,
   planManager,
   SchoolSubScene,
@@ -137,7 +138,7 @@ export const shopAction: ActionMetadata[] = [
         {
           name: purchaseContext.productName,
           description: purchaseContext.description,
-          category: "food",
+          category: InventoryItemCategory.Food,
           metadata: buildFoodMetadata({
             stamina: purchaseContext.stamina,
             satiety: purchaseContext.satiety,

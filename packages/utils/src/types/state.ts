@@ -62,9 +62,14 @@ export interface FoodMetadata {
 
 /**
  * @description 预留
- * 材料元数据
+ * 食材元数据
  */
-export type MaterialMetadata = {};
+export type IngredientMetadata = {};
+
+export enum InventoryItemCategory {
+  Food = "food",
+  Ingredient = "ingredient",
+}
 
 /**
  * 物品接口（判别联合类型）
@@ -75,11 +80,11 @@ export type InventoryItem = {
   /** 物品描述 */
   description: string;
   /** 物品类别 */
-  category: "food" | "material";
+  category: InventoryItemCategory;
   /** 数量 */
   quantity: number;
-  /** 食物元数据 */
-  metadata: FoodMetadata | MaterialMetadata;
+  /** 物品元数据 */
+  metadata: FoodMetadata | IngredientMetadata;
 };
 
 /**
