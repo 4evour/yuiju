@@ -129,4 +129,21 @@ export const parkAction: ActionMetadata[] = [
     },
     durationMin: 10,
   },
+  {
+    action: ActionId.Go_To_Pond_From_Park,
+    description: "从南风公园前往水音池。[体力-3][饱腹-2][耗时10分钟]",
+    precondition(context) {
+      return isAtPark(context);
+    },
+    async executor(context) {
+      await context.characterState.setAction(ActionId.Go_To_Pond_From_Park);
+      await context.characterState.setLocation({
+        major: MajorScene.ParkArea,
+        minor: ParkAreaSubScene.Pond,
+      });
+      await context.characterState.changeStamina(-3);
+      await context.characterState.changeSatiety(-2);
+    },
+    durationMin: 10,
+  },
 ];

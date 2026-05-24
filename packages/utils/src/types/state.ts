@@ -32,6 +32,7 @@ export enum BusinessDistrictSubScene {
 // 公园周边的小场景
 export enum ParkAreaSubScene {
   Park = "南风公园",
+  Pond = "水音池",
   Shrine = "结灯神社",
 }
 
@@ -61,10 +62,12 @@ export interface FoodMetadata {
 }
 
 /**
- * @description 预留
  * 食材元数据
  */
-export type IngredientMetadata = {};
+export type IngredientMetadata = {
+  /** 售卖价格 */
+  salePrice?: number;
+};
 
 export enum InventoryItemCategory {
   Food = "food",

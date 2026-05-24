@@ -1,7 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
 import {
-  shrineIntroduction,
   type WorldGuideTopic,
   worldGuidePlaceIntroductions,
   worldGuideTopics,
@@ -44,11 +43,6 @@ const staticGuideResultByTopic = {
     title: "薄暮咖啡菜单",
     coffees: CAFE_COFFEES,
   }),
-  shrineIntroduction: () => ({
-    topic: "shrineIntroduction",
-    title: "结灯神社介绍",
-    shrine: shrineIntroduction,
-  }),
   placeIntroductions: () => ({
     topic: "placeIntroductions",
     title: "星见町地点介绍",
@@ -68,8 +62,7 @@ export const queryStaticGuideTool = tool({
 - supermarketProducts：超市售卖的食材、价格与描述
 - dinerMenu：日和食堂可点餐品、价格、描述与店内就餐恢复效果
 - cafeMenu：薄暮咖啡可点的咖啡、价格、描述与饮用效果
-- shrineIntroduction：结灯神社的地点介绍、氛围、用途与可进行的事情
-- placeIntroductions：星见町所有主要地点的简要介绍与可进行的事情
+- placeIntroductions：星见町所有主要地点的简要介绍与可执行 Action
 `),
   }),
   execute: async ({ topics }) => {

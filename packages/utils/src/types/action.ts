@@ -86,6 +86,8 @@ export enum ActionId {
 
   /** 从公园去神社 */
   Go_To_Shrine_From_Park = "从公园去神社",
+  /** 从公园去水音池 */
+  Go_To_Pond_From_Park = "从公园去水音池",
   /** 从家去神社 */
   Go_To_Shrine_From_Home = "从家去神社",
   /** 在神社参拜 */
@@ -94,6 +96,10 @@ export enum ActionId {
   Go_To_Park_From_Shrine = "从神社回公园",
   /** 从神社回家 */
   Go_Home_From_Shrine = "从神社回家",
+  /** 从水音池回公园 */
+  Go_To_Park_From_Pond = "从水音池回公园",
+  /** 在水音池钓鱼 */
+  Fish_At_Pond = "钓鱼",
 
   /** 从商店去月汐海岸 */
   Go_To_Coast_From_Shop = "从商店去月汐海岸",

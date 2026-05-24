@@ -22,6 +22,7 @@ export type WorldMapMinorPlaceId =
   | "DINER"
   | "CAFE"
   | "PARK"
+  | "POND"
   | "SHRINE"
   | "BEACH";
 
@@ -100,6 +101,7 @@ export const worldMapMinorPlacesByMajor: Record<
   ],
   PARK_AREA: [
     { id: "PARK", name: ParkAreaSubScene.Park },
+    { id: "POND", name: ParkAreaSubScene.Pond },
     { id: "SHRINE", name: ParkAreaSubScene.Shrine },
   ],
   COAST_AREA: [{ id: "BEACH", name: CoastAreaSubScene.Beach }],
@@ -120,6 +122,8 @@ export const worldMapMinorLinksByMajor: Record<
     { from: "CAFE", to: "DINER", timeMinutes: 5, stamina: -1, satiety: -1, dir: "W" },
   ],
   PARK_AREA: [
+    { from: "PARK", to: "POND", timeMinutes: 10, stamina: -3, satiety: -2, dir: "SE" },
+    { from: "POND", to: "PARK", timeMinutes: 10, stamina: -3, satiety: -2, dir: "NW" },
     { from: "PARK", to: "SHRINE", timeMinutes: 10, stamina: -3, satiety: -2, dir: "S" },
     { from: "SHRINE", to: "PARK", timeMinutes: 10, stamina: -3, satiety: -2, dir: "N" },
   ],
@@ -200,7 +204,7 @@ export const worldMapTerminalUi = `
                    │
                ┌───┴────┐
                │公园周边 │
-               │公园/神社│
+               │公园/池/社│
                └────────┘
 `.trim();
 
