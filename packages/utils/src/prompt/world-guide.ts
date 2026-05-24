@@ -10,6 +10,8 @@ import {
 export const worldGuideTopics = [
   "worldMap",
   "shopProducts",
+  "supermarketProducts",
+  "dinerMenu",
   "cafeMenu",
   "shrineIntroduction",
   "placeIntroductions",

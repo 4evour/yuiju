@@ -2,12 +2,21 @@ import {
   type ActionContext,
   ActionId,
   type ActionMetadata,
+  allTrue,
   BusinessDistrictSubScene,
+  type ChoiceOption,
   CoastAreaSubScene,
+  DINER_MEALS,
+  type DinerMeal,
   HomeSubScene,
   MajorScene,
+  planManager,
   SchoolSubScene,
 } from "@yuiju/utils";
+import { chooseDinerMealAgent } from "@/llm/agent";
+import { logger } from "@/utils/logger";
+
+const DINER_MIN_PRICE = Math.min(...DINER_MEALS.map((meal) => meal.price));
 
 function isAtDiner(context: ActionContext) {
   return (
@@ -16,7 +25,111 @@ function isAtDiner(context: ActionContext) {
   );
 }
 
+function formatDinerMealDescription(meal: DinerMeal) {
+  const description: string[] = [`[价格${meal.price}金币]`];
+  if (meal.stamina) {
+    description.push(`[体力+${meal.stamina}]`);
+  }
+  if (meal.satiety) {
+    description.push(`[饱腹+${meal.satiety}]`);
+  }
+  if (meal.mood) {
+    description.push(`[心情+${meal.mood}]`);
+  }
+
+  return `${meal.description}${description.join("")}`;
+}
+
 export const dinerAction: ActionMetadata[] = [
+  {
+    action: ActionId.Eat_At_Diner,
+    description: "在日和食堂店内就餐。[金币-?][体力+?][饱腹+?][心情+?][耗时20分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
+    precondition(context) {
+      return allTrue([
+        () => isAtDiner(context),
+        () => context.characterState.money >= DINER_MIN_PRICE,
+      ]);
+    },
+    async executor(context) {
+      await context.characterState.setAction(ActionId.Eat_At_Diner);
+
+      const mealList: ChoiceOption[] = DINER_MEALS.map((meal) => {
+        return {
+          value: meal.name,
+          description: formatDinerMealDescription(meal),
+        };
+      });
+
+      const selectedMeal = await chooseDinerMealAgent(
+        mealList,
+        context,
+        [],
+        await planManager.getState(),
+      );
+      if (!selectedMeal) {
+        logger.error("[Eat_At_Diner] 没有选择餐品");
+        return { executionResult: "点餐失败，没有选择餐品。" };
+      }
+
+      const meal = DINER_MEALS.find((item) => item.name === selectedMeal.value);
+      if (!meal) {
+        logger.error(`[Eat_At_Diner] 未找到餐品: ${selectedMeal.value}`);
+        return { executionResult: "点餐失败，未找到餐品。" };
+      }
+
+      if (context.characterState.money < meal.price) {
+        logger.info(
+          `[Eat_At_Diner] 余额不足，跳过点餐: ${meal.name}（单价${meal.price}元，余额${context.characterState.money}元）`,
+        );
+        return { executionResult: "点餐失败，余额不足。" };
+      }
+
+      await context.characterState.changeMoney(-meal.price);
+
+      logger.info(`[Eat_At_Diner] 点餐成功: ${meal.name}，花费${meal.price}元`);
+
+      return {
+        executionResult: `在日和食堂点了${meal.name}，花费${meal.price}元`,
+        startContext: {
+          mealName: meal.name,
+          stamina: meal.stamina ?? 0,
+          satiety: meal.satiety ?? 0,
+          mood: meal.mood ?? 0,
+        },
+      };
+    },
+    async completionEvent(context, runningAction) {
+      const mealContext = runningAction.startContext as {
+        mealName: string;
+        stamina: number;
+        satiety: number;
+        mood: number;
+      };
+
+      const result: string[] = [];
+      if (mealContext.stamina !== 0) {
+        await context.characterState.changeStamina(mealContext.stamina);
+        result.push(`[体力+${mealContext.stamina}]`);
+      }
+      if (mealContext.satiety !== 0) {
+        await context.characterState.changeSatiety(mealContext.satiety);
+        result.push(`[饱腹+${mealContext.satiety}]`);
+      }
+      if (mealContext.mood !== 0) {
+        await context.characterState.changeMood(mealContext.mood);
+        result.push(`[心情+${mealContext.mood}]`);
+      }
+
+      return {
+        completionContext: mealContext,
+        eventDescription: `在日和食堂吃完了${mealContext.mealName}${result.join(",")}`,
+      };
+    },
+    durationMin: 20,
+  },
   {
     action: ActionId.Go_Home_From_Diner,
     description: "从日和食堂回家。[体力-5][饱腹-3][耗时20分钟]",

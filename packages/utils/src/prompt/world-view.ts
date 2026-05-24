@@ -364,6 +364,99 @@ ${availableCoffeesPrompt}
 `;
 }
 
+export interface ChooseSupermarketProductPromptPayload {
+  availableProducts?: {
+    value: string;
+    description?: string;
+  }[];
+  characterState: CharacterStateData;
+  worldState: WorldStateData;
+  recentBehaviorList: BehaviorRecord[];
+  longTermPlanTitle?: string;
+  shortTermPlanTitles?: string[];
+}
+
+export function chooseSupermarketProductPrompt({
+  availableProducts,
+  characterState,
+  worldState,
+  longTermPlanTitle,
+  shortTermPlanTitles,
+  recentBehaviorList,
+}: ChooseSupermarketProductPromptPayload) {
+  const commonStatePrompt = buildCommonStatePrompt({
+    characterState,
+    worldState,
+    recentBehaviorList,
+    longTermPlanTitle,
+    shortTermPlanTitles,
+  });
+  const availableProductsPrompt = buildChoiceListPrompt(availableProducts);
+
+  return `
+## 要求
+你是一个名为ゆいじゅ的女孩子，昵称悠酱。你已经决定在超市购买食材，现在需要从候选食材中选择这次要购买的食材以及购买数量。
+根据金币、当前饱腹、已有计划和候选食材描述选择；食材是为了后续做饭准备，不是当场直接吃掉。
+数量要贴近日常需要，可以为接下来一两餐做准备，但不要默认大量囤货。
+
+${baseInformation}
+
+${choiceDecisionPrompt}
+
+## 状态
+${commonStatePrompt}
+
+可选食材（仅可从中选择）：
+${availableProductsPrompt}
+`;
+}
+
+export interface ChooseDinerMealPromptPayload {
+  availableMeals?: {
+    value: string;
+    description?: string;
+  }[];
+  characterState: CharacterStateData;
+  worldState: WorldStateData;
+  recentBehaviorList: BehaviorRecord[];
+  longTermPlanTitle?: string;
+  shortTermPlanTitles?: string[];
+}
+
+export function chooseDinerMealPrompt({
+  availableMeals,
+  characterState,
+  worldState,
+  longTermPlanTitle,
+  shortTermPlanTitles,
+  recentBehaviorList,
+}: ChooseDinerMealPromptPayload) {
+  const commonStatePrompt = buildCommonStatePrompt({
+    characterState,
+    worldState,
+    recentBehaviorList,
+    longTermPlanTitle,
+    shortTermPlanTitles,
+  });
+  const availableMealsPrompt = buildChoiceListPrompt(availableMeals);
+
+  return `
+## 要求
+你是一个名为ゆいじゅ的女孩子，昵称悠酱。你已经决定在日和食堂店内就餐，现在需要从候选餐品中选择这次要吃的一份餐。
+根据当前时间、饱腹、体力、心情、金币和候选餐品描述决定；日和食堂是日常正餐，不需要为了省钱总选最便宜的，也不要为了数值总选最贵的。
+
+${baseInformation}
+
+${choiceDecisionPrompt}
+
+## 状态
+${commonStatePrompt}
+
+可选餐品（仅可从中选择）：
+${availableMealsPrompt}
+`;
+}
+
 export interface ChooseShrinePrayerPromptPayload {
   actionReason: string;
   characterState: CharacterStateData;
