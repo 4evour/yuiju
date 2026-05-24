@@ -6,11 +6,12 @@
  * - 使用 enum 目的是让 world/web/message 等跨包代码对“可用名称集合”有强类型约束。
  */
 export enum CafeCoffeeName {
-  BlendHot = "拼配热咖啡",
-  IcedCoffee = "冰咖啡",
-  Americano = "美式咖啡",
-  CafeAuLait = "咖啡欧蕾",
-  Latte = "拿铁",
+  DeepRoastBlend = "深煎拼配",
+  LightRoastBlend = "浅煎拼配",
+  IceDripCoffee = "冰滴咖啡",
+  Americano = "美式",
+  MilkCoffee = "牛奶咖啡",
+  ViennaCoffee = "维也纳咖啡",
 }
 
 /**
@@ -41,39 +42,48 @@ export type CafeCoffee = {
  */
 export const CAFE_COFFEES: CafeCoffee[] = [
   {
-    name: CafeCoffeeName.BlendHot,
+    name: CafeCoffeeName.DeepRoastBlend,
     price: 80,
     stamina: 5,
     satiety: 8,
-    description: "店家每日拼配，香气温和，口感顺口。",
+    description: "深煎豆香扎实，苦韵干净，适合慢慢喝。",
   },
   {
-    name: CafeCoffeeName.IcedCoffee,
+    name: CafeCoffeeName.LightRoastBlend,
+    price: 85,
+    stamina: 5,
+    satiety: 8,
+    mood: 2,
+    description: "浅煎风味明亮，带一点果香，尾韵轻盈。",
+  },
+  {
+    name: CafeCoffeeName.IceDripCoffee,
     price: 90,
     stamina: 5,
     satiety: 9,
-    description: "冰镇清爽，适合夏天。",
+    description: "低温慢萃，口感清透，冰凉里带着回甘。",
   },
   {
     name: CafeCoffeeName.Americano,
     price: 90,
     stamina: 5,
     satiety: 9,
-    description: "清透不腻，带一点点苦。",
+    description: "清爽直接，苦感利落，是最经典的一杯。",
   },
   {
-    name: CafeCoffeeName.CafeAuLait,
+    name: CafeCoffeeName.MilkCoffee,
     price: 100,
     stamina: 5,
     satiety: 10,
     mood: 3,
-    description: "牛奶与咖啡的温柔平衡。",
+    description: "热牛奶把咖啡的苦味收得柔和，温暖又顺口。",
   },
   {
-    name: CafeCoffeeName.Latte,
-    price: 110,
+    name: CafeCoffeeName.ViennaCoffee,
+    price: 120,
     stamina: 5,
     satiety: 11,
-    description: "奶泡细腻，口感更醇厚。",
+    mood: 4,
+    description: "浓咖啡顶着柔软鲜奶油，入口香甜，余味还是咖啡香。",
   },
 ];

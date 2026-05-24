@@ -40,7 +40,7 @@ function isCafeWorkTimeWithAtLeastOneHourLeft(time: { hour: () => number; minute
 }
 
 /**
- * 判断字符串是否为薄暮咖啡馆的合法咖啡名。
+ * 判断字符串是否为薄暮咖啡的合法咖啡名。
  *
  * 说明：
  * - 背包 item.name 的类型是 string（来源可能很多），这里通过清单做一次收窄；
@@ -66,7 +66,7 @@ function getAvailableCafeCoffeeNames(context: {
 export const cafeAction: ActionMetadata[] = [
   {
     action: ActionId.Order_Coffee,
-    description: "在薄暮咖啡馆点单。[金币-?][耗时10分钟]",
+    description: "在薄暮咖啡点单。[金币-?][耗时10分钟]",
     proactiveShare: {
       enabled: true,
     },
@@ -229,7 +229,7 @@ export const cafeAction: ActionMetadata[] = [
   },
   {
     action: ActionId.Work_At_Cafe,
-    description: "在薄暮咖啡馆打工。[金币+200][体力-10][心情-5][饱腹-10][耗时60分钟]",
+    description: "在薄暮咖啡打工。[金币+200][体力-10][心情-5][饱腹-10][耗时60分钟]",
     proactiveShare: {
       enabled: true,
     },
@@ -254,14 +254,14 @@ export const cafeAction: ActionMetadata[] = [
           satietyDelta: -10,
           moodDelta: -5,
         },
-        eventDescription: "在薄暮咖啡馆打工1小时，赚了200元",
+        eventDescription: "在薄暮咖啡打工1小时，赚了200元",
       };
     },
     durationMin: 60,
   },
   {
     action: ActionId.Go_Home_From_Cafe,
-    description: "从薄暮咖啡馆回家。[体力-5][饱腹-3][耗时20分钟]",
+    description: "从薄暮咖啡回家。[体力-5][饱腹-3][耗时20分钟]",
     precondition(context) {
       return isAtCafe(context.characterState.location.major);
     },
@@ -275,7 +275,7 @@ export const cafeAction: ActionMetadata[] = [
   },
   {
     action: ActionId.Go_To_School_From_Cafe,
-    description: "从薄暮咖啡馆去星见丘高校。[体力-3][饱腹-2][耗时10分钟]",
+    description: "从薄暮咖啡去星见丘高校。[体力-3][饱腹-2][耗时10分钟]",
     precondition(context) {
       return isAtCafe(context.characterState.location.major);
     },

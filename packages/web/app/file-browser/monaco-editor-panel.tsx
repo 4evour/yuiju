@@ -22,7 +22,7 @@ export const MonacoEditorPanel = ({
     language === "log" && value.length > LOG_HIGHLIGHT_MAX_SIZE ? "plaintext" : language;
 
   const handleBeforeMount = (monaco: Monaco) => {
-    const hasLogLanguage = monaco.languages.getLanguages().some((item) => item.id === "log");
+    const hasLogLanguage = monaco.languages.getLanguages().some((item: any) => item.id === "log");
     if (hasLogLanguage) {
       return;
     }

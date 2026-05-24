@@ -1,4 +1,4 @@
-import { generateText, Output } from "ai";
+import { generateText, type ModelMessage, Output } from "ai";
 import { structuredOutputJsonPrompt } from "../prompt";
 
 type GenerateTextOptions = Parameters<typeof generateText>[0];
@@ -56,10 +56,30 @@ export async function generateStructuredOutput<OUTPUT extends StructuredOutput>(
   ].join("\n");
 
   let lastError: unknown;
+  let retryMessages: ModelMessage[] = [];
 
   for (let attempt = 0; attempt < 3; attempt += 1) {
+    let promptOptions = {};
+
+    if (retryMessages.length > 0) {
+      if (options.messages != null) {
+        promptOptions = {
+          messages: [...options.messages, ...retryMessages],
+        };
+      } else if (typeof options.prompt === "string") {
+        promptOptions = {
+          prompt: [{ role: "user" as const, content: options.prompt }, ...retryMessages],
+        };
+      } else {
+        promptOptions = {
+          prompt: [...(options.prompt as ModelMessage[]), ...retryMessages],
+        };
+      }
+    }
+
     const result = await generateText({
       ...options,
+      ...promptOptions,
       system,
       output: Output.text(),
     } as Parameters<typeof generateText>[0]);
@@ -87,6 +107,7 @@ export async function generateStructuredOutput<OUTPUT extends StructuredOutput>(
       };
     } catch (error) {
       lastError = error;
+      retryMessages = [...retryMessages, ...result.response.messages.slice(0, -1)];
     }
   }
 

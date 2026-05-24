@@ -178,7 +178,7 @@ export const homeAction: ActionMetadata[] = [
   },
   {
     action: ActionId.Go_To_Cafe_From_Home,
-    description: "从家去薄暮咖啡馆。[体力-5][饱腹-3][耗时20分钟]",
+    description: "从家去薄暮咖啡。[体力-5][饱腹-3][耗时20分钟]",
     precondition(context) {
       return allTrue([context.characterState.stamina >= 5, !isNight(context)]);
     },

@@ -23,7 +23,7 @@ const staticGuideResultByTopic = {
   }),
   cafeMenu: () => ({
     topic: "cafeMenu",
-    title: "薄暮咖啡馆菜单",
+    title: "薄暮咖啡菜单",
     coffees: CAFE_COFFEES,
   }),
   shrineIntroduction: () => ({
@@ -47,7 +47,7 @@ export const queryStaticGuideTool = tool({
       .describe(`
 - worldMap：星见町世界地图 DSL，包括地点关系、路径、方向与移动耗时
 - shopProducts：小町商店售卖的商品、价格、描述与食用效果
-- cafeMenu：薄暮咖啡馆可点的咖啡、价格、描述与饮用效果
+- cafeMenu：薄暮咖啡可点的咖啡、价格、描述与饮用效果
 - shrineIntroduction：结灯神社的地点介绍、氛围、用途与可进行的事情
 - placeIntroductions：星见町所有主要地点的简要介绍与可进行的事情
 `),

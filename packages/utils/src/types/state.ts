@@ -7,7 +7,7 @@ export enum MajorScene {
   Home = "家",
   School = "星见丘高校",
   Shop = "小町商店",
-  Cafe = "薄暮咖啡馆",
+  Cafe = "薄暮咖啡",
   Park = "南风公园",
   Shrine = "结灯神社",
   Coast = "月汐海岸",

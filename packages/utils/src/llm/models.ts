@@ -9,6 +9,36 @@ import { logger } from "../logger";
 
 const config = getYuijuConfig();
 
+// 模型调用失败后的冷却时间
+const MODEL_SOURCE_FAILURE_COOLDOWN_MS = 5 * 60 * 1000;
+
+class LlmModelSourceAvailability {
+  private cooldownUntilList: number[];
+
+  constructor(sourceCount: number) {
+    this.cooldownUntilList = Array.from({ length: sourceCount }, () => 0);
+  }
+
+  getCandidateIndexes(now: number): number[] {
+    const availableIndexes: number[] = [];
+    const cooldownIndexes: number[] = [];
+
+    for (let index = 0; index < this.cooldownUntilList.length; index += 1) {
+      if (this.cooldownUntilList[index] > now) {
+        cooldownIndexes.push(index);
+      } else {
+        availableIndexes.push(index);
+      }
+    }
+
+    return [...availableIndexes, ...cooldownIndexes];
+  }
+
+  markFailed(index: number, now: number) {
+    this.cooldownUntilList[index] = now + MODEL_SOURCE_FAILURE_COOLDOWN_MS;
+  }
+}
+
 function createFallbackModel(
   name: keyof YuijuLlmModelsConfig,
   sources: YuijuLlmModelSourcesConfig,
@@ -23,6 +53,7 @@ function createFallbackModel(
 
     return provider(source.model);
   });
+  const availability = new LlmModelSourceAvailability(models.length);
 
   return wrapLanguageModel({
     model: {
@@ -32,11 +63,16 @@ function createFallbackModel(
       supportedUrls: models[0].supportedUrls,
 
       async doGenerate(params) {
-        for (const [index, model] of models.entries()) {
+        const candidateIndexes = availability.getCandidateIndexes(Date.now());
+
+        for (const [candidateIndex, index] of candidateIndexes.entries()) {
           try {
-            return await model.doGenerate(params);
+            return await models[index].doGenerate(params);
           } catch (error) {
-            if (index === models.length - 1) {
+            const now = Date.now();
+            availability.markFailed(index, now);
+
+            if (candidateIndex === candidateIndexes.length - 1) {
               throw error;
             }
 
@@ -52,16 +88,22 @@ function createFallbackModel(
       },
 
       async doStream(params) {
-        for (const [index, model] of models.entries()) {
+        const candidateIndexes = availability.getCandidateIndexes(Date.now());
+
+        for (const [candidateIndex, index] of candidateIndexes.entries()) {
           try {
-            return await model.doStream(params);
+            return await models[index].doStream(params);
           } catch (error) {
-            if (index === models.length - 1) {
+            const now = Date.now();
+            availability.markFailed(index, now);
+
+            if (candidateIndex === candidateIndexes.length - 1) {
               throw error;
             }
 
             logger.error("[llm] 模型来源调用失败，切换到备用来源", {
               modelType: name,
+              modelName: sources[index]?.model,
               failedSourceIndex: index,
             });
           }

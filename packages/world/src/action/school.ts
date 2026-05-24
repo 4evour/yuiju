@@ -77,7 +77,7 @@ export const schoolAction: ActionMetadata[] = [
   },
   {
     action: ActionId.Go_To_Cafe_From_School,
-    description: "从星见丘高校去薄暮咖啡馆。[体力-3][饱腹-2][耗时10分钟]",
+    description: "从星见丘高校去薄暮咖啡。[体力-3][饱腹-2][耗时10分钟]",
     precondition(context) {
       return allTrue([context.characterState.stamina >= 5, !isNight(context)]);
     },
