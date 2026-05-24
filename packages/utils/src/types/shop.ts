@@ -41,28 +41,28 @@ export type ShopProduct = {
 export const SHOP_PRODUCTS: ShopProduct[] = [
   {
     name: ShopProductName.Pocky,
-    price: 50,
+    price: 12,
     satiety: 5,
     mood: 2,
     description: "涂层饼干棒，草莓口味。",
   },
   {
     name: ShopProductName.SoftCandy,
-    price: 50,
+    price: 12,
     satiety: 5,
     mood: 2,
     description: "高果汁含量的软糖，芒果口味。",
   },
   {
     name: ShopProductName.RamuneCandy,
-    price: 30,
+    price: 8,
     satiety: 3,
     mood: 1,
     description: "汽水风味的硬糖，含气泡口感。",
   },
   {
     name: ShopProductName.MatchaPudding,
-    price: 50,
+    price: 15,
     satiety: 5,
     mood: 2,
     description: "带有抹茶的清香微苦，口感细腻。",

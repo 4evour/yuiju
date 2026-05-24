@@ -124,4 +124,48 @@ export const schoolAction: ActionMetadata[] = [
     },
     durationMin: 10,
   },
+  {
+    action: ActionId.Go_To_Supermarket_From_School,
+    description: "从星见丘高校前往超市。[体力-3][饱腹-2][耗时10分钟]",
+    precondition(context) {
+      return allTrue([
+        () => isAtSchoolCampus(context),
+        context.characterState.stamina >= 5,
+        !isNight(context),
+      ]);
+    },
+    async executor(context) {
+      await context.characterState.setAction(ActionId.Go_To_Supermarket_From_School);
+      await context.characterState.setLocation({
+        major: MajorScene.BusinessDistrict,
+        minor: BusinessDistrictSubScene.Supermarket,
+      });
+
+      await context.characterState.changeStamina(-3);
+      await context.characterState.changeSatiety(-2);
+    },
+    durationMin: 10,
+  },
+  {
+    action: ActionId.Go_To_Diner_From_School,
+    description: "从星见丘高校前往日和食堂。[体力-3][饱腹-2][耗时10分钟]",
+    precondition(context) {
+      return allTrue([
+        () => isAtSchoolCampus(context),
+        context.characterState.stamina >= 5,
+        !isNight(context),
+      ]);
+    },
+    async executor(context) {
+      await context.characterState.setAction(ActionId.Go_To_Diner_From_School);
+      await context.characterState.setLocation({
+        major: MajorScene.BusinessDistrict,
+        minor: BusinessDistrictSubScene.Diner,
+      });
+
+      await context.characterState.changeStamina(-3);
+      await context.characterState.changeSatiety(-2);
+    },
+    durationMin: 10,
+  },
 ];

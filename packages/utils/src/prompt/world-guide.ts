@@ -34,6 +34,16 @@ export const worldGuidePlaceIntroductions = [
     availableActivities: ["购买零食"],
   },
   {
+    name: `${MajorScene.BusinessDistrict}-${BusinessDistrictSubScene.Supermarket}`,
+    introduction: "商业区里的超市，货架上有日常食材和生活用品。",
+    availableActivities: ["购买食材"],
+  },
+  {
+    name: `${MajorScene.BusinessDistrict}-${BusinessDistrictSubScene.Diner}`,
+    introduction: "商业区里的日常食堂，提供定食和简餐，是星见町解决日常餐食的地方。",
+    availableActivities: ["日常用餐"],
+  },
+  {
     name: `${MajorScene.BusinessDistrict}-${BusinessDistrictSubScene.Cafe}`,
     introduction: "气氛安静的小咖啡馆，可以兼职打工，也可以在这里购买各种咖啡。",
     availableActivities: ["点咖啡", "兼职打工"],

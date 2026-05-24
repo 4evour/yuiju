@@ -18,6 +18,8 @@ export type WorldMapMinorPlaceId =
   | "HOUSE"
   | "CAMPUS"
   | "SHOP"
+  | "SUPERMARKET"
+  | "DINER"
   | "CAFE"
   | "PARK"
   | "SHRINE"
@@ -92,6 +94,8 @@ export const worldMapMinorPlacesByMajor: Record<
   SCHOOL: [{ id: "CAMPUS", name: SchoolSubScene.Campus }],
   BUSINESS_DISTRICT: [
     { id: "SHOP", name: BusinessDistrictSubScene.Shop },
+    { id: "SUPERMARKET", name: BusinessDistrictSubScene.Supermarket },
+    { id: "DINER", name: BusinessDistrictSubScene.Diner },
     { id: "CAFE", name: BusinessDistrictSubScene.Cafe },
   ],
   PARK_AREA: [
@@ -108,8 +112,12 @@ export const worldMapMinorLinksByMajor: Record<
   HOME: [],
   SCHOOL: [],
   BUSINESS_DISTRICT: [
-    { from: "SHOP", to: "CAFE", timeMinutes: 5, stamina: -1, satiety: -1, dir: "W" },
-    { from: "CAFE", to: "SHOP", timeMinutes: 5, stamina: -1, satiety: -1, dir: "E" },
+    { from: "SHOP", to: "SUPERMARKET", timeMinutes: 5, stamina: -1, satiety: -1, dir: "E" },
+    { from: "SUPERMARKET", to: "SHOP", timeMinutes: 5, stamina: -1, satiety: -1, dir: "W" },
+    { from: "SUPERMARKET", to: "DINER", timeMinutes: 5, stamina: -1, satiety: -1, dir: "E" },
+    { from: "DINER", to: "SUPERMARKET", timeMinutes: 5, stamina: -1, satiety: -1, dir: "W" },
+    { from: "DINER", to: "CAFE", timeMinutes: 5, stamina: -1, satiety: -1, dir: "E" },
+    { from: "CAFE", to: "DINER", timeMinutes: 5, stamina: -1, satiety: -1, dir: "W" },
   ],
   PARK_AREA: [
     { from: "PARK", to: "SHRINE", timeMinutes: 10, stamina: -3, satiety: -2, dir: "S" },
@@ -182,7 +190,8 @@ export const worldMapTerminalUi = `
                    │
                ┌───┴────┐
                │ 商业区  │──────┌────────┐
-               │商店/咖啡│      │  海岸  │
+               │商店/超市│      │  海岸  │
+               │食堂/咖啡│
                └───┬────┘──────└────────┘
                    │
                ┌───┴────┐

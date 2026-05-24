@@ -219,6 +219,48 @@ export const homeAction: ActionMetadata[] = [
     durationMin: 20,
   },
   {
+    action: ActionId.Go_To_Supermarket_From_Home,
+    description: "从家前往超市。[体力-5][饱腹-3][耗时20分钟]",
+    precondition(context) {
+      return allTrue([
+        () => isAtHomeHouse(context),
+        context.characterState.stamina >= 5,
+        !isNight(context),
+      ]);
+    },
+    async executor(context) {
+      await context.characterState.setAction(ActionId.Go_To_Supermarket_From_Home);
+      await context.characterState.setLocation({
+        major: MajorScene.BusinessDistrict,
+        minor: BusinessDistrictSubScene.Supermarket,
+      });
+      await context.characterState.changeStamina(-5);
+      await context.characterState.changeSatiety(-3);
+    },
+    durationMin: 20,
+  },
+  {
+    action: ActionId.Go_To_Diner_From_Home,
+    description: "从家前往日和食堂。[体力-5][饱腹-3][耗时20分钟]",
+    precondition(context) {
+      return allTrue([
+        () => isAtHomeHouse(context),
+        context.characterState.stamina >= 5,
+        !isNight(context),
+      ]);
+    },
+    async executor(context) {
+      await context.characterState.setAction(ActionId.Go_To_Diner_From_Home);
+      await context.characterState.setLocation({
+        major: MajorScene.BusinessDistrict,
+        minor: BusinessDistrictSubScene.Diner,
+      });
+      await context.characterState.changeStamina(-5);
+      await context.characterState.changeSatiety(-3);
+    },
+    durationMin: 20,
+  },
+  {
     action: ActionId.Go_To_Park_From_Home,
     description: "从家前往南风公园。[体力-3][饱腹-2][耗时10分钟]",
     precondition(context) {

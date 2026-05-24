@@ -132,4 +132,38 @@ export const coastAction: ActionMetadata[] = [
     },
     durationMin: 30,
   },
+  {
+    action: ActionId.Go_To_Supermarket_From_Coast,
+    description: "从月汐海岸回到超市，路程较远。[体力-7][饱腹-5][耗时30分钟]",
+    precondition(context) {
+      return isAtCoast(context);
+    },
+    async executor(context) {
+      await context.characterState.setAction(ActionId.Go_To_Supermarket_From_Coast);
+      await context.characterState.setLocation({
+        major: MajorScene.BusinessDistrict,
+        minor: BusinessDistrictSubScene.Supermarket,
+      });
+      await context.characterState.changeStamina(-7);
+      await context.characterState.changeSatiety(-5);
+    },
+    durationMin: 30,
+  },
+  {
+    action: ActionId.Go_To_Diner_From_Coast,
+    description: "从月汐海岸回到日和食堂，路程较远。[体力-7][饱腹-5][耗时30分钟]",
+    precondition(context) {
+      return isAtCoast(context);
+    },
+    async executor(context) {
+      await context.characterState.setAction(ActionId.Go_To_Diner_From_Coast);
+      await context.characterState.setLocation({
+        major: MajorScene.BusinessDistrict,
+        minor: BusinessDistrictSubScene.Diner,
+      });
+      await context.characterState.changeStamina(-7);
+      await context.characterState.changeSatiety(-5);
+    },
+    durationMin: 30,
+  },
 ];

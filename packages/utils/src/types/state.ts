@@ -24,6 +24,8 @@ export enum SchoolSubScene {
 // 商业区的小场景
 export enum BusinessDistrictSubScene {
   Shop = "小町商店",
+  Supermarket = "超市",
+  Diner = "日和食堂",
   Cafe = "薄暮咖啡",
 }
 

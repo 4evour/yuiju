@@ -43,14 +43,14 @@ export type CafeCoffee = {
 export const CAFE_COFFEES: CafeCoffee[] = [
   {
     name: CafeCoffeeName.DeepRoastBlend,
-    price: 80,
+    price: 35,
     stamina: 5,
     satiety: 8,
     description: "深煎豆香扎实，苦韵干净，适合慢慢喝。",
   },
   {
     name: CafeCoffeeName.LightRoastBlend,
-    price: 85,
+    price: 38,
     stamina: 5,
     satiety: 8,
     mood: 2,
@@ -58,21 +58,21 @@ export const CAFE_COFFEES: CafeCoffee[] = [
   },
   {
     name: CafeCoffeeName.IceDripCoffee,
-    price: 90,
+    price: 42,
     stamina: 5,
     satiety: 9,
     description: "低温慢萃，口感清透，冰凉里带着回甘。",
   },
   {
     name: CafeCoffeeName.Americano,
-    price: 90,
+    price: 36,
     stamina: 5,
     satiety: 9,
     description: "清爽直接，苦感利落，是最经典的一杯。",
   },
   {
     name: CafeCoffeeName.MilkCoffee,
-    price: 100,
+    price: 45,
     stamina: 5,
     satiety: 10,
     mood: 3,
@@ -80,7 +80,7 @@ export const CAFE_COFFEES: CafeCoffee[] = [
   },
   {
     name: CafeCoffeeName.ViennaCoffee,
-    price: 120,
+    price: 55,
     stamina: 5,
     satiety: 11,
     mood: 4,

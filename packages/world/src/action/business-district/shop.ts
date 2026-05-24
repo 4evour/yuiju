@@ -195,16 +195,16 @@ export const shopAction: ActionMetadata[] = [
     durationMin: 10,
   },
   {
-    action: ActionId.Go_To_Cafe_From_Shop,
-    description: "从小町商店前往薄暮咖啡。[体力-1][饱腹-1][耗时5分钟]",
+    action: ActionId.Go_To_Supermarket_From_Shop,
+    description: "从小町商店前往超市。[体力-1][饱腹-1][耗时5分钟]",
     precondition(context) {
       return isAtShop(context);
     },
     async executor(context) {
-      await context.characterState.setAction(ActionId.Go_To_Cafe_From_Shop);
+      await context.characterState.setAction(ActionId.Go_To_Supermarket_From_Shop);
       await context.characterState.setLocation({
         major: MajorScene.BusinessDistrict,
-        minor: BusinessDistrictSubScene.Cafe,
+        minor: BusinessDistrictSubScene.Supermarket,
       });
       await context.characterState.changeStamina(-1);
       await context.characterState.changeSatiety(-1);
