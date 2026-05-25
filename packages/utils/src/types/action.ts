@@ -6,21 +6,14 @@ export enum ActionId {
   Wake_Up = "起床",
   /** 再睡一会 */
   Sleep_For_A_Little = "再睡一会",
-  /** 吃早餐 */
-  Eat_Breakfast = "吃早餐",
   /** 去学校 */
   Go_To_School_From_Home = "从家去学校",
   /** 待在家里 */
   Stay_At_Home = "待在家里",
-  /** 吃晚餐 */
-  Eat_Dinner = "吃晚餐",
-  /** 做饭 */
-  Cook_At_Home = "做饭",
+  /** 在家做饭吃 */
+  Cook_And_Eat_At_Home = "在家做饭吃",
   /** 睡觉 */
   Sleep = "睡觉",
-
-  /** 吃午餐 */
-  Eat_Lunch = "吃午餐",
 
   /** 在学校学习 */
   Study_At_School = "在学校学习",

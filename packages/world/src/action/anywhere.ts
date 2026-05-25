@@ -11,7 +11,6 @@ import {
 import { chooseFoodAgent } from "@/llm/agent";
 import { logger } from "@/utils/logger";
 import { resolveFoodRecoveryPerUnit } from "../utils/food-utils";
-import { notDoneToday } from "./utils";
 
 function getAvailableFoodOptions(context: ActionContext): ChoiceOption[] {
   const inventory = context.characterState.inventory || [];
@@ -41,30 +40,6 @@ export const anywhereAction: ActionMetadata[] = [
     async durationMin(_context, selectedAction) {
       return selectedAction?.durationMinute ?? 10;
     },
-  },
-  {
-    action: ActionId.Eat_Lunch,
-    description: "吃午饭。[体力+50][饱腹+50][耗时20分钟]",
-    proactiveShare: {
-      enabled: true,
-    },
-    precondition(context) {
-      const hour = context.worldState.time.get("hour");
-      return allTrue([
-        () => hour >= 11 && hour < 14,
-        () => notDoneToday(context, ActionId.Eat_Lunch),
-      ]);
-    },
-    async executor(context) {
-      await context.characterState.setAction(ActionId.Eat_Lunch);
-    },
-    async completionEvent(context) {
-      await context.characterState.changeStamina(50);
-      await context.characterState.changeSatiety(50);
-      await context.characterState.markActionDoneToday(ActionId.Eat_Lunch);
-      return { eventDescription: "吃完午饭，体力和饱腹恢复了" };
-    },
-    durationMin: 20,
   },
   {
     action: ActionId.Eat_Item,

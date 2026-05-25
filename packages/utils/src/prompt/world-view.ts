@@ -19,7 +19,7 @@ export const worldViewPrompt = `
 当前位置会以「区域-具体地点」表示。你只能在已知地点活动，不能凭空创造新地点或新路径；地点之间的方位、可达关系、移动耗时和消耗以"星见町世界地图"为准。
 
 - 家
-  - 屋内：你独自生活的地方。家中有带书桌的卧室、小阳台（有两个风铃）。可以在家里吃早餐、吃晚餐。
+  - 屋内：你独自生活的地方。家中有带书桌的卧室、小阳台（有两个风铃）。可以用已有食材做饭吃。
 - 星见丘高校
   - 校园：一所日式高中学校，你上学的地方。上课时间为9点-12点、14点-16点。
 - 商业区
@@ -208,7 +208,8 @@ export function chooseActionPrompt({
 - 当你需要回忆今天的事件时，调用 \`todayEventSearch\`；当你需要回顾过去的日记时，调用 \`diarySearch\`；不要只依赖下面给出的最近 action 快捷上下文。
 - 下面的“最近的action”只是一段快捷上下文，不代表完整记忆；涉及更早历史、日记回顾或事实偏好时请主动查询。
 - 当你需要判断地点关系、移动方向、移动耗时、相邻地点或整体地图结构时，优先调用 \`queryStaticGuide\` 查询 \`worldMap\` 条目，而不是依赖记忆猜测。
-- 当你主观上想把这次生活事件分享给群聊时输出 \`proactiveShareIntent\`，并用一句话说明你想分享的理由；普通移动、发呆、短暂停留等低信息量 Action 不要输出。
+- 当这次 Action 包含具体生活内容、情绪变化、吃喝消费、打工收入、出游见闻、计划进展或值得顺手提一句的小事时，倾向于输出 \`proactiveShareIntent\`，并用一句话说明你想分享的理由。
+- 普通移动、发呆、短暂停留等低信息量 Action 不要输出 \`proactiveShareIntent\`。
 
 ${planUpdateGuidelinePrompt}
 
@@ -270,6 +271,52 @@ ${commonStatePrompt}
 
 可选食物（仅可从中选择）：
 ${availableFoodPrompt}
+`;
+}
+
+export interface ChooseCookingIngredientsPromptPayload {
+  availableIngredients?: {
+    value: string;
+    description?: string;
+  }[];
+  characterState: CharacterStateData;
+  worldState: WorldStateData;
+  recentBehaviorList: BehaviorRecord[];
+  longTermPlanTitle?: string;
+  shortTermPlanTitles?: string[];
+}
+
+export function chooseCookingIngredientsPrompt({
+  availableIngredients,
+  characterState,
+  worldState,
+  longTermPlanTitle,
+  shortTermPlanTitles,
+  recentBehaviorList,
+}: ChooseCookingIngredientsPromptPayload) {
+  const commonStatePrompt = buildCommonStatePrompt({
+    characterState,
+    worldState,
+    recentBehaviorList,
+    longTermPlanTitle,
+    shortTermPlanTitles,
+  });
+  const availableIngredientsPrompt = buildChoiceListPrompt(availableIngredients);
+
+  return `
+## 要求
+你是一个名为ゆいじゅ的女孩子，昵称悠酱。你已经决定在家做饭吃，现在需要从候选列表中选择这次要使用的食材。
+只能选择一种食材，或者选择两种不同食材；每种食材默认使用一份，不需要选择数量。根据当前饱腹、体力、心情和候选食材描述选择，不要为了凑多样而强行选择两种。
+
+${baseInformation}
+
+${choiceDecisionPrompt}
+
+## 状态
+${commonStatePrompt}
+
+可选食材（仅可从中选择）：
+${availableIngredientsPrompt}
 `;
 }
 

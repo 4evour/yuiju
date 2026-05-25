@@ -67,6 +67,12 @@ export interface FoodMetadata {
 export type IngredientMetadata = {
   /** 售卖价格 */
   salePrice?: number;
+  /** 做饭时对料理体力恢复的基础贡献 */
+  stamina?: number;
+  /** 做饭时对料理饱腹恢复的基础贡献 */
+  satiety?: number;
+  /** 做饭时对料理心情恢复的基础贡献 */
+  mood?: number;
 };
 
 export enum InventoryItemCategory {

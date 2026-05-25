@@ -68,7 +68,7 @@ function createFallbackModel(
         for (const [candidateIndex, index] of candidateIndexes.entries()) {
           try {
             return await models[index].doGenerate(params);
-          } catch (error) {
+          } catch (error: any) {
             const now = Date.now();
             availability.markFailed(index, now);
 
@@ -80,6 +80,7 @@ function createFallbackModel(
               modelType: name,
               modelName: sources[index]?.model,
               failedSourceIndex: index,
+              errorMessage: error?.message,
             });
           }
         }
@@ -93,7 +94,7 @@ function createFallbackModel(
         for (const [candidateIndex, index] of candidateIndexes.entries()) {
           try {
             return await models[index].doStream(params);
-          } catch (error) {
+          } catch (error: any) {
             const now = Date.now();
             availability.markFailed(index, now);
 
@@ -105,6 +106,7 @@ function createFallbackModel(
               modelType: name,
               modelName: sources[index]?.model,
               failedSourceIndex: index,
+              errorMessage: error?.message,
             });
           }
         }

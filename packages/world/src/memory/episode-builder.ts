@@ -50,7 +50,7 @@ export function buildRunningBehaviorEpisode(
   }
 
   const summaryText = [
-    `悠酱在${input.context.characterState.location.major}${input.context.characterState.location.minor ? `-${input.context.characterState.location.minor}` : ""}开始执行行为「${input.selectedAction.action}」`,
+    `悠酱在「${input.context.characterState.location.major}${input.context.characterState.location.minor ? `-${input.context.characterState.location.minor}` : ""}」开始执行行为「${input.selectedAction.action}」`,
     `原因：${input.selectedAction.reason}`,
     input.executionResult ? `开始结果：${input.executionResult}` : undefined,
     `预计持续时间：${input.durationMinutes} 分钟`,
@@ -102,7 +102,7 @@ export function buildCompletedBehaviorEpisodeUpdate(
         );
 
   const summaryText = [
-    `悠酱在${input.context.characterState.location}完成了行为「${input.runningAction.action}」`,
+    `悠酱在${input.context.characterState.location.major}-${input.context.characterState.location.minor}完成了行为「${input.runningAction.action}」`,
     `原因：${input.runningPayload.reason}`,
     input.eventDescription ? `事件：${input.eventDescription}` : undefined,
     input.runningPayload.executionResult

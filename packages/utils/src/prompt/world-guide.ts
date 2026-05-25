@@ -26,7 +26,6 @@ export const worldGuidePlaceIntroductions = [
     availableActions: [
       ActionId.Wake_Up,
       ActionId.Sleep_For_A_Little,
-      ActionId.Eat_Breakfast,
       ActionId.Go_To_School_From_Home,
       ActionId.Go_To_Shop_From_Home,
       ActionId.Go_To_Cafe_From_Home,
@@ -34,8 +33,7 @@ export const worldGuidePlaceIntroductions = [
       ActionId.Go_To_Diner_From_Home,
       ActionId.Go_To_Park_From_Home,
       ActionId.Go_To_Shrine_From_Home,
-      ActionId.Eat_Dinner,
-      ActionId.Cook_At_Home,
+      ActionId.Cook_And_Eat_At_Home,
       ActionId.Stay_At_Home,
       ActionId.Sleep,
     ],

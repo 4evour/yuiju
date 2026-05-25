@@ -1,3 +1,5 @@
+import type { IngredientMetadata } from "./state";
+
 /**
  * 超市可购买食材名称枚举。
  *
@@ -26,6 +28,7 @@ export type SupermarketProduct = {
   name: SupermarketProductName;
   price: number;
   description: string;
+  metadata: IngredientMetadata;
 };
 
 /**
@@ -40,55 +43,110 @@ export const SUPERMARKET_PRODUCTS: SupermarketProduct[] = [
     name: SupermarketProductName.Rice,
     price: 8,
     description: "家里常备的主食，多餐都能用上。",
+    metadata: {
+      stamina: 3,
+      satiety: 22,
+      mood: 0,
+    },
   },
   {
     name: SupermarketProductName.Egg,
     price: 6,
     description: "便宜又万能的蛋白质，适合早餐和简单料理。",
+    metadata: {
+      stamina: 5,
+      satiety: 12,
+      mood: 1,
+    },
   },
   {
     name: SupermarketProductName.Tofu,
     price: 6,
     description: "清淡便宜的豆制品，可以做成温和的一餐。",
+    metadata: {
+      stamina: 4,
+      satiety: 14,
+      mood: 1,
+    },
   },
   {
     name: SupermarketProductName.Cabbage,
     price: 8,
     description: "耐放的便宜蔬菜，适合搭配主食和肉类。",
+    metadata: {
+      stamina: 2,
+      satiety: 12,
+      mood: 1,
+    },
   },
   {
     name: SupermarketProductName.Miso,
     price: 8,
     description: "可以用来做味噌汤，也能给简单饭菜增加风味。",
+    metadata: {
+      stamina: 1,
+      satiety: 8,
+      mood: 1,
+    },
   },
   {
     name: SupermarketProductName.FrozenUdon,
     price: 12,
     description: "方便快速做一餐的冷冻乌冬。",
+    metadata: {
+      stamina: 5,
+      satiety: 28,
+      mood: 1,
+    },
   },
   {
     name: SupermarketProductName.ChickenLeg,
     price: 18,
     description: "普通肉类食材，适合做一顿更扎实的家常饭。",
+    metadata: {
+      stamina: 8,
+      satiety: 18,
+      mood: 2,
+    },
   },
   {
     name: SupermarketProductName.SalmonFillet,
     price: 24,
     description: "稍微好一点的鱼类食材，适合认真做晚餐。",
+    metadata: {
+      stamina: 7,
+      satiety: 18,
+      mood: 3,
+    },
   },
   {
     name: SupermarketProductName.CurryBlock,
     price: 10,
     description: "咖喱调味块，可以让简单食材变成更有满足感的一餐。",
+    metadata: {
+      stamina: 2,
+      satiety: 10,
+      mood: 2,
+    },
   },
   {
     name: SupermarketProductName.Milk,
     price: 10,
     description: "早餐、饮品或料理都能用到的牛奶。",
+    metadata: {
+      stamina: 3,
+      satiety: 10,
+      mood: 1,
+    },
   },
   {
     name: SupermarketProductName.BentoSideDishSet,
     price: 22,
     description: "搭配好的便当菜组合，适合省心准备一餐。",
+    metadata: {
+      stamina: 8,
+      satiety: 34,
+      mood: 3,
+    },
   },
 ];

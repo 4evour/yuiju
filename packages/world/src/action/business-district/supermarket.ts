@@ -101,6 +101,7 @@ export const supermarketAction: ActionMetadata[] = [
           productName: product.name,
           description: product.description,
           quantity,
+          metadata: product.metadata,
         },
       };
     },
@@ -109,6 +110,7 @@ export const supermarketAction: ActionMetadata[] = [
         productName: string;
         description: string;
         quantity: number;
+        metadata: SupermarketProduct["metadata"];
       };
 
       await context.characterState.addItem(
@@ -116,7 +118,7 @@ export const supermarketAction: ActionMetadata[] = [
           name: purchaseContext.productName,
           description: purchaseContext.description,
           category: InventoryItemCategory.Ingredient,
-          metadata: {},
+          metadata: purchaseContext.metadata,
         },
         purchaseContext.quantity,
       );

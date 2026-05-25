@@ -11,19 +11,34 @@ const POND_FISHING_RESULTS = [
   {
     name: "小鲫鱼",
     description: "从水音池钓到的小鲫鱼，可以作为做饭食材。",
-    salePrice: 18,
+    metadata: {
+      salePrice: 18,
+      stamina: 5,
+      satiety: 14,
+      mood: 1,
+    },
     probability: 45,
   },
   {
     name: "河鳟",
     description: "从水音池钓到的河鳟，肉质清爽，可以作为做饭食材。",
-    salePrice: 36,
+    metadata: {
+      salePrice: 36,
+      stamina: 7,
+      satiety: 18,
+      mood: 3,
+    },
     probability: 25,
   },
   {
     name: "银鳞鲤",
     description: "从水音池钓到的少见鲤鱼，鳞片带着淡淡银光，可以作为做饭食材。",
-    salePrice: 80,
+    metadata: {
+      salePrice: 80,
+      stamina: 9,
+      satiety: 22,
+      mood: 4,
+    },
     probability: 10,
   },
 ];
@@ -70,9 +85,7 @@ export const pondAction: ActionMetadata[] = [
               name: fish.name,
               description: fish.description,
               category: InventoryItemCategory.Ingredient,
-              metadata: {
-                salePrice: fish.salePrice,
-              },
+              metadata: fish.metadata,
             },
             1,
           );
@@ -82,7 +95,7 @@ export const pondAction: ActionMetadata[] = [
               caughtFish: {
                 name: fish.name,
                 quantity: 1,
-                salePrice: fish.salePrice,
+                salePrice: fish.metadata.salePrice,
               },
             },
             eventDescription: `在水音池钓到了一条${fish.name}`,
