@@ -13,7 +13,12 @@ import {
   SchoolSubScene,
 } from "../../types";
 import { safeParseJson } from "../../utils";
-import { getRedis, type RedisReadSource, syncRedisStateWrite } from "../client";
+import {
+  getRedis,
+  type RedisHashFields,
+  type RedisReadSource,
+  syncRedisStateWrite,
+} from "../client";
 
 export const REDIS_KEY_CHARACTER_STATE = isDev()
   ? "dev:yuiju:charactor:state"
@@ -132,6 +137,48 @@ export const saveCharacterStateData = async (state: CharacterStateData): Promise
   });
 };
 
+export const updateCharacterStateData = async (
+  fields: Partial<CharacterStateData>,
+): Promise<void> => {
+  const redis = getRedis();
+  const characterStateFields: RedisHashFields = {};
+
+  if (fields.action !== undefined) {
+    characterStateFields.action = fields.action;
+  }
+  if (fields.location !== undefined) {
+    characterStateFields.location = JSON.stringify(fields.location);
+  }
+  if (fields.stamina !== undefined) {
+    characterStateFields.stamina = fields.stamina;
+  }
+  if (fields.satiety !== undefined) {
+    characterStateFields.satiety = fields.satiety;
+  }
+  if (fields.mood !== undefined) {
+    characterStateFields.mood = fields.mood;
+  }
+  if (fields.money !== undefined) {
+    characterStateFields.money = fields.money;
+  }
+  if (fields.dailyActionsDoneToday !== undefined) {
+    characterStateFields.dailyActionsDoneToday = JSON.stringify(fields.dailyActionsDoneToday);
+  }
+  if (fields.inventory !== undefined) {
+    characterStateFields.inventory = JSON.stringify(fields.inventory);
+  }
+  if (fields.runningAction !== undefined) {
+    characterStateFields.runningAction = JSON.stringify(fields.runningAction);
+  }
+
+  await redis.hset(REDIS_KEY_CHARACTER_STATE, characterStateFields);
+  await syncRedisStateWrite({
+    command: "hset",
+    key: REDIS_KEY_CHARACTER_STATE,
+    fields: characterStateFields,
+  });
+};
+
 export const initCharacterStateData = async (
   options: InitCharacterStateDataOptions = {},
 ): Promise<CharacterStateData> => {
@@ -219,6 +266,7 @@ export const changeCharacterMoney = async (
 ): Promise<{ previousMoney: number; currentMoney: number; delta: number }> => {
   const redis = getRedis();
   const currentMoney = await redis.hincrby(REDIS_KEY_CHARACTER_STATE, "money", amount);
+  await syncCharacterMoney(currentMoney);
 
   return {
     previousMoney: currentMoney - amount,
@@ -252,6 +300,7 @@ export const setCharacterMoney = async (
 
   const previousMoney = Number.parseInt(String(oldValue ?? "0"), 10);
   const currentMoney = Number.parseInt(String(newValue ?? "0"), 10);
+  await syncCharacterMoney(currentMoney);
 
   return {
     previousMoney,

@@ -33,8 +33,8 @@ const DEFAULT_PARK_WALK_TIER = PARK_WALK_TIERS[1];
 
 function isAtPark(context: ActionContext) {
   return (
-    context.characterState.location.major === MajorScene.ParkArea &&
-    context.characterState.location.minor === ParkAreaSubScene.Park
+    context.characterStateData.location.major === MajorScene.ParkArea &&
+    context.characterStateData.location.minor === ParkAreaSubScene.Park
   );
 }
 

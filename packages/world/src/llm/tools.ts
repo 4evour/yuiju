@@ -7,7 +7,7 @@ export const queryAvailableFood = (context: ActionContext) =>
     description: "查询当前背包中的食物列表",
     inputSchema: z.object({}),
     execute: async () => {
-      const inventory = context.characterState.inventory || [];
+      const inventory = context.characterStateData.inventory || [];
       const availableFood = inventory.filter(
         (item) => item.category === InventoryItemCategory.Food && item.quantity > 0,
       );

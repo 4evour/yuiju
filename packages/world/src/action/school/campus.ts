@@ -12,8 +12,8 @@ import { isAfternoon, isNight, isWeekday } from "../utils";
 
 function isAtSchoolCampus(context: ActionContext) {
   return (
-    context.characterState.location.major === MajorScene.School &&
-    context.characterState.location.minor === SchoolSubScene.Campus
+    context.characterStateData.location.major === MajorScene.School &&
+    context.characterStateData.location.minor === SchoolSubScene.Campus
   );
 }
 
@@ -64,7 +64,7 @@ export const schoolAction: ActionMetadata[] = [
     precondition(context) {
       return allTrue([
         () => isAtSchoolCampus(context),
-        context.characterState.stamina >= 10,
+        context.characterStateData.stamina >= 10,
         isAfternoon(context),
       ]);
     },
@@ -86,7 +86,7 @@ export const schoolAction: ActionMetadata[] = [
     precondition(context) {
       return allTrue([
         () => isAtSchoolCampus(context),
-        context.characterState.stamina >= 5,
+        context.characterStateData.stamina >= 5,
         !isNight(context),
       ]);
     },
@@ -108,7 +108,7 @@ export const schoolAction: ActionMetadata[] = [
     precondition(context) {
       return allTrue([
         () => isAtSchoolCampus(context),
-        context.characterState.stamina >= 5,
+        context.characterStateData.stamina >= 5,
         !isNight(context),
       ]);
     },
@@ -130,7 +130,7 @@ export const schoolAction: ActionMetadata[] = [
     precondition(context) {
       return allTrue([
         () => isAtSchoolCampus(context),
-        context.characterState.stamina >= 5,
+        context.characterStateData.stamina >= 5,
         !isNight(context),
       ]);
     },
@@ -152,7 +152,7 @@ export const schoolAction: ActionMetadata[] = [
     precondition(context) {
       return allTrue([
         () => isAtSchoolCampus(context),
-        context.characterState.stamina >= 5,
+        context.characterStateData.stamina >= 5,
         !isNight(context),
       ]);
     },

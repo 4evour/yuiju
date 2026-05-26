@@ -58,7 +58,7 @@ const COMBINED_INGREDIENT_MEAL_NAMES: Record<string, string[]> = {
 };
 
 export function getAvailableCookingIngredientOptions(context: ActionContext): ChoiceOption[] {
-  const inventory = context.characterState.inventory || [];
+  const inventory = context.characterStateData.inventory || [];
   return inventory
     .filter((item) => item.category === InventoryItemCategory.Ingredient && item.quantity > 0)
     .map((item): ChoiceOption => {

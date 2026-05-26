@@ -139,7 +139,9 @@ export interface CharacterStateData {
   runningAction: RunningActionState | null;
 }
 
-export interface ICharacterState extends CharacterStateData {
+export interface ICharacterState {
+  /** 读取当前 Redis 中的角色实时状态。 */
+  getData(): Promise<CharacterStateData>;
   setAction(action: ActionId): Promise<void>;
   /** 设置体力值 */
   setStamina(stamina: number): Promise<void>;
@@ -156,8 +158,6 @@ export interface ICharacterState extends CharacterStateData {
   markActionDoneToday(action: ActionId): Promise<void>;
   /** 清空今日动作 */
   clearDailyActions(): Promise<void>;
-  /** 获取状态日志（深拷贝） */
-  log(): CharacterStateData;
   /**
    * 写入运行中的 action 等待上下文。
    *
@@ -168,7 +168,7 @@ export interface ICharacterState extends CharacterStateData {
   /** 清除运行中的 action 等待上下文。 */
   clearRunningAction(): Promise<void>;
   /** 获取当前运行中的 action 等待上下文。 */
-  getRunningAction(): RunningActionState | null;
+  getRunningAction(): Promise<RunningActionState | null>;
 
   /** 背包管理方法 */
   /** 添加物品到背包 */
@@ -176,7 +176,7 @@ export interface ICharacterState extends CharacterStateData {
   /** 消费背包中的物品 */
   consumeItem(itemName: string, quantity?: number): Promise<boolean>;
   /** 获取背包中指定物品的数量 */
-  getItemQuantity(itemName: string): number;
+  getItemQuantity(itemName: string): Promise<number>;
 }
 
 export interface WorldStateData {

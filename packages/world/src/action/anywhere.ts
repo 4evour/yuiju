@@ -13,7 +13,7 @@ import { logger } from "@/utils/logger";
 import { resolveFoodRecoveryPerUnit } from "../utils/food-utils";
 
 function getAvailableFoodOptions(context: ActionContext): ChoiceOption[] {
-  const inventory = context.characterState.inventory || [];
+  const inventory = context.characterStateData.inventory || [];
   const availableFood = inventory.filter(
     (item) => item.category === InventoryItemCategory.Food && item.quantity! > 0,
   );

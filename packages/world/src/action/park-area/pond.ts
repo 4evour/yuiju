@@ -45,8 +45,8 @@ const POND_FISHING_RESULTS = [
 
 function isAtPond(context: ActionContext) {
   return (
-    context.characterState.location.major === MajorScene.ParkArea &&
-    context.characterState.location.minor === ParkAreaSubScene.Pond
+    context.characterStateData.location.major === MajorScene.ParkArea &&
+    context.characterStateData.location.minor === ParkAreaSubScene.Pond
   );
 }
 

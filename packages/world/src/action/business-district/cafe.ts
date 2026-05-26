@@ -21,8 +21,8 @@ const CAFE_MIN_PRICE = Math.min(...CAFE_COFFEES.map((p) => p.price));
 
 function isAtCafe(context: ActionContext) {
   return (
-    context.characterState.location.major === MajorScene.BusinessDistrict &&
-    context.characterState.location.minor === BusinessDistrictSubScene.Cafe
+    context.characterStateData.location.major === MajorScene.BusinessDistrict &&
+    context.characterStateData.location.minor === BusinessDistrictSubScene.Cafe
   );
 }
 
@@ -56,7 +56,7 @@ export const cafeAction: ActionMetadata[] = [
     precondition(context) {
       return allTrue([
         () => isAtCafe(context),
-        () => context.characterState.money >= CAFE_MIN_PRICE,
+        () => context.characterStateData.money >= CAFE_MIN_PRICE,
       ]);
     },
     async executor(context) {
@@ -88,9 +88,9 @@ export const cafeAction: ActionMetadata[] = [
       }
 
       const cost = coffee.price;
-      if (context.characterState.money < cost) {
+      if (context.characterStateData.money < cost) {
         logger.info(
-          `[Drink_Coffee] 余额不足，跳过点单: ${coffee.name}（单价${coffee.price}元，余额${context.characterState.money}元）`,
+          `[Drink_Coffee] 余额不足，跳过点单: ${coffee.name}（单价${coffee.price}元，余额${context.characterStateData.money}元）`,
         );
         return { executionResult: "点单失败，余额不足。" };
       }

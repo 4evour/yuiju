@@ -21,8 +21,8 @@ const SUPERMARKET_MIN_PRICE = Math.min(...SUPERMARKET_PRODUCTS.map((p) => p.pric
 
 function isAtSupermarket(context: ActionContext) {
   return (
-    context.characterState.location.major === MajorScene.BusinessDistrict &&
-    context.characterState.location.minor === BusinessDistrictSubScene.Supermarket
+    context.characterStateData.location.major === MajorScene.BusinessDistrict &&
+    context.characterStateData.location.minor === BusinessDistrictSubScene.Supermarket
   );
 }
 
@@ -40,13 +40,13 @@ export const supermarketAction: ActionMetadata[] = [
     precondition(context) {
       return allTrue([
         () => isAtSupermarket(context),
-        () => context.characterState.money >= SUPERMARKET_MIN_PRICE,
+        () => context.characterStateData.money >= SUPERMARKET_MIN_PRICE,
       ]);
     },
     async executor(context) {
       await context.characterState.setAction(ActionId.Buy_Ingredient_At_Supermarket);
 
-      let remainingMoney = context.characterState.money;
+      let remainingMoney = context.characterStateData.money;
       const productList: ChoiceOption[] = SUPERMARKET_PRODUCTS.map((product) => {
         return {
           value: product.name,

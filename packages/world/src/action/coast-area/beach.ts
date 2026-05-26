@@ -37,8 +37,8 @@ const DEFAULT_COAST_WALK_TIER = COAST_WALK_TIERS[1];
  */
 function isAtCoast(context: ActionContext) {
   return (
-    context.characterState.location.major === MajorScene.CoastArea &&
-    context.characterState.location.minor === CoastAreaSubScene.Beach
+    context.characterStateData.location.major === MajorScene.CoastArea &&
+    context.characterStateData.location.minor === CoastAreaSubScene.Beach
   );
 }
 

@@ -66,6 +66,7 @@ interface ActionStartTickResult {
 async function startAction(eventDescription?: string): Promise<ActionStartTickResult> {
   const context: ActionContext = {
     characterState,
+    characterStateData: await characterState.getData(),
     worldState,
     eventDescription,
   };
@@ -135,10 +136,18 @@ async function startAction(eventDescription?: string): Promise<ActionStartTickRe
     }
 
     const actionStartResult = await actionMetadata.executor(context, selectedAction);
+    const updatedContext: ActionContext = {
+      ...context,
+      characterStateData: await characterState.getData(),
+    };
 
-    await context.worldState.updateTime();
+    await updatedContext.worldState.updateTime();
 
-    const durationMin = await getDurationTime(actionMetadata.durationMin, context, selectedAction);
+    const durationMin = await getDurationTime(
+      actionMetadata.durationMin,
+      updatedContext,
+      selectedAction,
+    );
 
     logger.info(
       `[action-lifecycle startAction] Duration ${durationMin} min, selectedAction: `,
@@ -176,7 +185,7 @@ async function startAction(eventDescription?: string): Promise<ActionStartTickRe
  * - Episode 更新成功后清理 Redis 运行态。
  */
 export async function recoverRunningAction(): Promise<string | undefined> {
-  const runningAction = characterState.getRunningAction();
+  const runningAction = await characterState.getRunningAction();
 
   if (!runningAction) {
     return undefined;
@@ -188,12 +197,17 @@ export async function recoverRunningAction(): Promise<string | undefined> {
     await setTimeout(remainingMs);
   }
 
-  const context = {
+  const context: ActionContext = {
     characterState,
+    characterStateData: await characterState.getData(),
     worldState,
   };
   const actionMetadata = getActionById(runningAction.action);
   const completionResult = await actionMetadata.completionEvent?.(context, runningAction);
+  const updatedContext: ActionContext = {
+    ...context,
+    characterStateData: await characterState.getData(),
+  };
 
   const runningEpisode = await getMemoryEpisodeById(runningAction.behaviorEpisodeId);
   if (!runningEpisode) {
@@ -201,7 +215,7 @@ export async function recoverRunningAction(): Promise<string | undefined> {
   }
 
   const completedEpisode = buildCompletedBehaviorEpisodeUpdate({
-    context,
+    context: updatedContext,
     runningAction,
     runningPayload: runningEpisode.payload as BehaviorEpisodePayload,
     completionContext: completionResult?.completionContext,
@@ -222,8 +236,8 @@ export async function recoverRunningAction(): Promise<string | undefined> {
     runningAction,
     eventDescription: completionResult?.eventDescription,
     completionContext: completionResult?.completionContext,
-    characterStateSnapshot: context.characterState.log(),
-    worldStateSnapshot: context.worldState.log(),
+    characterStateSnapshot: updatedContext.characterStateData,
+    worldStateSnapshot: updatedContext.worldState.log(),
   });
 
   await characterState.clearRunningAction();
@@ -251,9 +265,11 @@ export async function runNextAction(eventDescription?: string): Promise<string |
   }
 
   const waitUntil = dayjs().add(actionStartResult.nextTickInMinutes, "minute").toISOString();
+  const characterStateData = await characterState.getData();
   const behaviorEpisode = buildRunningBehaviorEpisode({
     context: {
       characterState,
+      characterStateData,
       worldState,
     },
     selectedAction: {

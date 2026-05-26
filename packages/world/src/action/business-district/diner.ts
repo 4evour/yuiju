@@ -20,8 +20,8 @@ const DINER_MIN_PRICE = Math.min(...DINER_MEALS.map((meal) => meal.price));
 
 function isAtDiner(context: ActionContext) {
   return (
-    context.characterState.location.major === MajorScene.BusinessDistrict &&
-    context.characterState.location.minor === BusinessDistrictSubScene.Diner
+    context.characterStateData.location.major === MajorScene.BusinessDistrict &&
+    context.characterStateData.location.minor === BusinessDistrictSubScene.Diner
   );
 }
 
@@ -50,7 +50,7 @@ export const dinerAction: ActionMetadata[] = [
     precondition(context) {
       return allTrue([
         () => isAtDiner(context),
-        () => context.characterState.money >= DINER_MIN_PRICE,
+        () => context.characterStateData.money >= DINER_MIN_PRICE,
       ]);
     },
     async executor(context) {
@@ -80,9 +80,9 @@ export const dinerAction: ActionMetadata[] = [
         return { executionResult: "点餐失败，未找到餐品。" };
       }
 
-      if (context.characterState.money < meal.price) {
+      if (context.characterStateData.money < meal.price) {
         logger.info(
-          `[Eat_At_Diner] 余额不足，跳过点餐: ${meal.name}（单价${meal.price}元，余额${context.characterState.money}元）`,
+          `[Eat_At_Diner] 余额不足，跳过点餐: ${meal.name}（单价${meal.price}元，余额${context.characterStateData.money}元）`,
         );
         return { executionResult: "点餐失败，余额不足。" };
       }

@@ -1,5 +1,5 @@
 import type { AgentPlanChange } from "./plan";
-import type { ICharacterState, IWorldState, RunningActionState } from "./state";
+import type { CharacterStateData, ICharacterState, IWorldState, RunningActionState } from "./state";
 
 export enum ActionId {
   /** 起床 */
@@ -130,6 +130,7 @@ export enum ActionId {
 
 export interface ActionContext {
   characterState: ICharacterState;
+  characterStateData: CharacterStateData;
   worldState: IWorldState;
   eventDescription?: string;
 }

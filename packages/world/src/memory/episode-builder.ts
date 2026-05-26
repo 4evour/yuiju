@@ -1,6 +1,7 @@
 import type {
   ActionAgentDecision,
   ActionContext,
+  CharacterStateData,
   MemoryEpisode,
   RunningActionState,
   WeatherSnapshot,
@@ -26,8 +27,8 @@ export interface BehaviorEpisodePayload extends Record<string, unknown> {
   startContext?: Record<string, unknown>;
   completionContext?: Record<string, unknown>;
   eventDescription?: string;
-  location: ActionContext["characterState"]["location"];
-  characterStateSnapshot: ReturnType<ActionContext["characterState"]["log"]>;
+  location: CharacterStateData["location"];
+  characterStateSnapshot: CharacterStateData;
 }
 
 interface WeatherChangedEpisodePayload {
@@ -50,7 +51,7 @@ export function buildRunningBehaviorEpisode(
   }
 
   const summaryText = [
-    `悠酱在「${input.context.characterState.location.major}${input.context.characterState.location.minor ? `-${input.context.characterState.location.minor}` : ""}」开始执行行为「${input.selectedAction.action}」`,
+    `悠酱在「${input.context.characterStateData.location.major}${input.context.characterStateData.location.minor ? `-${input.context.characterStateData.location.minor}` : ""}」开始执行行为「${input.selectedAction.action}」`,
     `原因：${input.selectedAction.reason}`,
     input.executionResult ? `开始结果：${input.executionResult}` : undefined,
     `预计持续时间：${input.durationMinutes} 分钟`,
@@ -72,8 +73,8 @@ export function buildRunningBehaviorEpisode(
       executionResult: input.executionResult,
       durationMinutes: input.durationMinutes,
       startContext: input.startContext,
-      location: input.context.characterState.location,
-      characterStateSnapshot: input.context.characterState.log(),
+      location: input.context.characterStateData.location,
+      characterStateSnapshot: input.context.characterStateData,
     },
   };
 }
@@ -102,7 +103,7 @@ export function buildCompletedBehaviorEpisodeUpdate(
         );
 
   const summaryText = [
-    `悠酱在${input.context.characterState.location.major}-${input.context.characterState.location.minor}完成了行为「${input.runningAction.action}」`,
+    `悠酱在${input.context.characterStateData.location.major}-${input.context.characterStateData.location.minor}完成了行为「${input.runningAction.action}」`,
     `原因：${input.runningPayload.reason}`,
     input.eventDescription ? `事件：${input.eventDescription}` : undefined,
     input.runningPayload.executionResult
@@ -123,8 +124,8 @@ export function buildCompletedBehaviorEpisodeUpdate(
       startContext: input.runningAction.startContext ?? input.runningPayload.startContext,
       completionContext: input.completionContext,
       eventDescription: input.eventDescription,
-      location: input.context.characterState.location,
-      characterStateSnapshot: input.context.characterState.log(),
+      location: input.context.characterStateData.location,
+      characterStateSnapshot: input.context.characterStateData,
     },
   };
 }

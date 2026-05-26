@@ -19,7 +19,7 @@ export async function chooseShrinePrayerAgent(
 ): Promise<ShrinePrayerAgentDecision | undefined> {
   const systemPrompt = chooseShrinePrayerPrompt({
     actionReason: selectedAction.reason,
-    characterState: context.characterState,
+    characterState: context.characterStateData,
     worldState: context.worldState,
     offeringCost,
     longTermPlanTitle: planState.longTermPlan?.title,

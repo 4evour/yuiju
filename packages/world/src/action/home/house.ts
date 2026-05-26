@@ -26,8 +26,8 @@ import { isAfternoon, isEvening, isMorning, isNight, isWeekday, isWeekend } from
 
 function isAtHomeHouse(context: ActionContext) {
   return (
-    context.characterState.location.major === MajorScene.Home &&
-    context.characterState.location.minor === HomeSubScene.House
+    context.characterStateData.location.major === MajorScene.Home &&
+    context.characterStateData.location.minor === HomeSubScene.House
   );
 }
 
@@ -86,7 +86,7 @@ export const homeAction: ActionMetadata[] = [
     precondition(context) {
       return allTrue([
         () => isAtHomeHouse(context),
-        context.characterState.stamina >= 5,
+        context.characterStateData.stamina >= 5,
         !isNight(context),
       ]);
     },
@@ -107,7 +107,7 @@ export const homeAction: ActionMetadata[] = [
     precondition(context) {
       return allTrue([
         () => isAtHomeHouse(context),
-        context.characterState.stamina >= 5,
+        context.characterStateData.stamina >= 5,
         !isNight(context),
       ]);
     },
@@ -128,7 +128,7 @@ export const homeAction: ActionMetadata[] = [
     precondition(context) {
       return allTrue([
         () => isAtHomeHouse(context),
-        context.characterState.stamina >= 5,
+        context.characterStateData.stamina >= 5,
         !isNight(context),
       ]);
     },
@@ -149,7 +149,7 @@ export const homeAction: ActionMetadata[] = [
     precondition(context) {
       return allTrue([
         () => isAtHomeHouse(context),
-        context.characterState.stamina >= 5,
+        context.characterStateData.stamina >= 5,
         !isNight(context),
       ]);
     },
@@ -170,7 +170,7 @@ export const homeAction: ActionMetadata[] = [
     precondition(context) {
       return allTrue([
         () => isAtHomeHouse(context),
-        context.characterState.stamina >= 3,
+        context.characterStateData.stamina >= 3,
         !isNight(context),
       ]);
     },
@@ -192,7 +192,7 @@ export const homeAction: ActionMetadata[] = [
     precondition(context) {
       return allTrue([
         () => isAtHomeHouse(context),
-        context.characterState.stamina >= 3,
+        context.characterStateData.stamina >= 3,
         !isNight(context),
       ]);
     },

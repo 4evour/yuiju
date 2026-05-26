@@ -37,7 +37,7 @@ export async function chooseActionAgent(
 ): Promise<ActionAgentDecision | undefined> {
   const systemPrompt = chooseActionPrompt({
     actionList,
-    characterState: context.characterState,
+    characterState: context.characterStateData,
     worldState: context.worldState,
     eventDescription: context.eventDescription,
     recentBehaviorList: actionMemoryList.map((item) => ({

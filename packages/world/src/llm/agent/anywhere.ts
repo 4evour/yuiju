@@ -23,7 +23,7 @@ export async function chooseFoodAgent(
 ): Promise<ParameterAgentSelectedItem[] | undefined> {
   const systemPrompt = chooseFoodPrompt({
     availableFood: foodList,
-    characterState: context.characterState,
+    characterState: context.characterStateData,
     worldState: context.worldState,
     longTermPlanTitle: planState.longTermPlan?.title,
     shortTermPlanTitles: planState.shortTermPlans.map((plan) => plan.title),
@@ -73,7 +73,7 @@ export async function chooseCookingIngredientsAgent(
 ): Promise<string[] | undefined> {
   const systemPrompt = chooseCookingIngredientsPrompt({
     availableIngredients: ingredientList,
-    characterState: context.characterState,
+    characterState: context.characterStateData,
     worldState: context.worldState,
     longTermPlanTitle: planState.longTermPlan?.title,
     shortTermPlanTitles: planState.shortTermPlans.map((plan) => plan.title),

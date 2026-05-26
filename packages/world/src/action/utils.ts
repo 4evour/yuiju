@@ -11,7 +11,7 @@ export const PrecheckActionMap: Record<string, ActionId[]> = {
 };
 
 export function precheckAction(context: ActionContext) {
-  const currentAction = context.characterState.action;
+  const currentAction = context.characterStateData.action;
   const actionList = PrecheckActionMap[currentAction];
   if (actionList) {
     return actionList.map(getActionById);
@@ -19,10 +19,10 @@ export function precheckAction(context: ActionContext) {
 }
 
 export const isDoing = (context: ActionContext, action: ActionId) =>
-  context.characterState.action === action;
+  context.characterStateData.action === action;
 
 export const isNotDoing = (context: ActionContext, action: ActionId) =>
-  context.characterState.action !== action;
+  context.characterStateData.action !== action;
 
 export const getActionById = (action: ActionId) => {
   return [
@@ -70,5 +70,5 @@ export const isWeekday = (context: ActionContext) => {
 };
 
 export const notDoneToday = (context: ActionContext, action: ActionId) => {
-  return !context.characterState.dailyActionsDoneToday.find((a) => a === action);
+  return !context.characterStateData.dailyActionsDoneToday.find((a) => a === action);
 };

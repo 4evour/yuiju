@@ -22,8 +22,8 @@ const SHOP_MIN_PRICE = Math.min(...SHOP_PRODUCTS.map((p) => p.price));
 
 function isAtShop(context: ActionContext) {
   return (
-    context.characterState.location.major === MajorScene.BusinessDistrict &&
-    context.characterState.location.minor === BusinessDistrictSubScene.Shop
+    context.characterStateData.location.major === MajorScene.BusinessDistrict &&
+    context.characterStateData.location.minor === BusinessDistrictSubScene.Shop
   );
 }
 
@@ -54,13 +54,13 @@ export const shopAction: ActionMetadata[] = [
     precondition(context) {
       return allTrue([
         () => isAtShop(context),
-        () => context.characterState.money >= SHOP_MIN_PRICE,
+        () => context.characterStateData.money >= SHOP_MIN_PRICE,
       ]);
     },
     async executor(context) {
       await context.characterState.setAction(ActionId.Buy_Item_At_Shop);
 
-      let remainingMoney = context.characterState.money;
+      let remainingMoney = context.characterStateData.money;
 
       const productList: ChoiceOption[] = SHOP_PRODUCTS.map((product) => {
         return {

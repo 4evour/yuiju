@@ -29,7 +29,7 @@ export async function chooseShopProductAgent(
 
   const systemPrompt = chooseShopProductPrompt({
     availableProducts: productList,
-    characterState: context.characterState,
+    characterState: context.characterStateData,
     worldState: context.worldState,
     longTermPlanTitle: planState.longTermPlan?.title,
     shortTermPlanTitles: planState.shortTermPlans.map((plan) => plan.title),
@@ -82,7 +82,7 @@ export async function chooseCafeCoffeeAgent(
 
   const systemPrompt = chooseCafeCoffeePrompt({
     availableCoffees: coffeeList,
-    characterState: context.characterState,
+    characterState: context.characterStateData,
     worldState: context.worldState,
     longTermPlanTitle: planState.longTermPlan?.title,
     shortTermPlanTitles: planState.shortTermPlans.map((plan) => plan.title),
@@ -135,7 +135,7 @@ export async function chooseSupermarketProductAgent(
 
   const systemPrompt = chooseSupermarketProductPrompt({
     availableProducts: productList,
-    characterState: context.characterState,
+    characterState: context.characterStateData,
     worldState: context.worldState,
     longTermPlanTitle: planState.longTermPlan?.title,
     shortTermPlanTitles: planState.shortTermPlans.map((plan) => plan.title),
@@ -188,7 +188,7 @@ export async function chooseDinerMealAgent(
 
   const systemPrompt = chooseDinerMealPrompt({
     availableMeals: mealList,
-    characterState: context.characterState,
+    characterState: context.characterStateData,
     worldState: context.worldState,
     longTermPlanTitle: planState.longTermPlan?.title,
     shortTermPlanTitles: planState.shortTermPlans.map((plan) => plan.title),

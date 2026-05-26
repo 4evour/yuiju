@@ -17,8 +17,8 @@ const SHRINE_OFFERING_MOOD_GAIN = 8;
 
 function isAtShrine(context: ActionContext) {
   return (
-    context.characterState.location.major === MajorScene.ParkArea &&
-    context.characterState.location.minor === ParkAreaSubScene.Shrine
+    context.characterStateData.location.major === MajorScene.ParkArea &&
+    context.characterStateData.location.minor === ParkAreaSubScene.Shrine
   );
 }
 
@@ -44,7 +44,7 @@ export const shrineAction: ActionMetadata[] = [
       );
       const shouldOffer =
         prayerDecision?.shouldOffer === true &&
-        context.characterState.money >= SHRINE_OFFERING_COST;
+        context.characterStateData.money >= SHRINE_OFFERING_COST;
 
       if (shouldOffer) {
         await context.characterState.changeMoney(-SHRINE_OFFERING_COST);
