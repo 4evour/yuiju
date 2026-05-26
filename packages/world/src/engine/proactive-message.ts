@@ -9,6 +9,7 @@ import {
   type ActionMetadata,
   buildProactiveGroupMessagePrompt,
   type CharacterStateData,
+  chatModel,
   chatReplyRulesPrompt,
   createToolCallLoggingHooks,
   flashModel,
@@ -86,13 +87,13 @@ async function shareActionCompletionToGroup(
     const groupContext = await internalMessageApi.getGroupContext(
       target.platform,
       target.groupId,
-      6,
+      5,
     );
     const result = await generateStructuredOutput({
-      model: flashModel,
+      model: chatModel,
       providerOptions: {
-        flash: {
-          enable_thinking: false,
+        chat: {
+          enable_thinking: true,
         },
       },
       system: [
@@ -121,8 +122,10 @@ async function shareActionCompletionToGroup(
       output: Output.object({
         schema: z.object({
           shouldSend: z.boolean().describe("当前是否适合发送这条主动生活分享"),
-          reason: z.string().describe("适合或不适合发送的简短原因"),
-          message: z.string().describe("最终要发送到群里的消息，shouldSend=false 时为空字符串"),
+          reason: z.string().describe("简短原因"),
+          message: z
+            .string()
+            .describe("最终要发送到群里的自然短消息，shouldSend=false 时为空字符串"),
         }),
       }),
     });

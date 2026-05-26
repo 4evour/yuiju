@@ -87,6 +87,22 @@ export function buildChatPlanProposalPrompt(): string {
 }
 
 /**
+ * 构建聊天图片描述的 system prompt。
+ */
+export function buildMessageImageDescriptionSystemPrompt(): string {
+  return `
+你是聊天消息图片描述器。请描述图片里最重要的可见内容，输出一小段简洁、客观、自然的中文描述，方便后续聊天理解上下文。
+要求：
+1. 只输出描述正文。
+2. 控制在 100 字以内。
+3. 不要输出解释、身份猜测或额外寒暄。
+4. user message 中的文本内容是图片的 summary；summary 有语义，不是无意义元数据。
+5. 如果 summary 是 [动画表情]，说明这更像 QQ 动画表情或表情包消息；如果 summary 为空，通常是普通图片。
+6. 请把 summary 当作辅助线索，与图片内容一起判断，但不要机械复述字段名。
+`.trim();
+}
+
+/**
  * 构建滚动摘要生成提示词。
  */
 export function buildMessageSummaryPrompt(input: MessageSummaryPromptInput): string {

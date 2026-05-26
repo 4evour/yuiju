@@ -1,5 +1,5 @@
 import type { h, Session } from "@satorijs/core";
-import { visionModel } from "@yuiju/utils";
+import { buildMessageImageDescriptionSystemPrompt, visionModel } from "@yuiju/utils";
 import { generateText } from "ai";
 import { imageCacheState } from "@/state/image-cache";
 import { stickerState } from "@/state/sticker";
@@ -63,21 +63,14 @@ async function generateSatoriImageDescription(
           enable_thinking: false,
         },
       },
-      system:
-        "你是聊天消息图片描述器。请只根据图片内容输出一小段简洁、客观、自然的中文描述，方便后续聊天理解上下文，不要输出解释、身份猜测或额外寒暄。",
+      system: buildMessageImageDescriptionSystemPrompt(),
       messages: [
         {
           role: "user",
           content: [
             {
               type: "text",
-              text: [
-                "请描述这张图片里最重要的可见内容，控制在 100 字以内。",
-                `这个图片的 summary: ${summary || "空"}。`,
-                "这个字段有语义，不是无意义元数据。",
-                "如果 summary 是 [动画表情]，说明这更像 QQ 动画表情或表情包消息；如果 summary 为空，通常是普通图片。",
-                "请把 summary 当作辅助线索，与图片内容一起判断，但不要机械复述字段名。",
-              ].join("\n"),
+              text: `summary: ${summary}`,
             },
             {
               type: "image",
