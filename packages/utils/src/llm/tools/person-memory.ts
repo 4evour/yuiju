@@ -15,9 +15,13 @@ export const listPersonMemoriesTool = tool({
 });
 
 export const getPersonMemoryTool = tool({
-  description: "按昵称批量读取人物长期记忆",
+  description:
+    "按昵称批量读取人物长期记忆。当聊天消息中出现具体人物昵称、@ 提及对象、身份称呼、关系梗、喜好、雷区或会影响回复方式的人物信息时，先调用这个工具读取对应人物记忆，再决定如何自然回应。",
   inputSchema: z.object({
-    nicknames: z.array(z.string().min(1)).min(1),
+    nicknames: z
+      .array(z.string().min(1))
+      .min(1)
+      .describe("要读取记忆的准确人物昵称，优先使用消息中的 @ displayName 或文本里出现的昵称。"),
   }),
   execute: async ({ nicknames }) => {
     const items = [];
