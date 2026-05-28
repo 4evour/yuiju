@@ -39,12 +39,12 @@ export async function privateMessageHandler(session: Session) {
 
   if (session.platform === "onebot") {
     const qq = Number(userId);
-    if (!Number.isInteger(qq) || !config.message.onebot.ownList.includes(qq)) {
+    if (!Number.isInteger(qq) || !config.message.onebot.ownerList.includes(qq)) {
       return;
     }
   } else if (session.platform === "lark") {
     if (
-      !config.message.lark.ownList.includes(userId) &&
+      !config.message.lark.ownerList.includes(userId) &&
       !config.message.lark.whiteList.includes(userId)
     ) {
       return;
@@ -54,7 +54,7 @@ export async function privateMessageHandler(session: Session) {
   }
 
   // 权限控制
-  if (config.message.lark.ownList.includes(userId) && groupMessageAction(session.content)) {
+  if (config.message.lark.ownerList.includes(userId) && groupMessageAction(session.content)) {
     return;
   }
 

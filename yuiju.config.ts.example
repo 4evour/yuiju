@@ -63,7 +63,7 @@ const config = defineYuijuConfig({
       retryLazy: 60000,
       responseTimeout: 120000,
       whiteList: [1918418506],
-      ownList: [1918418506],
+      ownerList: [1918418506],
       groupWhiteList: [838986741, 1083608109],
     },
     lark: {
@@ -75,7 +75,7 @@ const config = defineYuijuConfig({
       retryInterval: 5000,
       retryLazy: 60000,
       whiteList: [],
-      ownList: [],
+      ownerList: [],
       groupWhiteList: [],
     },
     stickers: {

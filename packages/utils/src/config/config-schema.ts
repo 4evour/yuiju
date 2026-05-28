@@ -25,7 +25,7 @@ export interface YuijuOneBotConfig extends YuijuMessageWebSocketReconnectConfig 
   token: string;
   responseTimeout: number;
   whiteList: number[];
-  ownList: number[];
+  ownerList: number[];
   groupWhiteList: number[];
 }
 
@@ -38,7 +38,7 @@ export interface YuijuLarkConfig extends YuijuMessageWebSocketReconnectConfig {
   appId: string;
   appSecret: string;
   whiteList: string[];
-  ownList: string[];
+  ownerList: string[];
   groupWhiteList: string[];
 }
 
