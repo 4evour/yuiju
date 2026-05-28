@@ -28,10 +28,6 @@ export async function privateMessageHandler(session: Session) {
     return;
   }
 
-  if (groupMessageAction(session.content)) {
-    return;
-  }
-
   if (!session.content) {
     return;
   }
@@ -43,14 +39,22 @@ export async function privateMessageHandler(session: Session) {
 
   if (session.platform === "onebot") {
     const qq = Number(userId);
-    if (!Number.isInteger(qq) || !config.message.onebot.whiteList.includes(qq)) {
+    if (!Number.isInteger(qq) || !config.message.onebot.ownList.includes(qq)) {
       return;
     }
   } else if (session.platform === "lark") {
-    if (!config.message.lark.whiteList.includes(userId)) {
+    if (
+      !config.message.lark.ownList.includes(userId) &&
+      !config.message.lark.whiteList.includes(userId)
+    ) {
       return;
     }
   } else {
+    return;
+  }
+
+  // 权限控制
+  if (config.message.lark.ownList.includes(userId) && groupMessageAction(session.content)) {
     return;
   }
 

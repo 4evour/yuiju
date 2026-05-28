@@ -43,7 +43,7 @@ src/
 - `database.mongoUri`
 - `llm.deepseekApiKey`
 - `message.napcat`
-- `message.whiteList`
+- `message.ownList`
 - `message.groupWhiteList`
 
 首次使用时，先基于示例文件创建本地配置：

@@ -65,6 +65,7 @@ const config = defineYuijuConfig({
       retryLazy: 60000,
       responseTimeout: 120000,
       whiteList: [],
+      ownList: [],
       groupWhiteList: [],
     },
     lark: {
@@ -76,6 +77,7 @@ const config = defineYuijuConfig({
       retryInterval: 5000,
       retryLazy: 60000,
       whiteList: [],
+      ownList: [],
       groupWhiteList: [],
     },
     stickers: {},

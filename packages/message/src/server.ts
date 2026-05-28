@@ -25,7 +25,7 @@ satori.on("message", async (session) => {
   try {
     const normalizedSession = await normalizeSatoriSession(session);
 
-    if (normalizedSession.isDirect) {
+    if (normalizedSession.subtype === "private") {
       await privateMessageHandler(normalizedSession);
       return;
     }
