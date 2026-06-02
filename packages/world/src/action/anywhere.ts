@@ -31,6 +31,9 @@ export const anywhereAction: ActionMetadata[] = [
   {
     action: ActionId.Idle,
     description: "休息等待，可以在任何地点进行。[耗时需要给出]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition(_context) {
       return true;
     },

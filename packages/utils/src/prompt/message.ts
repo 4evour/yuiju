@@ -11,6 +11,11 @@ export interface MessageSummaryPromptInput {
   transcript: string;
 }
 
+export interface StickerPromptItem {
+  key: string;
+  description: string;
+}
+
 export const messageHistorySchemaPrompt = `
 ## 历史消息结构
 历史消息是按时间从旧到新排列的 JSON 数组。
@@ -45,6 +50,7 @@ export const chatReplyRulesPrompt = `
 当最新消息直接 @、明确提问、请求回应或征求意见时，这是更强的回复信号。
 当最新消息直接 @ 你，同时提到另一个人物，并要求你围绕对方身份、称呼、关系或群聊玩笑作出反应时，应先调用 \`getPersonMemory\` 读取这个人物的长期记忆；如果查到相关身份信息，应自然接住，不要因为不确定身份而回避。
 需要回复时，回复要贴合当前聊天话题，优先接住最新上下文，不要突然转移话题、泛泛寒暄或机械总结历史。
+回复要短一点，普通回复优先一句话；认真回答或情绪回应也不要说满，超过约 45 个中文字符时请用换行符拆成 2 到 3 行。
 聊天场景对回复延时比较敏感；当需要调用多个彼此独立的工具时，应尽量在同一轮并行调用，避免不必要的串行等待。
 `.trim();
 
@@ -84,6 +90,36 @@ export function buildChatPlanProposalPrompt(): string {
 \`proposePlanChanges\` 只表示提案已提交后台审查，不代表计划已经更新成功。
 调用工具后，不要对用户说“计划已更新”“已加入计划”“已经安排好”等确认生效的话。
 \`proposePlanChanges\` 只能调用一次
+`.trim();
+}
+
+/**
+ * 构建聊天表情包使用规则提示词。
+ */
+export function buildStickerPromptSection(stickers: StickerPromptItem[]): string {
+  if (!stickers.length) {
+    return `
+## 表情包使用规则
+当前没有可用表情包，不要输出任何 \`[[sticker:key]]\` 标记。
+`.trim();
+  }
+
+  const stickerList = stickers
+    .map((sticker) => `- ${sticker.key}: ${sticker.description}`)
+    .join("\n");
+  const exampleSticker = stickers[0];
+
+  return `
+## 表情包
+表情包可以作为聊天语气的一部分，用来补充情绪、调侃、撒娇、吐槽、开心、惊讶、害羞、委屈或轻松收尾。
+当回复本身较短、文字情绪不够传神，或只想用一个小反应接住对方时，可以自然使用 1 个表情包。
+格式必须是 \`[[sticker:key]]\`，key 只能从下方列表选择，不能写路径或自造 key；一般放在回复最后。
+同一条回复最多使用 1 个表情包；不要每次都用，也不要连续多轮高频使用。
+事实问答、严肃说明、身份确认、需要清楚解释问题，或正文已经足够表达情绪时，不要使用。
+可用列表：
+${stickerList}
+格式示例：
+[[sticker:${exampleSticker.key}]]
 `.trim();
 }
 

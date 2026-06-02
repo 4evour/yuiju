@@ -173,6 +173,9 @@ export const cafeAction: ActionMetadata[] = [
   {
     action: ActionId.Go_Home_From_Cafe,
     description: "从薄暮咖啡回家。[体力-5][饱腹-3][耗时20分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition(context) {
       return isAtCafe(context);
     },
@@ -190,6 +193,9 @@ export const cafeAction: ActionMetadata[] = [
   {
     action: ActionId.Go_To_School_From_Cafe,
     description: "从薄暮咖啡去星见丘高校。[体力-3][饱腹-2][耗时10分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition(context) {
       return isAtCafe(context);
     },
@@ -207,6 +213,9 @@ export const cafeAction: ActionMetadata[] = [
   {
     action: ActionId.Go_To_Diner_From_Cafe,
     description: "从薄暮咖啡前往日和食堂。[体力-1][饱腹-1][耗时5分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition(context) {
       return isAtCafe(context);
     },
@@ -224,6 +233,9 @@ export const cafeAction: ActionMetadata[] = [
   {
     action: ActionId.Go_To_Coast_From_Cafe,
     description: "从薄暮咖啡前往月汐海岸。[体力-7][饱腹-5][耗时30分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition(context) {
       return isAtCafe(context);
     },

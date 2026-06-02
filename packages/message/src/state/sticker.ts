@@ -1,7 +1,12 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { h } from "@satorijs/core";
-import { getYuijuConfig, getYuijuProjectRoot, type YuijuStickerConfig } from "@yuiju/utils";
+import {
+  buildStickerPromptSection,
+  getYuijuConfig,
+  getYuijuProjectRoot,
+  type YuijuStickerConfig,
+} from "@yuiju/utils";
 import { logger } from "@/utils/logger";
 
 export interface ResolvedSticker {
@@ -92,30 +97,7 @@ export class StickerState {
    * - 有可用表情包时，会列出 key 与说明，并强调一般放在回复末尾。
    */
   public buildPromptSection(): string {
-    const stickers = this.list();
-    if (!stickers.length) {
-      return [
-        "## 表情包使用规则",
-        "当前没有可用表情包，不要输出任何 `[[sticker:key]]` 标记。",
-      ].join("\n");
-    }
-
-    const stickerList = stickers
-      .map((sticker) => `- ${sticker.key}: ${sticker.description}`)
-      .join("\n");
-    const exampleSticker = stickers[0];
-
-    return [
-      "## 表情包",
-      "默认不用表情包；只有情绪很强、文字不够传神时，才偶尔使用 1 个。",
-      "格式必须是 `[[sticker:key]]`，key 只能从下方列表选择，不能写路径或自造 key；一般放在回复最后。",
-      "打招呼、事实问答、身份确认、普通闲聊、连续追问，或正文已表达清楚情绪时，不要使用。",
-      "不要连续或频繁使用表情包，宁可不用，也不要把它当成默认语气词。",
-      "可用列表：",
-      stickerList,
-      "格式示例：",
-      `[[sticker:${exampleSticker.key}]]`,
-    ].join("\n");
+    return buildStickerPromptSection(this.list());
   }
 
   public buildSatoriElementsFromLine(line: string): h[] {

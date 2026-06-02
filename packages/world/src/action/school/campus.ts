@@ -61,6 +61,9 @@ export const schoolAction: ActionMetadata[] = [
   {
     action: ActionId.Go_Home_From_School,
     description: "从星见丘高校回家。[体力-7][饱腹-5][耗时30分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition(context) {
       return allTrue([
         () => isAtSchoolCampus(context),
@@ -83,6 +86,9 @@ export const schoolAction: ActionMetadata[] = [
   {
     action: ActionId.Go_To_Shop_From_School,
     description: "从星见丘高校前往小町商店。[体力-3][饱腹-2][耗时10分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition(context) {
       return allTrue([
         () => isAtSchoolCampus(context),
@@ -105,6 +111,9 @@ export const schoolAction: ActionMetadata[] = [
   {
     action: ActionId.Go_To_Cafe_From_School,
     description: "从星见丘高校去薄暮咖啡。[体力-3][饱腹-2][耗时10分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition(context) {
       return allTrue([
         () => isAtSchoolCampus(context),
@@ -127,6 +136,9 @@ export const schoolAction: ActionMetadata[] = [
   {
     action: ActionId.Go_To_Supermarket_From_School,
     description: "从星见丘高校前往超市。[体力-3][饱腹-2][耗时10分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition(context) {
       return allTrue([
         () => isAtSchoolCampus(context),
@@ -149,6 +161,9 @@ export const schoolAction: ActionMetadata[] = [
   {
     action: ActionId.Go_To_Diner_From_School,
     description: "从星见丘高校前往日和食堂。[体力-3][饱腹-2][耗时10分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition(context) {
       return allTrue([
         () => isAtSchoolCampus(context),

@@ -133,6 +133,9 @@ export const dinerAction: ActionMetadata[] = [
   {
     action: ActionId.Go_Home_From_Diner,
     description: "从日和食堂回家。[体力-5][饱腹-3][耗时20分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition(context) {
       return isAtDiner(context);
     },
@@ -150,6 +153,9 @@ export const dinerAction: ActionMetadata[] = [
   {
     action: ActionId.Go_To_School_From_Diner,
     description: "从日和食堂前往星见丘高校。[体力-3][饱腹-2][耗时10分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition(context) {
       return isAtDiner(context);
     },
@@ -167,6 +173,9 @@ export const dinerAction: ActionMetadata[] = [
   {
     action: ActionId.Go_To_Supermarket_From_Diner,
     description: "从日和食堂前往超市。[体力-1][饱腹-1][耗时5分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition(context) {
       return isAtDiner(context);
     },
@@ -184,6 +193,9 @@ export const dinerAction: ActionMetadata[] = [
   {
     action: ActionId.Go_To_Cafe_From_Diner,
     description: "从日和食堂前往薄暮咖啡。[体力-1][饱腹-1][耗时5分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition(context) {
       return isAtDiner(context);
     },
@@ -201,6 +213,9 @@ export const dinerAction: ActionMetadata[] = [
   {
     action: ActionId.Go_To_Coast_From_Diner,
     description: "从日和食堂前往月汐海岸。[体力-7][饱腹-5][耗时30分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition(context) {
       return isAtDiner(context);
     },

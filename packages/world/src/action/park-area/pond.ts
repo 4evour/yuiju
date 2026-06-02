@@ -108,6 +108,9 @@ export const pondAction: ActionMetadata[] = [
   {
     action: ActionId.Go_To_Park_From_Pond,
     description: "从水音池回到南风公园。[体力-3][饱腹-2][耗时10分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition(context) {
       return isAtPond(context);
     },

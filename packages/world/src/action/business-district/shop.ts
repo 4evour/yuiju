@@ -164,6 +164,9 @@ export const shopAction: ActionMetadata[] = [
   {
     action: ActionId.Go_Home_From_Shop,
     description: "从小町商店回家。[体力-5][饱腹-3][耗时20分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition(context) {
       return isAtShop(context);
     },
@@ -181,6 +184,9 @@ export const shopAction: ActionMetadata[] = [
   {
     action: ActionId.Go_To_School_From_Shop,
     description: "从小町商店前往星见丘高校。[体力-3][饱腹-2][耗时10分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition(context) {
       return isAtShop(context);
     },
@@ -198,6 +204,9 @@ export const shopAction: ActionMetadata[] = [
   {
     action: ActionId.Go_To_Supermarket_From_Shop,
     description: "从小町商店前往超市。[体力-1][饱腹-1][耗时5分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition(context) {
       return isAtShop(context);
     },
@@ -215,6 +224,9 @@ export const shopAction: ActionMetadata[] = [
   {
     action: ActionId.Go_To_Coast_From_Shop,
     description: "从小町商店前往月汐海岸。[体力-7][饱腹-5][耗时30分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition(context) {
       return isAtShop(context);
     },

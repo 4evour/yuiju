@@ -35,6 +35,9 @@ export const homeAction: ActionMetadata[] = [
   {
     action: ActionId.Wake_Up,
     description: "起床并洗漱，新的一天开始。[体力=85][饱腹=20][耗时10分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
     // 已在 precheckAction 中处理
     precondition() {
       return false;
@@ -50,6 +53,9 @@ export const homeAction: ActionMetadata[] = [
   {
     action: ActionId.Sleep_For_A_Little,
     description: "再睡一会。[心情+1][耗时10分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition() {
       // 已在 precheckAction 中处理
       return false;
@@ -66,6 +72,9 @@ export const homeAction: ActionMetadata[] = [
   {
     action: ActionId.Go_To_School_From_Home,
     description: "前往星见丘高校。[体力-7][饱腹-5][耗时30分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition(context) {
       return allTrue([() => isAtHomeHouse(context), isWeekday(context), isMorning(context)]);
     },
@@ -83,6 +92,9 @@ export const homeAction: ActionMetadata[] = [
   {
     action: ActionId.Go_To_Shop_From_Home,
     description: "从家前往小町商店。[体力-5][饱腹-3][耗时20分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition(context) {
       return allTrue([
         () => isAtHomeHouse(context),
@@ -104,6 +116,9 @@ export const homeAction: ActionMetadata[] = [
   {
     action: ActionId.Go_To_Cafe_From_Home,
     description: "从家去薄暮咖啡。[体力-5][饱腹-3][耗时20分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition(context) {
       return allTrue([
         () => isAtHomeHouse(context),
@@ -125,6 +140,9 @@ export const homeAction: ActionMetadata[] = [
   {
     action: ActionId.Go_To_Supermarket_From_Home,
     description: "从家前往超市。[体力-5][饱腹-3][耗时20分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition(context) {
       return allTrue([
         () => isAtHomeHouse(context),
@@ -146,6 +164,9 @@ export const homeAction: ActionMetadata[] = [
   {
     action: ActionId.Go_To_Diner_From_Home,
     description: "从家前往日和食堂。[体力-5][饱腹-3][耗时20分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition(context) {
       return allTrue([
         () => isAtHomeHouse(context),
@@ -167,6 +188,9 @@ export const homeAction: ActionMetadata[] = [
   {
     action: ActionId.Go_To_Park_From_Home,
     description: "从家前往南风公园。[体力-3][饱腹-2][耗时10分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition(context) {
       return allTrue([
         () => isAtHomeHouse(context),
@@ -189,6 +213,9 @@ export const homeAction: ActionMetadata[] = [
   {
     action: ActionId.Go_To_Shrine_From_Home,
     description: "从家前往结灯神社。[体力-3][饱腹-2][耗时10分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition(context) {
       return allTrue([
         () => isAtHomeHouse(context),
@@ -349,6 +376,9 @@ export const homeAction: ActionMetadata[] = [
   {
     action: ActionId.Sleep,
     description: "睡觉。[耗时动态]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition(context) {
       return allTrue([() => isAtHomeHouse(context), isNight(context)]);
     },

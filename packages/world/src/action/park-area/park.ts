@@ -98,6 +98,9 @@ export const parkAction: ActionMetadata[] = [
   {
     action: ActionId.Go_Home_From_Park,
     description: "从南风公园回家。[体力-3][饱腹-2][耗时10分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition(context) {
       return isAtPark(context);
     },
@@ -115,6 +118,9 @@ export const parkAction: ActionMetadata[] = [
   {
     action: ActionId.Go_To_Shrine_From_Park,
     description: "从南风公园前往结灯神社。[体力-3][饱腹-2][耗时10分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition(context) {
       return allTrue([() => isAtPark(context), () => !isNight(context)]);
     },
@@ -132,6 +138,9 @@ export const parkAction: ActionMetadata[] = [
   {
     action: ActionId.Go_To_Pond_From_Park,
     description: "从南风公园前往水音池。[体力-3][饱腹-2][耗时10分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition(context) {
       return isAtPark(context);
     },

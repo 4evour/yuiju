@@ -98,6 +98,9 @@ export const shrineAction: ActionMetadata[] = [
   {
     action: ActionId.Go_To_Park_From_Shrine,
     description: "从结灯神社回到南风公园。[体力-3][饱腹-2][耗时10分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition(context) {
       return isAtShrine(context);
     },
@@ -115,6 +118,9 @@ export const shrineAction: ActionMetadata[] = [
   {
     action: ActionId.Go_Home_From_Shrine,
     description: "从结灯神社回家。[体力-3][饱腹-2][耗时10分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
     precondition(context) {
       return isAtShrine(context);
     },
