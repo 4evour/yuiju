@@ -106,12 +106,21 @@ const parseRunningActionState = (value: unknown): RunningActionState | null => {
     return null;
   }
 
+  if (
+    maybeRunningAction.proactiveShareIntent !== undefined &&
+    (typeof maybeRunningAction.proactiveShareIntent.shouldShare !== "boolean" ||
+      typeof maybeRunningAction.proactiveShareIntent.reason !== "string")
+  ) {
+    return null;
+  }
+
   return {
     action: maybeRunningAction.action,
     actionStartedAt: maybeRunningAction.actionStartedAt,
     waitUntil: maybeRunningAction.waitUntil,
     behaviorEpisodeId: maybeRunningAction.behaviorEpisodeId,
     startContext: maybeRunningAction.startContext,
+    proactiveShareIntent: maybeRunningAction.proactiveShareIntent,
   };
 };
 

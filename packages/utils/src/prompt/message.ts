@@ -115,7 +115,6 @@ export function buildStickerPromptSection(stickers: StickerPromptItem[]): string
 当回复本身较短、文字情绪不够传神，或只想用一个小反应接住对方时，可以自然使用 1 个表情包。
 格式必须是 \`[[sticker:key]]\`，key 只能从下方列表选择，不能写路径或自造 key；一般放在回复最后。
 同一条回复最多使用 1 个表情包；不要每次都用，也不要连续多轮高频使用。
-事实问答、严肃说明、身份确认、需要清楚解释问题，或正文已经足够表达情绪时，不要使用。
 可用列表：
 ${stickerList}
 格式示例：
