@@ -27,14 +27,9 @@ import {
   type StoredSatoriGroupMessage,
   type StoredSatoriPrivateMessage,
 } from "@/utils/message";
-import {
-  type AbstractChatSessionManager,
-  GroupChatSessionManager,
-  PrivateChatSessionManager,
-  type SessionHistoryContext,
-} from "./chat-session-manager";
+import { ChatSessionManager, type SessionHistoryContext } from "./chat-session-manager";
 
-type ActiveGroupChatTask = {
+interface ActiveGroupChatTask {
   controller: AbortController;
   /**
    * 直接复用触发本次回复生成的群消息 `message_id`，用于识别“当前群里最新的一次回复生成请求”。
@@ -45,7 +40,7 @@ type ActiveGroupChatTask = {
    * - 只要 requestId 已经过期，就把这次结果视为失效，禁止继续发送消息。
    */
   requestId: string;
-};
+}
 
 export type GroupChatResult =
   | {
@@ -74,8 +69,8 @@ export type PrivateChatResult =
     };
 
 export class LLMManager {
-  private privateSession: AbstractChatSessionManager<StoredSatoriPrivateMessage>;
-  private groupSession: AbstractChatSessionManager<StoredSatoriGroupMessage>;
+  private privateSession: ChatSessionManager<StoredSatoriPrivateMessage>;
+  private groupSession: ChatSessionManager<StoredSatoriGroupMessage>;
   /**
    * 记录每个群当前正在执行的回复生成任务，用于在同群新消息到来时取消旧请求。
    */
@@ -90,21 +85,27 @@ export class LLMManager {
   private latestGroupChatRequestIdBySessionId = new Map<string, string>();
 
   constructor() {
-    this.privateSession = new PrivateChatSessionManager({
-      conversationLimit: 20,
-      conversationTtlMs: 8 * 60 * 60 * 1000,
-      summaryFlushMessageCount: 15,
-      summaryFlushIdleMs: 30 * 60 * 1000,
-      episodeIdleMs: 12 * 60 * 60 * 1000,
-      episodeMessageCountLimit: 30,
+    this.privateSession = new ChatSessionManager<StoredSatoriPrivateMessage>({
+      sceneLabel: "private",
+      options: {
+        conversationLimit: 20,
+        conversationTtlMs: 8 * 60 * 60 * 1000,
+        summaryFlushMessageCount: 15,
+        summaryFlushIdleMs: 30 * 60 * 1000,
+        episodeIdleMs: 12 * 60 * 60 * 1000,
+        episodeMessageCountLimit: 30,
+      },
     });
-    this.groupSession = new GroupChatSessionManager({
-      conversationLimit: 20,
-      conversationTtlMs: 8 * 60 * 60 * 1000,
-      summaryFlushMessageCount: 15,
-      summaryFlushIdleMs: 30 * 60 * 1000,
-      episodeIdleMs: 12 * 60 * 60 * 1000,
-      episodeMessageCountLimit: 30,
+    this.groupSession = new ChatSessionManager<StoredSatoriGroupMessage>({
+      sceneLabel: "group",
+      options: {
+        conversationLimit: 20,
+        conversationTtlMs: 8 * 60 * 60 * 1000,
+        summaryFlushMessageCount: 15,
+        summaryFlushIdleMs: 30 * 60 * 1000,
+        episodeIdleMs: 12 * 60 * 60 * 1000,
+        episodeMessageCountLimit: 30,
+      },
     });
   }
 

@@ -10,6 +10,9 @@ import type {
   StoredSatoriPrivateMessage,
 } from "./types";
 
+const HISTORY_TEXT_SEGMENT_LIMIT = 300;
+const HISTORY_TEXT_TRUNCATED_SUFFIX = "...[已截断]";
+
 export async function createStoredSatoriGroupMessage(
   session: Session,
 ): Promise<StoredSatoriGroupMessage | null> {
@@ -153,7 +156,7 @@ async function projectSatoriElementsToHistoryContent(
       content.push({
         type: "text",
         data: {
-          text: String(element.attrs.content ?? ""),
+          text: truncateHistoryTextSegment(String(element.attrs.content ?? "")),
         },
       } as HistoryMessageSegment);
       continue;
@@ -232,10 +235,18 @@ async function projectSatoriQuotedMessageContent(
     {
       type: "text",
       data: {
-        text,
+        text: truncateHistoryTextSegment(text),
       },
     } as HistoryMessageSegment,
   ];
+}
+
+function truncateHistoryTextSegment(text: string): string {
+  if (text.length <= HISTORY_TEXT_SEGMENT_LIMIT) {
+    return text;
+  }
+
+  return `${text.slice(0, HISTORY_TEXT_SEGMENT_LIMIT)}${HISTORY_TEXT_TRUNCATED_SUFFIX}`;
 }
 
 function getSatoriQuoteSpeaker(quote: SatoriMessage): string | undefined {

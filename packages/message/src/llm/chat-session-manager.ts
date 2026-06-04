@@ -84,21 +84,6 @@ export interface ChatSessionManagerOptions {
 }
 
 /**
- * LLMManager 依赖的会话管理抽象契约。
- *
- * 说明：
- * - 这里只定义对外能力，不暴露内部摘要/窗口实现细节；
- * - 群聊和私聊在上层仍保留独立入口，但可复用底层通用实现。
- */
-export abstract class AbstractChatSessionManager<TMessage> {
-  abstract recordMessage(input: ChatMessageInput<TMessage>): void;
-
-  abstract getHistoryJson(sessionId: string, limit?: number): Promise<SessionHistoryContext>;
-
-  abstract flushUserWindow(sessionId: string): Promise<void>;
-}
-
-/**
  * 自上次摘要刷新后累计的增量消息块。
  *
  * 说明：
@@ -126,7 +111,7 @@ export interface EpisodeWindowState<TMessage> {
   messages: TMessage[];
 }
 
-interface BaseChatSessionManagerInput<TMessage extends StoredSatoriChatMessage> {
+interface ChatSessionManagerInput {
   options: ChatSessionManagerOptions;
   sceneLabel: "group" | "private";
 }
@@ -136,11 +121,9 @@ interface BaseChatSessionManagerInput<TMessage extends StoredSatoriChatMessage> 
  *
  * 说明：
  * - 最近原始消息、滚动摘要块、episode 窗口分开维护，避免三个职责共用一个阈值；
- * - 上层仍通过 Group/Private 两个薄包装类接入，保留业务语义边界。
+ * - 上层初始化时显式传入 sceneLabel，避免为群聊/私聊增加只固定参数的包装类。
  */
-export class BaseChatSessionManager<
-  TMessage extends StoredSatoriChatMessage,
-> extends AbstractChatSessionManager<TMessage> {
+export class ChatSessionManager<TMessage extends StoredSatoriChatMessage> {
   private conversationBySessionId = new Map<string, TMessage[]>();
   private summaryChunkBySessionId = new Map<string, RollingSummaryChunkState<TMessage>>();
   private episodeStateBySessionId = new Map<string, EpisodeWindowState<TMessage>>();
@@ -155,8 +138,7 @@ export class BaseChatSessionManager<
   private isDev: boolean;
   private sceneLabel: "group" | "private";
 
-  constructor(input: BaseChatSessionManagerInput<TMessage>) {
-    super();
+  constructor(input: ChatSessionManagerInput) {
     const { options, sceneLabel } = input;
 
     this.conversationLimit = options.conversationLimit;
@@ -479,37 +461,5 @@ export class BaseChatSessionManager<
     return filtered.length > this.conversationLimit
       ? filtered.slice(filtered.length - this.conversationLimit)
       : filtered;
-  }
-}
-
-/**
- * 群聊会话管理器。
- *
- * 说明：
- * - 作为群聊场景的轻量适配层，复用通用会话内核；
- * - 保留独立类名，避免上层群聊语义被通用实现抹平。
- */
-export class GroupChatSessionManager extends BaseChatSessionManager<StoredSatoriGroupMessage> {
-  constructor(options: ChatSessionManagerOptions) {
-    super({
-      options,
-      sceneLabel: "group",
-    });
-  }
-}
-
-/**
- * 私聊会话管理器。
- *
- * 说明：
- * - 作为私聊场景的轻量适配层，复用通用会话内核；
- * - 保留独立类名，便于后续私聊策略单独分叉。
- */
-export class PrivateChatSessionManager extends BaseChatSessionManager<StoredSatoriPrivateMessage> {
-  constructor(options: ChatSessionManagerOptions) {
-    super({
-      options,
-      sceneLabel: "private",
-    });
   }
 }

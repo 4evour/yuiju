@@ -3,7 +3,7 @@ import { Output, stepCountIs, tool } from "ai";
 import dayjs from "dayjs";
 import { z } from "zod";
 import { createToolCallLoggingHooks, generateStructuredOutput } from "../../llm";
-import { visionModel } from "../../llm/models";
+import { flashModel } from "../../llm/models";
 import { logger } from "../../logger";
 import { buildPersonMemoryProposalPrompt, buildPersonMemoryReviewPrompt } from "../../prompt";
 import { formatProjectTime } from "../../time";
@@ -40,6 +40,7 @@ interface PersonMemoryProposalContext {
 interface PersonMemoryReviewContext {
   scene: "private" | "group";
   nickname: string;
+  currentTime: string;
   interactionMaterial: string;
   existingMemory?: PersonMemoryDocument;
   proposal: PersonMemoryProposal;
@@ -125,10 +126,12 @@ export async function updatePersonMemory(
 async function generatePersonMemoryProposal(
   input: PersonMemoryProposalContext,
 ): Promise<PersonMemoryProposal | null> {
+  const currentTime = formatProjectTime(new Date(), "YYYY-MM-DD");
+
   const { output } = await generateStructuredOutput({
-    model: visionModel,
+    model: flashModel,
     providerOptions: {
-      vision: {
+      flash: {
         enable_thinking: false,
       },
     },
@@ -136,6 +139,7 @@ async function generatePersonMemoryProposal(
       reviewPersonMemoryProposal: reviewPersonMemoryProposalTool({
         scene: input.scene,
         nickname: input.nickname,
+        currentTime,
         interactionMaterial: input.interactionMaterial,
         existingMemory: input.existingMemory,
       }),
@@ -146,6 +150,7 @@ async function generatePersonMemoryProposal(
     prompt: buildPersonMemoryProposalPrompt({
       scene: input.scene,
       nickname: input.nickname,
+      currentTime,
       interactionMaterial: input.interactionMaterial,
       existingMemoryText: input.existingMemory
         ? JSON.stringify(input.existingMemory, null, 2)
@@ -172,9 +177,9 @@ function reviewPersonMemoryProposalTool(input: Omit<PersonMemoryReviewContext, "
     execute: async ({ proposal }) => {
       const normalizedProposal = normalizeProposal(proposal);
       const { output } = await generateStructuredOutput({
-        model: visionModel,
+        model: flashModel,
         providerOptions: {
-          vision: {
+          flash: {
             enable_thinking: false,
           },
         },
@@ -184,6 +189,7 @@ function reviewPersonMemoryProposalTool(input: Omit<PersonMemoryReviewContext, "
         prompt: buildPersonMemoryReviewPrompt({
           scene: input.scene,
           nickname: input.nickname,
+          currentTime: input.currentTime,
           interactionMaterial: input.interactionMaterial,
           existingMemoryText: input.existingMemory
             ? JSON.stringify(input.existingMemory, null, 2)

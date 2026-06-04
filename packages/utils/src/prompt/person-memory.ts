@@ -1,6 +1,7 @@
 export interface PersonMemoryProposalPromptInput {
   scene: "private" | "group";
   nickname: string;
+  currentTime: string;
   interactionMaterial: string;
   existingMemoryText: string;
   sectionKeys: readonly string[];
@@ -9,6 +10,7 @@ export interface PersonMemoryProposalPromptInput {
 export interface PersonMemoryReviewPromptInput {
   scene: "private" | "group";
   nickname: string;
+  currentTime: string;
   interactionMaterial: string;
   existingMemoryText: string;
   proposalJson: string;
@@ -21,6 +23,7 @@ export function buildPersonMemoryProposalPrompt(input: PersonMemoryProposalPromp
 ## 当前人物
 - scene: ${input.scene}
 - 当前程序昵称: ${input.nickname}
+- 当前时间: ${input.currentTime}
 
 ## 旧人物记忆 JSON 对象
 ${input.existingMemoryText}
@@ -40,7 +43,7 @@ ${input.sectionKeys.map((section) => `- ${section}`).join("\n")}
 - 称呼 只接受自称、别人稳定使用且上下文明确指向该人物的称呼；一次玩笑、临时梗、反讽称呼不要写入。
 - 喜好 需要明确表达“喜欢/常做/偏好”，或在多次互动中稳定出现；一次选择、一次尝试、一次随口提到通常不足以写入。
 - 雷区 更新门槛最高，只有明确的不喜欢、反感、拒绝、回避，或稳定负面反馈才允许写入；一次抱怨、玩笑吐槽、情绪化表达不要升级成雷区。
-- 最近在忙什么 只保留当前阶段仍有效的近况，可以直接覆盖旧内容；不要累加已经过期的日程、临时状态或流水账。
+- 最近在忙什么 只保留当前阶段仍有效的近况，可以直接覆盖旧内容；新写入或保留的近况必须带观察日期，格式为“YYYY-MM-DD：近况正文”；更新时要结合当前时间删除已经过期的日程、临时状态或流水账，不要把新近况直接追加到旧内容后面。
 - 悠酱对她的态度 只能小步调整，记录关系倾向和互动感受，不要写悠酱没有明确表现出的内心脑补，不能因为一次普通互动发生跳跃式变化。
 - 最近一次值得记住的互动 只保留一条最新且确实值得记住、并且明确发生在“该人物与悠酱之间”的双边互动；普通寒暄、单个表情、无后续参考价值的互动不要写入。
 - 如果这次材料里只有群聊围观、该人物被别人提到、该人物与其他成员的来回交流，或别人对该人物的反应，而没有形成该人物与悠酱之间的明确互动，就不要更新“最近一次值得记住的互动”。
@@ -73,6 +76,7 @@ export function buildPersonMemoryReviewPrompt(input: PersonMemoryReviewPromptInp
 ## 当前人物
 - scene: ${input.scene}
 - 当前程序昵称: ${input.nickname}
+- 当前时间: ${input.currentTime}
 
 ## 旧人物记忆 JSON 对象
 ${input.existingMemoryText}
@@ -87,7 +91,7 @@ ${input.proposalJson}
 - 只根据旧人物记忆对象和本次互动材料来判断，不要脑补额外背景。
 - 必须检查提案是否把猜测、印象或一次性信息写成了长期事实。
 - 必须检查是否错误修改了高门槛字段：称呼、喜好、雷区；称呼不能来自玩笑或临时梗，喜好不能来自一次性选择，雷区不能来自一次普通抱怨或玩笑吐槽。
-- 必须检查“最近在忙什么”是否仍是当前有效近况，是否无意义累加了过期日程、临时状态或流水账。
+- 必须检查“最近在忙什么”是否仍是当前有效近况，是否带有“YYYY-MM-DD：近况正文”格式的观察日期，是否结合当前时间删除了过期日程、临时状态或流水账，是否只是把新近况无意义追加到旧内容后面。
 - 必须检查悠酱对她的态度是否发生了过大的跳跃式修改，或写入了缺少明确表现依据的内心脑补。
 - 必须检查“最近一次值得记住的互动”是否写成了该人物与悠酱之间的互动；如果只是群聊中别人对她的反应、她与别人的互动，或没有形成与悠酱的明确双边互动，就不能通过。
 - 必须检查群聊材料是否被过度采信：群聊玩笑、起哄、旁观信息、别人提到该人物，默认不足以写入长期记忆。

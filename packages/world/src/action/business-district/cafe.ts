@@ -51,7 +51,7 @@ export const cafeAction: ActionMetadata[] = [
     action: ActionId.Drink_Coffee,
     description: "在薄暮咖啡点咖啡并店内饮用。[金币-?][体力+?][饱腹+?][心情+?][耗时30分钟]",
     proactiveShare: {
-      enabled: true,
+      enabled: false,
     },
     precondition(context) {
       return allTrue([
