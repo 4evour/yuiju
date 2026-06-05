@@ -50,11 +50,7 @@ export function scheduleActionCompletionProactiveShare(
 ) {
   const shareIntent = input.runningAction.proactiveShareIntent;
   if (!shareIntent?.shouldShare || !input.actionMetadata.proactiveShare?.enabled) {
-    logger.info(
-      "[proactive-message] 分享被取消",
-      shareIntent?.shouldShare,
-      input.actionMetadata.proactiveShare?.enabled,
-    );
+    logger.info("[proactive-message] 分享被取消", shareIntent);
     return;
   }
 

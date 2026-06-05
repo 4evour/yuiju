@@ -27,7 +27,7 @@ import {
   type StoredSatoriGroupMessage,
   type StoredSatoriPrivateMessage,
 } from "@/utils/message";
-import { ChatSessionManager, type SessionHistoryContext } from "./chat-session-manager";
+import { ChatSessionManager } from "./chat-session-manager";
 
 interface ActiveGroupChatTask {
   controller: AbortController;
@@ -70,7 +70,7 @@ export type PrivateChatResult =
 
 export class LLMManager {
   private privateSession: ChatSessionManager<StoredSatoriPrivateMessage>;
-  private groupSession: ChatSessionManager<StoredSatoriGroupMessage>;
+  public readonly groupSession: ChatSessionManager<StoredSatoriGroupMessage>;
   /**
    * 记录每个群当前正在执行的回复生成任务，用于在同群新消息到来时取消旧请求。
    */
@@ -129,20 +129,6 @@ export class LLMManager {
       sessionLabel: sessionLabel ?? getProtocolMessageSenderName(message),
       message,
     });
-  }
-
-  /**
-   * 读取群聊当前会话上下文，供内部接口复用同一份历史投影。
-   */
-  public async getGroupConversationContext(input: {
-    platform: string;
-    channelId: string;
-    limit?: number;
-  }): Promise<SessionHistoryContext> {
-    return this.groupSession.getHistoryJson(
-      `group:${input.platform}:${input.channelId}`,
-      input.limit,
-    );
   }
 
   private buildPrivateSessionKey(message: StoredSatoriPrivateMessage): string {
@@ -228,7 +214,11 @@ export class LLMManager {
         output: Output.object({
           schema: z.object({
             shouldReply: z.boolean().describe("是否回复"),
-            reply: z.string().describe("回复内容，shouldReply为false时，这个字段应该是空字符"),
+            reply: z
+              .string()
+              .describe(
+                "回复内容，可以包含合法的 [[sticker:key]] 表情包标记；shouldReply为false时，这个字段应该是空字符",
+              ),
             noReplyReason: z.string().describe("不回复的简短原因"),
           }),
         }),
@@ -325,7 +315,11 @@ export class LLMManager {
         output: Output.object({
           schema: z.object({
             shouldReply: z.boolean().describe("是否回复"),
-            reply: z.string().describe("回复内容，shouldReply为false时，这个字段应该是空字符"),
+            reply: z
+              .string()
+              .describe(
+                "回复内容，可以包含合法的 [[sticker:key]] 表情包标记；shouldReply为false时，这个字段应该是空字符",
+              ),
             noReplyReason: z.string().describe("不回复的简短原因"),
           }),
         }),

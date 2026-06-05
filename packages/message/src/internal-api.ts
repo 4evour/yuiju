@@ -94,11 +94,10 @@ export function startMessageInternalApi(input: InternalApiInput) {
       platform,
       groupId,
     });
-    const groupContext = await llmManager.getGroupConversationContext({
-      platform,
-      channelId: groupId,
+    const groupContext = await llmManager.groupSession.getHistoryJson(
+      buildSatoriGroupSessionKey(platform, groupId),
       limit,
-    });
+    );
 
     return context.json({
       platform,

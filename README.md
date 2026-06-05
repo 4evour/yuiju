@@ -12,6 +12,10 @@
 
 > philosophy: 不做 AI 智能助手，做有自己生活的“人”
 
+飞书文档🔗 [yuiju 项目介绍](https://my.feishu.cn/docx/EPmhd2SwmoPSjoxnmAGc9T7TnSb)
+
+[Bilibili 视频](https://www.bilibili.com/video/BV1fRR2BYEb1)
+
 ## 特性
 
 - **LLM 驱动决策**：每个 tick 从可用行为中做选择，并可细化到参数选择（比如吃什么、行动多久）。
