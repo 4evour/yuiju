@@ -12,6 +12,7 @@ import {
   listPersonMemoriesTool,
   messageHistorySchemaPrompt,
   NICKNAME,
+  queryAvailableInventoryItems,
   queryStateTool,
   queryStaticGuideTool,
   todayEventSearchTool,
@@ -200,6 +201,7 @@ export class LLMManager {
           getPersonMemory: getPersonMemoryTool,
           queryStateTool: queryStateTool,
           queryStaticGuide: queryStaticGuideTool,
+          queryAvailableInventoryItems,
           proposePlanChanges: createChatPlanChangesProposalTool({
             scene: "group",
             summary,
@@ -302,6 +304,7 @@ export class LLMManager {
           getPersonMemory: getPersonMemoryTool,
           queryStateTool: queryStateTool,
           queryStaticGuide: queryStaticGuideTool,
+          queryAvailableInventoryItems,
           proposePlanChanges: createChatPlanChangesProposalTool({
             scene: "private",
             summary,

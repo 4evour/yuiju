@@ -13,6 +13,7 @@ import {
   generateStructuredOutput,
   getPersonMemoryTool,
   listPersonMemoriesTool,
+  queryAvailableInventoryItems,
   queryStaticGuideTool,
   reviewPlanChangesTool,
   strongModel,
@@ -22,7 +23,6 @@ import { Output, stepCountIs } from "ai";
 import dayjs from "dayjs";
 import { z } from "zod";
 import { logger } from "@/utils/logger";
-import { queryAvailableFood } from "../tools";
 import { RETRY_COUNT } from "./shared";
 
 /**
@@ -63,7 +63,7 @@ export async function chooseActionAgent(
           diarySearch: diarySearchTool,
           listPersonMemories: listPersonMemoriesTool,
           getPersonMemory: getPersonMemoryTool,
-          queryAvailableFood: queryAvailableFood(context),
+          queryAvailableInventoryItems,
           queryStaticGuide: queryStaticGuideTool,
           reviewPlanChanges: reviewPlanChangesTool(),
         },

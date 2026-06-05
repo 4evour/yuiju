@@ -47,7 +47,7 @@ export const anywhereAction: ActionMetadata[] = [
   {
     action: ActionId.Eat_Item,
     description:
-      "吃食物。[体力+?][饱腹+?][心情+?][耗时10分钟]（可调用 queryAvailableFood 查看可用食物）",
+      "吃食物。[体力+?][饱腹+?][心情+?][耗时10分钟]（可调用 queryAvailableInventoryItems 查看可用食物）",
     proactiveShare: {
       enabled: true,
     },
