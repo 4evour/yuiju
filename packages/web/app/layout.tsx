@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import { Toaster } from "@/components/ui/sonner";
 import { Navbar } from "@/lib/components/navbar";
@@ -28,6 +29,7 @@ export default function RootLayout({
         />
         <div>{children}</div>
         <Toaster />
+        <Analytics />
       </body>
     </html>
   );
