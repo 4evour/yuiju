@@ -49,7 +49,7 @@ interface ActionStartTickResult {
     reason: string;
     durationMinutes: number;
     executionResult?: string;
-    startContext?: Record<string, unknown>;
+    startContext?: Record<string, any>;
     proactiveShareIntent?: ActionAgentDecision["proactiveShareIntent"];
   };
 }
@@ -104,9 +104,10 @@ async function startAction(eventDescription?: string): Promise<ActionStartTickRe
 
   if (actionMetadata && selectedAction) {
     const actionStartedAt = new Date();
+
+    // 计划变更逻辑
     let planChanges: PlanChange[] = [];
     const agentPlanChanges = selectedAction.planChanges;
-
     if (agentPlanChanges?.length) {
       try {
         planChanges = (await planManager.applyPlanChanges(agentPlanChanges)).changes;

@@ -72,7 +72,11 @@ export async function chooseActionAgent(
             action: z
               .enum(actionList?.map((item) => item.action))
               .describe("Action ID，例如：发呆、起床等"),
-            reason: z.string().describe("选择这个 Action 的简短原因"),
+            reason: z
+              .string()
+              .describe(
+                "选择这个 Action 的原因。如果这个 Action 后续有子决策，这个原因会作为后续决策的参考",
+              ),
             durationMinute: z
               .number()
               .optional()
@@ -81,11 +85,11 @@ export async function chooseActionAgent(
               .array(agentPlanChangeSchema)
               .min(1)
               .optional()
-              .describe("只有确实需要调整计划时才输出。输出前必须先调用 reviewPlanChanges。"),
+              .describe("需要调整计划时才输出。输出前必须先调用 reviewPlanChanges。"),
             proactiveShareIntent: z
               .object({
                 shouldShare: z.boolean().describe("是否想向别人分享点什么"),
-                reason: z.string().describe("想分享或不想分享的简短理由"),
+                reason: z.string(),
               })
               .optional()
               .describe("当你想向别人分享点什么的时候才输出"),

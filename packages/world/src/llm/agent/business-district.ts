@@ -21,6 +21,7 @@ import { type ParameterAgentSelectedItem, RETRY_COUNT } from "./shared";
 export async function chooseShopProductAgent(
   productList: ChoiceOption[],
   context: ActionContext,
+  actionReason: string,
   actionMemoryList: BehaviorRecord[],
   planState: PlanState,
 ): Promise<ParameterAgentSelectedItem | undefined> {
@@ -29,6 +30,7 @@ export async function chooseShopProductAgent(
   }
 
   const systemPrompt = chooseShopProductPrompt({
+    actionReason,
     availableProducts: productList,
     characterState: context.characterStateData,
     worldState: context.worldState,
@@ -74,6 +76,7 @@ export async function chooseShopProductAgent(
 export async function chooseCafeCoffeeAgent(
   coffeeList: ChoiceOption[],
   context: ActionContext,
+  actionReason: string,
   actionMemoryList: BehaviorRecord[],
   planState: PlanState,
 ): Promise<ParameterAgentSelectedItem | undefined> {
@@ -82,6 +85,7 @@ export async function chooseCafeCoffeeAgent(
   }
 
   const systemPrompt = chooseCafeCoffeePrompt({
+    actionReason,
     availableCoffees: coffeeList,
     characterState: context.characterStateData,
     worldState: context.worldState,
@@ -127,6 +131,7 @@ export async function chooseCafeCoffeeAgent(
 export async function chooseSupermarketProductAgent(
   productList: ChoiceOption[],
   context: ActionContext,
+  actionReason: string,
   actionMemoryList: BehaviorRecord[],
   planState: PlanState,
 ): Promise<ParameterAgentSelectedItem[] | undefined> {
@@ -135,6 +140,7 @@ export async function chooseSupermarketProductAgent(
   }
 
   const systemPrompt = chooseSupermarketProductPrompt({
+    actionReason,
     availableProducts: productList,
     characterState: context.characterStateData,
     worldState: context.worldState,
@@ -186,6 +192,7 @@ export async function chooseSupermarketProductAgent(
 export async function chooseSellableItemAgent(
   itemList: ChoiceOption[],
   context: ActionContext,
+  actionReason: string,
   actionMemoryList: BehaviorRecord[],
   planState: PlanState,
 ): Promise<ParameterAgentSelectedItem[] | undefined> {
@@ -194,6 +201,7 @@ export async function chooseSellableItemAgent(
   }
 
   const systemPrompt = chooseSellableItemPrompt({
+    actionReason,
     availableItems: itemList,
     characterState: context.characterStateData,
     worldState: context.worldState,
@@ -245,6 +253,7 @@ export async function chooseSellableItemAgent(
 export async function chooseDinerMealAgent(
   mealList: ChoiceOption[],
   context: ActionContext,
+  actionReason: string,
   actionMemoryList: BehaviorRecord[],
   planState: PlanState,
 ): Promise<ParameterAgentSelectedItem | undefined> {
@@ -253,6 +262,7 @@ export async function chooseDinerMealAgent(
   }
 
   const systemPrompt = chooseDinerMealPrompt({
+    actionReason,
     availableMeals: mealList,
     characterState: context.characterStateData,
     worldState: context.worldState,

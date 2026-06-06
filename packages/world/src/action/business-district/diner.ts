@@ -52,7 +52,7 @@ export const dinerAction: ActionMetadata[] = [
         () => context.characterStateData.money >= DINER_MIN_PRICE,
       ]);
     },
-    async executor(context) {
+    async executor(context, selectedAction) {
       await context.characterState.setAction(ActionId.Eat_At_Diner);
 
       const mealList: ChoiceOption[] = DINER_MEALS.map((meal) => {
@@ -65,6 +65,7 @@ export const dinerAction: ActionMetadata[] = [
       const selectedMeal = await chooseDinerMealAgent(
         mealList,
         context,
+        selectedAction.reason,
         [],
         await planManager.getState(),
       );

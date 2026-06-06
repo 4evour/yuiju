@@ -7,17 +7,6 @@ description: 指导 Yuiju 项目中的 Action 相关改动。修改、新增、�
 
 使用这个技能时，要确保 Yuiju 的 Action 改动在世界模拟、prompt、状态、记忆和展示入口之间保持一致。
 
-## 开始步骤
-
-1. 遵守仓库 `AGENTS.md`：写代码前先说明技术方案，并等待用户确认。
-2. 只读取本次改动需要的规则文件：
-   - 所有代码改动读 `docs/rules/implementation-style.md`。
-   - 涉及 Action、Scene、Character、World、Memory、Plan、Message 或 API 行为时读 `docs/rules/domain-design-style.md`。
-   - 修改 prompt 文案或 LLM 可见描述时读 `docs/rules/prompt-style.md`。
-3. 优先使用 `rg` 搜索，不要大范围手动翻文件。常用搜索：
-   - `rg -n "ActionId|ActionMetadata|precondition|durationMin|completionEvent|setAction" packages`
-   - `rg -n "<action-name-or-route>" packages`
-
 ## 核心文件
 
 Action 改动时始终考虑这些文件：
@@ -29,7 +18,7 @@ Action 改动时始终考虑这些文件：
 - `packages/world/src/action/utils.ts`：`getActionById`、预检 Action、共享时间判断。
 - `packages/world/src/engine/action-lifecycle.ts`：开始、running 状态、耗时、完成、记忆写入。
 - `packages/world/src/llm/agent/action.ts`：Action 选择的 structured output schema。
-- `packages/utils/src/prompt/world-view.ts`：Action 选择 prompt 和候选列表格式。
+- `packages/utils/src/prompt/world-view.ts`：Action 选择 prompt 和候选列表格式，`worldViewPrompt` 世界观prompt。
 
 ## 按改动类型检查
 

@@ -27,12 +27,13 @@ export const worldViewPrompt = `
   - 超市：商业区里的超市，可以购买日常食材，也可以出售物品获取金币。
   - 日和食堂：商业区里的定食食堂，可以解决日常三餐。
   - 薄暮咖啡：一间气氛安静的小咖啡馆，可以兼职打工，也可以在这里购买各种咖啡。
+  - 星见町站：商业区中心的电车站，可以乘电车前往月汐海岸，单程车费 3 元。
 - 公园周边
   - 南风公园：适合散步放松，恢复心情。
   - 水音池：南风公园附近安静的小池，可以钓鱼，鱼可以作为做饭食材，也有售卖价格。
   - 结灯神社：供奉神明的地方，可以参拜，恢复心情。
 - 海岸
-  - 月汐海岸：海岸步道，路程较远，适合散步放松，恢复心情。
+  - 月汐海岸：需要从星见町站乘电车抵达的海岸步道，适合散步放松，恢复心情。
 
 ### 设备
 - 手机：可以接收到来自现实世界的信息。
@@ -238,6 +239,7 @@ ${actionListPrompt}
 }
 
 export interface ChooseFoodPromptPayload {
+  actionReason: string;
   availableFood?: {
     value: string;
     description?: string;
@@ -250,6 +252,7 @@ export interface ChooseFoodPromptPayload {
 }
 
 export function chooseFoodPrompt({
+  actionReason,
   availableFood,
   characterState,
   worldState,
@@ -276,6 +279,8 @@ ${baseInformation}
 ${choiceDecisionPrompt}
 
 ## 状态
+本次选择食物的原因：${actionReason}
+
 ${commonStatePrompt}
 
 可选食物（仅可从中选择）：
@@ -284,6 +289,7 @@ ${availableFoodPrompt}
 }
 
 export interface PlanHomeCookingPromptPayload {
+  actionReason: string;
   availableIngredients?: {
     value: string;
     description?: string;
@@ -296,6 +302,7 @@ export interface PlanHomeCookingPromptPayload {
 }
 
 export function planHomeCookingPrompt({
+  actionReason,
   availableIngredients,
   characterState,
   worldState,
@@ -324,6 +331,8 @@ ${baseInformation}
 ${choiceDecisionPrompt}
 
 ## 状态
+本次做饭的原因：${actionReason}
+
 ${commonStatePrompt}
 
 可选食材（仅可从中选择）：
@@ -332,6 +341,7 @@ ${availableIngredientsPrompt}
 }
 
 export interface ChooseShopProductPromptPayload {
+  actionReason: string;
   availableProducts?: {
     value: string;
     description?: string;
@@ -344,6 +354,7 @@ export interface ChooseShopProductPromptPayload {
 }
 
 export function chooseShopProductPrompt({
+  actionReason,
   availableProducts,
   characterState,
   worldState,
@@ -370,6 +381,8 @@ ${baseInformation}
 ${choiceDecisionPrompt}
 
 ## 状态
+本次购买商品的原因：${actionReason}
+
 ${commonStatePrompt}
 
 可选商品（仅可从中选择）：
@@ -378,6 +391,7 @@ ${availableProductsPrompt}
 }
 
 export interface ChooseCafeCoffeePromptPayload {
+  actionReason: string;
   availableCoffees?: {
     value: string;
     description?: string;
@@ -390,6 +404,7 @@ export interface ChooseCafeCoffeePromptPayload {
 }
 
 export function chooseCafeCoffeePrompt({
+  actionReason,
   availableCoffees,
   characterState,
   worldState,
@@ -409,13 +424,15 @@ export function chooseCafeCoffeePrompt({
   return `
 ## 要求
 你是一个名为ゆいじゅ的女孩子，昵称悠酱。你已经决定点一杯咖啡，现在需要从候选咖啡中选择这次要点的咖啡。（数量固定为1杯）
-根据当前时间、天气、心情、最近选择和候选咖啡描述决定；不要总是固定选择同一种口味。
+根据当前时间、天气、心情、这次点咖啡的原因、最近选择和候选咖啡描述决定；不要总是固定选择同一种口味。
 
 ${baseInformation}
 
 ${choiceDecisionPrompt}
 
 ## 状态
+本次点咖啡的原因：${actionReason}
+
 ${commonStatePrompt}
 
 可选咖啡（仅可从中选择）：
@@ -424,6 +441,7 @@ ${availableCoffeesPrompt}
 }
 
 export interface ChooseSupermarketProductPromptPayload {
+  actionReason: string;
   availableProducts?: {
     value: string;
     description?: string;
@@ -436,6 +454,7 @@ export interface ChooseSupermarketProductPromptPayload {
 }
 
 export function chooseSupermarketProductPrompt({
+  actionReason,
   availableProducts,
   characterState,
   worldState,
@@ -455,7 +474,7 @@ export function chooseSupermarketProductPrompt({
   return `
 ## 要求
 你是一个名为ゆいじゅ的女孩子，昵称悠酱。你已经决定在超市购买食材，现在需要从候选食材中选择这次要购买的食材以及每种食材的购买数量。
-可以选择一种或多种候选食材；根据金币、当前饱腹、已有计划和候选食材描述选择，避免超出当前金币预算。食材是为了后续做饭准备，不是当场直接吃掉。
+可以选择一种或多种候选食材；根据金币、当前饱腹、已有计划、这次购买食材的原因和候选食材描述选择，避免超出当前金币预算。食材是为了后续做饭准备，不是当场直接吃掉。
 数量要贴近日常需要，可以为接下来一两餐做准备，但不要默认大量囤货。
 
 ${baseInformation}
@@ -463,6 +482,7 @@ ${baseInformation}
 ${choiceDecisionPrompt}
 
 ## 状态
+本次购买食材的原因：${actionReason}
 ${commonStatePrompt}
 
 可选食材（仅可从中选择）：
@@ -471,6 +491,7 @@ ${availableProductsPrompt}
 }
 
 export interface ChooseSellableItemPromptPayload {
+  actionReason: string;
   availableItems?: {
     value: string;
     description?: string;
@@ -483,6 +504,7 @@ export interface ChooseSellableItemPromptPayload {
 }
 
 export function chooseSellableItemPrompt({
+  actionReason,
   availableItems,
   characterState,
   worldState,
@@ -502,13 +524,14 @@ export function chooseSellableItemPrompt({
   return `
 ## 要求
 你是一个名为ゆいじゅ的女孩子，昵称悠酱。你已经决定在超市出售背包里的物品，现在需要从候选物品中选择这次要出售的物品以及每种物品的出售数量。
-可以选择一种或多种候选物品；候选物品都来自当前背包，只能选择候选列表中的物品。数量要根据当前库存和近期计划决定，不要超过库存，也不要卖掉接下来明确要用来做饭或完成计划的物品。
+可以选择一种或多种候选物品；候选物品都来自当前背包，只能选择候选列表中的物品。数量要根据当前库存、这次售卖的原因和近期计划决定，不要超过库存，也不要卖掉接下来明确要用来做饭或完成计划的物品。
 
 ${baseInformation}
 
 ${choiceDecisionPrompt}
 
 ## 状态
+本次售卖物品的原因：${actionReason}
 ${commonStatePrompt}
 
 可售卖物品（仅可从中选择）：
@@ -517,6 +540,7 @@ ${availableItemsPrompt}
 }
 
 export interface ChooseDinerMealPromptPayload {
+  actionReason: string;
   availableMeals?: {
     value: string;
     description?: string;
@@ -529,6 +553,7 @@ export interface ChooseDinerMealPromptPayload {
 }
 
 export function chooseDinerMealPrompt({
+  actionReason,
   availableMeals,
   characterState,
   worldState,
@@ -548,13 +573,15 @@ export function chooseDinerMealPrompt({
   return `
 ## 要求
 你是一个名为ゆいじゅ的女孩子，昵称悠酱。你已经决定在日和食堂店内就餐，现在需要从候选餐品中选择这次要吃的一份餐。
-根据当前时间、饱腹、体力、心情、金币和候选餐品描述决定；日和食堂是日常正餐，不需要为了省钱总选最便宜的，也不要为了数值总选最贵的。
+根据当前时间、饱腹、体力、心情、金币、这次就餐的原因和候选餐品描述决定；日和食堂是日常正餐，不需要为了省钱总选最便宜的，也不要为了数值总选最贵的。
 
 ${baseInformation}
 
 ${choiceDecisionPrompt}
 
 ## 状态
+本次选择餐品的原因：${actionReason}
+
 ${commonStatePrompt}
 
 可选餐品（仅可从中选择）：

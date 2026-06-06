@@ -241,7 +241,7 @@ export const homeAction: ActionMetadata[] = [
   {
     action: ActionId.Cook_And_Eat_At_Home,
     description:
-      "在家做饭吃，从背包中选择一到两种不同食材，完成后直接吃掉料理。[体力+?][饱腹+?][心情+?][耗时30分钟]（可调用 queryAvailableInventoryItems 查询可用食材）",
+      "在家做饭吃，从背包中选择一到两种不同食材。[体力+?][饱腹+?][心情+?][耗时30分钟]（可调用 queryAvailableInventoryItems 查询可用食材）",
     proactiveShare: {
       enabled: true,
     },
@@ -251,7 +251,7 @@ export const homeAction: ActionMetadata[] = [
         () => getAvailableCookingIngredientOptions(context).length > 0,
       ]);
     },
-    async executor(context) {
+    async executor(context, selectedAction) {
       await context.characterState.setAction(ActionId.Cook_And_Eat_At_Home);
 
       const ingredientOptions = getAvailableCookingIngredientOptions(context);
@@ -262,6 +262,7 @@ export const homeAction: ActionMetadata[] = [
       const cookingPlan = await planHomeCookingAgent(
         ingredientOptions,
         context,
+        selectedAction.reason,
         [],
         await planManager.getState(),
       );

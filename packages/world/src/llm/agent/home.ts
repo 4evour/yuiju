@@ -18,10 +18,12 @@ export interface HomeCookingPlan {
 export async function planHomeCookingAgent(
   ingredientList: ChoiceOption[],
   context: ActionContext,
+  actionReason: string,
   actionMemoryList: BehaviorRecord[],
   planState: PlanState,
 ): Promise<HomeCookingPlan | undefined> {
   const systemPrompt = planHomeCookingPrompt({
+    actionReason,
     availableIngredients: ingredientList,
     characterState: context.characterStateData,
     worldState: context.worldState,

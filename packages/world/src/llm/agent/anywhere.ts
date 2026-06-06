@@ -13,10 +13,12 @@ import { type ParameterAgentSelectedItem, RETRY_COUNT } from "./shared";
 export async function chooseFoodAgent(
   foodList: ChoiceOption[],
   context: ActionContext,
+  actionReason: string,
   actionMemoryList: BehaviorRecord[],
   planState: PlanState,
 ): Promise<ParameterAgentSelectedItem[] | undefined> {
   const systemPrompt = chooseFoodPrompt({
+    actionReason,
     availableFood: foodList,
     characterState: context.characterStateData,
     worldState: context.worldState,

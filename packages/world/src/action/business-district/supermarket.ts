@@ -42,7 +42,7 @@ export const supermarketAction: ActionMetadata[] = [
         () => context.characterStateData.money >= SUPERMARKET_MIN_PRICE,
       ]);
     },
-    async executor(context) {
+    async executor(context, selectedAction) {
       await context.characterState.setAction(ActionId.Buy_Ingredient_At_Supermarket);
 
       let remainingMoney = context.characterStateData.money;
@@ -56,6 +56,7 @@ export const supermarketAction: ActionMetadata[] = [
       const selectedProducts = await chooseSupermarketProductAgent(
         productList,
         context,
+        selectedAction.reason,
         [],
         await planManager.getState(),
       );
@@ -197,7 +198,7 @@ export const supermarketAction: ActionMetadata[] = [
           }),
       ]);
     },
-    async executor(context) {
+    async executor(context, selectedAction) {
       await context.characterState.setAction(ActionId.Sell_Item_At_Supermarket);
 
       const sellableItems = (context.characterStateData.inventory ?? []).flatMap((item) => {
@@ -225,6 +226,7 @@ export const supermarketAction: ActionMetadata[] = [
       const selectedItems = await chooseSellableItemAgent(
         itemList,
         context,
+        selectedAction.reason,
         [],
         await planManager.getState(),
       );

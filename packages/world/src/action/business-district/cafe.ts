@@ -58,7 +58,7 @@ export const cafeAction: ActionMetadata[] = [
         () => context.characterStateData.money >= CAFE_MIN_PRICE,
       ]);
     },
-    async executor(context) {
+    async executor(context, selectedAction) {
       await context.characterState.setAction(ActionId.Drink_Coffee);
 
       const coffeeList: ChoiceOption[] = CAFE_COFFEES.map((coffee) => {
@@ -72,6 +72,7 @@ export const cafeAction: ActionMetadata[] = [
       const selectedCoffee = await chooseCafeCoffeeAgent(
         coffeeList,
         context,
+        selectedAction.reason,
         [],
         await planManager.getState(),
       );

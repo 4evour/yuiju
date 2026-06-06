@@ -56,7 +56,7 @@ export const shopAction: ActionMetadata[] = [
         () => context.characterStateData.money >= SHOP_MIN_PRICE,
       ]);
     },
-    async executor(context) {
+    async executor(context, selectedAction) {
       await context.characterState.setAction(ActionId.Buy_Item_At_Shop);
 
       let remainingMoney = context.characterStateData.money;
@@ -71,6 +71,7 @@ export const shopAction: ActionMetadata[] = [
       const selectedProduct = await chooseShopProductAgent(
         productList,
         context,
+        selectedAction.reason,
         [],
         await planManager.getState(),
       );

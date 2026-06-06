@@ -58,7 +58,7 @@ export const anywhereAction: ActionMetadata[] = [
         },
       ]);
     },
-    async executor(context) {
+    async executor(context, selectedAction) {
       const foodList = getAvailableFoodOptions(context);
       if (foodList.length === 0) {
         return { executionResult: "没有可吃的食物。" };
@@ -70,6 +70,7 @@ export const anywhereAction: ActionMetadata[] = [
       const selectionResult = await chooseFoodAgent(
         foodList,
         context,
+        selectedAction.reason,
         [],
         await planManager.getState(),
       );

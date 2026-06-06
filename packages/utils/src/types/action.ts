@@ -176,11 +176,11 @@ export interface ActionProactiveShareConfig {
 
 export type ActionStartResult = void | {
   executionResult?: string;
-  startContext?: Record<string, unknown>;
+  startContext?: Record<string, any>;
 };
 
 export type ActionCompletionEventResult = void | {
-  completionContext?: Record<string, unknown>;
+  completionContext?: Record<string, any>;
   eventDescription?: string;
 };
 
