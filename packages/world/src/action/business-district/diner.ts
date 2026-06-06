@@ -132,7 +132,7 @@ export const dinerAction: ActionMetadata[] = [
   },
   {
     action: ActionId.Go_Home_From_Diner,
-    description: "从日和食堂回家。[体力-5][饱腹-3][耗时20分钟]",
+    description: "从日和食堂回家。[体力-5][饱腹-3][耗时10分钟]",
     proactiveShare: {
       enabled: true,
     },
@@ -148,7 +148,7 @@ export const dinerAction: ActionMetadata[] = [
       await context.characterState.changeStamina(-5);
       await context.characterState.changeSatiety(-3);
     },
-    durationMin: 20,
+    durationMin: 10,
   },
   {
     action: ActionId.Go_To_School_From_Diner,

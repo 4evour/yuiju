@@ -97,7 +97,7 @@ export const shrineAction: ActionMetadata[] = [
   },
   {
     action: ActionId.Go_To_Park_From_Shrine,
-    description: "从结灯神社回到南风公园。[体力-3][饱腹-2][耗时10分钟]",
+    description: "从结灯神社回到南风公园。[体力-3][饱腹-2][耗时5分钟]",
     proactiveShare: {
       enabled: true,
     },
@@ -113,7 +113,7 @@ export const shrineAction: ActionMetadata[] = [
       await context.characterState.changeStamina(-3);
       await context.characterState.changeSatiety(-2);
     },
-    durationMin: 10,
+    durationMin: 5,
   },
   {
     action: ActionId.Go_Home_From_Shrine,

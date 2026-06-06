@@ -60,7 +60,7 @@ export const schoolAction: ActionMetadata[] = [
   },
   {
     action: ActionId.Go_Home_From_School,
-    description: "从星见丘高校回家。[体力-7][饱腹-5][耗时30分钟]",
+    description: "从星见丘高校回家。[体力-7][饱腹-5][耗时20分钟]",
     proactiveShare: {
       enabled: true,
     },
@@ -81,7 +81,7 @@ export const schoolAction: ActionMetadata[] = [
       await context.characterState.changeStamina(-7);
       await context.characterState.changeSatiety(-5);
     },
-    durationMin: 30,
+    durationMin: 20,
   },
   {
     action: ActionId.Go_To_Shop_From_School,

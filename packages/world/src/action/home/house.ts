@@ -75,7 +75,7 @@ export const homeAction: ActionMetadata[] = [
   },
   {
     action: ActionId.Go_To_School_From_Home,
-    description: "前往星见丘高校。[体力-7][饱腹-5][耗时30分钟]",
+    description: "前往星见丘高校。[体力-7][饱腹-5][耗时20分钟]",
     proactiveShare: {
       enabled: true,
     },
@@ -91,11 +91,11 @@ export const homeAction: ActionMetadata[] = [
       await context.characterState.changeStamina(-7);
       await context.characterState.changeSatiety(-5);
     },
-    durationMin: 30,
+    durationMin: 20,
   },
   {
     action: ActionId.Go_To_Shop_From_Home,
-    description: "从家前往小町商店。[体力-5][饱腹-3][耗时20分钟]",
+    description: "从家前往小町商店。[体力-5][饱腹-3][耗时10分钟]",
     proactiveShare: {
       enabled: true,
     },
@@ -115,11 +115,11 @@ export const homeAction: ActionMetadata[] = [
       await context.characterState.changeStamina(-5);
       await context.characterState.changeSatiety(-3);
     },
-    durationMin: 20,
+    durationMin: 10,
   },
   {
     action: ActionId.Go_To_Cafe_From_Home,
-    description: "从家去薄暮咖啡。[体力-5][饱腹-3][耗时20分钟]",
+    description: "从家去薄暮咖啡。[体力-5][饱腹-3][耗时10分钟]",
     proactiveShare: {
       enabled: true,
     },
@@ -139,11 +139,11 @@ export const homeAction: ActionMetadata[] = [
       await context.characterState.changeStamina(-5);
       await context.characterState.changeSatiety(-3);
     },
-    durationMin: 20,
+    durationMin: 10,
   },
   {
     action: ActionId.Go_To_Supermarket_From_Home,
-    description: "从家前往超市。[体力-5][饱腹-3][耗时20分钟]",
+    description: "从家前往超市。[体力-5][饱腹-3][耗时10分钟]",
     proactiveShare: {
       enabled: true,
     },
@@ -163,11 +163,11 @@ export const homeAction: ActionMetadata[] = [
       await context.characterState.changeStamina(-5);
       await context.characterState.changeSatiety(-3);
     },
-    durationMin: 20,
+    durationMin: 10,
   },
   {
     action: ActionId.Go_To_Diner_From_Home,
-    description: "从家前往日和食堂。[体力-5][饱腹-3][耗时20分钟]",
+    description: "从家前往日和食堂。[体力-5][饱腹-3][耗时10分钟]",
     proactiveShare: {
       enabled: true,
     },
@@ -187,7 +187,7 @@ export const homeAction: ActionMetadata[] = [
       await context.characterState.changeStamina(-5);
       await context.characterState.changeSatiety(-3);
     },
-    durationMin: 20,
+    durationMin: 10,
   },
   {
     action: ActionId.Go_To_Park_From_Home,

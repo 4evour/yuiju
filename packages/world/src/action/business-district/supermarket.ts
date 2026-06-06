@@ -330,7 +330,7 @@ export const supermarketAction: ActionMetadata[] = [
   },
   {
     action: ActionId.Go_Home_From_Supermarket,
-    description: "从超市回家。[体力-5][饱腹-3][耗时20分钟]",
+    description: "从超市回家。[体力-5][饱腹-3][耗时10分钟]",
     proactiveShare: {
       enabled: true,
     },
@@ -346,7 +346,7 @@ export const supermarketAction: ActionMetadata[] = [
       await context.characterState.changeStamina(-5);
       await context.characterState.changeSatiety(-3);
     },
-    durationMin: 20,
+    durationMin: 10,
   },
   {
     action: ActionId.Go_To_School_From_Supermarket,

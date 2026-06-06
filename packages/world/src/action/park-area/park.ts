@@ -117,7 +117,7 @@ export const parkAction: ActionMetadata[] = [
   },
   {
     action: ActionId.Go_To_Shrine_From_Park,
-    description: "从南风公园前往结灯神社。[体力-3][饱腹-2][耗时10分钟]",
+    description: "从南风公园前往结灯神社。[体力-3][饱腹-2][耗时5分钟]",
     proactiveShare: {
       enabled: true,
     },
@@ -133,11 +133,11 @@ export const parkAction: ActionMetadata[] = [
       await context.characterState.changeStamina(-3);
       await context.characterState.changeSatiety(-2);
     },
-    durationMin: 10,
+    durationMin: 5,
   },
   {
     action: ActionId.Go_To_Pond_From_Park,
-    description: "从南风公园前往水音池。[体力-3][饱腹-2][耗时10分钟]",
+    description: "从南风公园前往水音池。[体力-3][饱腹-2][耗时5分钟]",
     proactiveShare: {
       enabled: true,
     },
@@ -153,6 +153,6 @@ export const parkAction: ActionMetadata[] = [
       await context.characterState.changeStamina(-3);
       await context.characterState.changeSatiety(-2);
     },
-    durationMin: 10,
+    durationMin: 5,
   },
 ];

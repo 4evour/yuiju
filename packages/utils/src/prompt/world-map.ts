@@ -57,11 +57,11 @@ const worldMapMajorPlaceIdByScene = {
 } satisfies Record<MajorScene, WorldMapMajorPlaceId>;
 
 export const worldMapMajorLinks: WorldMapLink<WorldMapMajorPlaceId>[] = [
-  { from: "HOME", to: "SCHOOL", timeMinutes: 30, stamina: -7, satiety: -4, dir: "N" },
-  { from: "SCHOOL", to: "HOME", timeMinutes: 30, stamina: -7, satiety: -4, dir: "S" },
+  { from: "HOME", to: "SCHOOL", timeMinutes: 20, stamina: -7, satiety: -4, dir: "N" },
+  { from: "SCHOOL", to: "HOME", timeMinutes: 20, stamina: -7, satiety: -4, dir: "S" },
 
-  { from: "HOME", to: "BUSINESS_DISTRICT", timeMinutes: 20, stamina: -5, satiety: -3, dir: "NE" },
-  { from: "BUSINESS_DISTRICT", to: "HOME", timeMinutes: 20, stamina: -5, satiety: -3, dir: "SW" },
+  { from: "HOME", to: "BUSINESS_DISTRICT", timeMinutes: 10, stamina: -5, satiety: -3, dir: "NE" },
+  { from: "BUSINESS_DISTRICT", to: "HOME", timeMinutes: 10, stamina: -5, satiety: -3, dir: "SW" },
 
   { from: "SCHOOL", to: "BUSINESS_DISTRICT", timeMinutes: 10, stamina: -3, satiety: -2, dir: "E" },
   { from: "BUSINESS_DISTRICT", to: "SCHOOL", timeMinutes: 10, stamina: -3, satiety: -2, dir: "W" },
@@ -122,10 +122,10 @@ export const worldMapMinorLinksByMajor: Record<
     { from: "CAFE", to: "DINER", timeMinutes: 5, stamina: -1, satiety: -1, dir: "W" },
   ],
   PARK_AREA: [
-    { from: "PARK", to: "POND", timeMinutes: 10, stamina: -3, satiety: -2, dir: "SE" },
-    { from: "POND", to: "PARK", timeMinutes: 10, stamina: -3, satiety: -2, dir: "NW" },
-    { from: "PARK", to: "SHRINE", timeMinutes: 10, stamina: -3, satiety: -2, dir: "S" },
-    { from: "SHRINE", to: "PARK", timeMinutes: 10, stamina: -3, satiety: -2, dir: "N" },
+    { from: "PARK", to: "POND", timeMinutes: 5, stamina: -3, satiety: -2, dir: "SE" },
+    { from: "POND", to: "PARK", timeMinutes: 5, stamina: -3, satiety: -2, dir: "NW" },
+    { from: "PARK", to: "SHRINE", timeMinutes: 5, stamina: -3, satiety: -2, dir: "S" },
+    { from: "SHRINE", to: "PARK", timeMinutes: 5, stamina: -3, satiety: -2, dir: "N" },
   ],
   COAST_AREA: [],
 };

@@ -172,7 +172,7 @@ export const cafeAction: ActionMetadata[] = [
   },
   {
     action: ActionId.Go_Home_From_Cafe,
-    description: "从薄暮咖啡回家。[体力-5][饱腹-3][耗时20分钟]",
+    description: "从薄暮咖啡回家。[体力-5][饱腹-3][耗时10分钟]",
     proactiveShare: {
       enabled: true,
     },
@@ -188,7 +188,7 @@ export const cafeAction: ActionMetadata[] = [
       await context.characterState.changeStamina(-5);
       await context.characterState.changeSatiety(-3);
     },
-    durationMin: 20,
+    durationMin: 10,
   },
   {
     action: ActionId.Go_To_School_From_Cafe,
