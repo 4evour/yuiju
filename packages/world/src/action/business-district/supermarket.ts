@@ -155,7 +155,7 @@ export const supermarketAction: ActionMetadata[] = [
           {
             name: product.productName,
             description: product.description,
-            category: InventoryItemCategory.Ingredient,
+            categories: [InventoryItemCategory.Ingredient],
             metadata: product.metadata,
           },
           product.quantity,

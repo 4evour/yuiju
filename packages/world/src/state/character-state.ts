@@ -109,7 +109,7 @@ export class CharacterState implements ICharacterState {
 
     if (existingItem) {
       existingItem.description = item.description;
-      existingItem.category = item.category;
+      existingItem.categories = item.categories;
       existingItem.metadata = item.metadata;
       existingItem.quantity = (existingItem.quantity ?? 0) + quantity;
     } else {

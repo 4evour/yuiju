@@ -1,16 +1,18 @@
 import { tool } from "ai";
 import { z } from "zod";
 import {
+  CAFE_COFFEES,
+  DINER_MEALS,
+  SHOP_PRODUCTS,
+  SUPERMARKET_PRODUCTS,
+} from "../../constants/world";
+import {
   type WorldGuideTopic,
   worldGuidePlaceIntroductions,
   worldGuideTopics,
 } from "../../prompt/world-guide";
 import { getWorldMapMajorPlaceId, worldMapDsl } from "../../prompt/world-map";
 import { initCharacterStateData } from "../../redis";
-import { CAFE_COFFEES } from "../../types/cafe";
-import { DINER_MEALS } from "../../types/diner";
-import { SHOP_PRODUCTS } from "../../types/shop";
-import { SUPERMARKET_PRODUCTS } from "../../types/supermarket";
 
 const staticGuideResultByTopic = {
   worldMap: async () => {

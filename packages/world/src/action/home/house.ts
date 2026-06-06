@@ -4,8 +4,8 @@ import {
   type ActionMetadata,
   allTrue,
   BusinessDistrictSubScene,
-  type FoodMetadata,
   HomeSubScene,
+  type InventoryItemMetadata,
   isDev,
   MajorScene,
   ParkAreaSubScene,
@@ -289,7 +289,7 @@ export const homeAction: ActionMetadata[] = [
             ingredientOption.extra?.metadata &&
             typeof ingredientOption.extra.metadata === "object" &&
             !Array.isArray(ingredientOption.extra.metadata)
-              ? (ingredientOption.extra.metadata as FoodMetadata)
+              ? (ingredientOption.extra.metadata as InventoryItemMetadata)
               : undefined,
         });
       }

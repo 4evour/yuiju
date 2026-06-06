@@ -15,7 +15,9 @@ export const queryAvailableInventoryItems = tool({
     const characterState = await initCharacterStateData();
     const inventory = characterState.inventory || [];
     const availableItems = inventory.filter(
-      (item) => category.includes(item.category) && item.quantity > 0,
+      (item) =>
+        item.categories.some((itemCategory) => category.includes(itemCategory)) &&
+        item.quantity > 0,
     );
 
     if (availableItems.length === 0) {
@@ -25,7 +27,7 @@ export const queryAvailableInventoryItems = tool({
     return availableItems.map((item) => {
       return {
         value: item.name,
-        category: item.category,
+        categories: item.categories,
         description: `${item.description}（剩余${item.quantity}个）`,
       };
     });

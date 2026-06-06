@@ -4,8 +4,8 @@ import {
   type ActionMetadata,
   allTrue,
   type ChoiceOption,
-  type FoodMetadata,
   InventoryItemCategory,
+  type InventoryItemMetadata,
   planManager,
 } from "@yuiju/utils";
 import { chooseFoodAgent } from "@/llm/agent";
@@ -15,14 +15,14 @@ import { resolveFoodRecoveryPerUnit } from "../utils/food-utils";
 function getAvailableFoodOptions(context: ActionContext): ChoiceOption[] {
   const inventory = context.characterStateData.inventory || [];
   const availableFood = inventory.filter(
-    (item) => item.category === InventoryItemCategory.Food && item.quantity! > 0,
+    (item) => item.categories.includes(InventoryItemCategory.Food) && item.quantity > 0,
   );
 
   return availableFood.map((food) => {
     return {
       value: food.name,
       description: `${food.description}（剩余${food.quantity}个）`,
-      extra: food.metadata as FoodMetadata,
+      extra: food.metadata as InventoryItemMetadata,
     };
   });
 }

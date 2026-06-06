@@ -49,29 +49,14 @@ export type Location =
   | { major: MajorScene.ParkArea; minor: ParkAreaSubScene }
   | { major: MajorScene.CoastArea; minor: CoastAreaSubScene };
 
-/**
- * 食物元数据
- */
-export interface FoodMetadata {
-  /** 体力恢复值 */
-  stamina?: number;
-  /** 饱腹度恢复值 */
-  satiety?: number;
-  /** 心情恢复值 */
-  mood?: number;
-}
-
-/**
- * 食材元数据
- */
-export type IngredientMetadata = {
+export type InventoryItemMetadata = {
   /** 售卖价格 */
   salePrice?: number;
-  /** 做饭时对料理体力恢复的基础贡献 */
+  /** 体力恢复值，直接食用和作为食材时共用同一数值 */
   stamina?: number;
-  /** 做饭时对料理饱腹恢复的基础贡献 */
+  /** 饱腹度恢复值，直接食用和作为食材时共用同一数值 */
   satiety?: number;
-  /** 做饭时对料理心情恢复的基础贡献 */
+  /** 心情恢复值，直接食用和作为食材时共用同一数值 */
   mood?: number;
 };
 
@@ -81,7 +66,7 @@ export enum InventoryItemCategory {
 }
 
 /**
- * 物品接口（判别联合类型）
+ * 物品接口
  */
 export type InventoryItem = {
   /** 物品名称 */
@@ -89,11 +74,11 @@ export type InventoryItem = {
   /** 物品描述 */
   description: string;
   /** 物品类别 */
-  category: InventoryItemCategory;
+  categories: InventoryItemCategory[];
   /** 数量 */
   quantity: number;
   /** 物品元数据 */
-  metadata: FoodMetadata | IngredientMetadata;
+  metadata: InventoryItemMetadata;
 };
 
 /**

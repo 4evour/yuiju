@@ -84,7 +84,7 @@ export const pondAction: ActionMetadata[] = [
             {
               name: fish.name,
               description: fish.description,
-              category: InventoryItemCategory.Ingredient,
+              categories: [InventoryItemCategory.Ingredient],
               metadata: fish.metadata,
             },
             1,

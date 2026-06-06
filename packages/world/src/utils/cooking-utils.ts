@@ -1,14 +1,14 @@
 import {
   type ActionContext,
   type ChoiceOption,
-  type FoodMetadata,
   InventoryItemCategory,
+  type InventoryItemMetadata,
 } from "@yuiju/utils";
 
 export type CookingIngredientSnapshot = {
   name: string;
   quantity: number;
-  metadata?: FoodMetadata;
+  metadata?: InventoryItemMetadata;
 };
 
 type CookingStartContext = {
@@ -60,7 +60,9 @@ const COMBINED_INGREDIENT_MEAL_NAMES: Record<string, string[]> = {
 export function getAvailableCookingIngredientOptions(context: ActionContext): ChoiceOption[] {
   const inventory = context.characterStateData.inventory || [];
   return inventory
-    .filter((item) => item.category === InventoryItemCategory.Ingredient && item.quantity > 0)
+    .filter(
+      (item) => item.categories.includes(InventoryItemCategory.Ingredient) && item.quantity > 0,
+    )
     .map((item): ChoiceOption => {
       return {
         value: item.name,
@@ -106,7 +108,7 @@ export function readCookingStartContext(
           maybeIngredient.metadata &&
           typeof maybeIngredient.metadata === "object" &&
           !Array.isArray(maybeIngredient.metadata)
-            ? (maybeIngredient.metadata as FoodMetadata)
+            ? (maybeIngredient.metadata as InventoryItemMetadata)
             : undefined,
       };
     })

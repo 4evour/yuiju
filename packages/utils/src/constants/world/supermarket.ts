@@ -1,4 +1,4 @@
-import type { IngredientMetadata } from "./state";
+import type { InventoryItemMetadata } from "../../types/state";
 
 /**
  * 超市可购买食材名称枚举。
@@ -28,7 +28,7 @@ export type SupermarketProduct = {
   name: SupermarketProductName;
   price: number;
   description: string;
-  metadata: IngredientMetadata;
+  metadata: InventoryItemMetadata;
 };
 
 /**

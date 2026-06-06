@@ -138,7 +138,7 @@ export const shopAction: ActionMetadata[] = [
         {
           name: purchaseContext.productName,
           description: purchaseContext.description,
-          category: InventoryItemCategory.Food,
+          categories: [InventoryItemCategory.Food],
           metadata: buildFoodMetadata({
             stamina: purchaseContext.stamina,
             satiety: purchaseContext.satiety,
