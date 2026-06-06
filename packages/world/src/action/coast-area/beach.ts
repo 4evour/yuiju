@@ -3,6 +3,7 @@ import {
   type ActionContext,
   ActionId,
   type ActionMetadata,
+  allTrue,
   BusinessDistrictSubScene,
   CoastAreaSubScene,
   MajorScene,
@@ -29,6 +30,7 @@ const COAST_WALK_TIERS: CoastWalkTier[] = [
 ];
 
 const DEFAULT_COAST_WALK_TIER = COAST_WALK_TIERS[1];
+const TRAIN_FARE = 3;
 
 /**
  * 判断角色是否位于月汐海岸。
@@ -99,83 +101,27 @@ export const coastAction: ActionMetadata[] = [
     },
   },
   {
-    action: ActionId.Go_To_Shop_From_Coast,
-    description: "从月汐海岸回到小町商店，路程较远。[体力-7][饱腹-5][耗时30分钟]",
+    action: ActionId.Take_Train_To_Train_Station_From_Coast,
+    description: "从月汐海岸乘电车回星见町站。[金币-3][体力-7][饱腹-5][耗时15分钟]",
     proactiveShare: {
       enabled: true,
     },
     precondition(context) {
-      return isAtCoast(context);
+      return allTrue([
+        () => isAtCoast(context),
+        () => context.characterStateData.money >= TRAIN_FARE,
+      ]);
     },
     async executor(context) {
-      await context.characterState.setAction(ActionId.Go_To_Shop_From_Coast);
+      await context.characterState.setAction(ActionId.Take_Train_To_Train_Station_From_Coast);
       await context.characterState.setLocation({
         major: MajorScene.BusinessDistrict,
-        minor: BusinessDistrictSubScene.Shop,
+        minor: BusinessDistrictSubScene.TrainStation,
       });
+      await context.characterState.changeMoney(-TRAIN_FARE);
       await context.characterState.changeStamina(-7);
       await context.characterState.changeSatiety(-5);
     },
-    durationMin: 30,
-  },
-  {
-    action: ActionId.Go_To_Cafe_From_Coast,
-    description: "从月汐海岸回到薄暮咖啡，路程较远。[体力-7][饱腹-5][耗时30分钟]",
-    proactiveShare: {
-      enabled: true,
-    },
-    precondition(context) {
-      return isAtCoast(context);
-    },
-    async executor(context) {
-      await context.characterState.setAction(ActionId.Go_To_Cafe_From_Coast);
-      await context.characterState.setLocation({
-        major: MajorScene.BusinessDistrict,
-        minor: BusinessDistrictSubScene.Cafe,
-      });
-      await context.characterState.changeStamina(-7);
-      await context.characterState.changeSatiety(-5);
-    },
-    durationMin: 30,
-  },
-  {
-    action: ActionId.Go_To_Supermarket_From_Coast,
-    description: "从月汐海岸回到超市，路程较远。[体力-7][饱腹-5][耗时30分钟]",
-    proactiveShare: {
-      enabled: true,
-    },
-    precondition(context) {
-      return isAtCoast(context);
-    },
-    async executor(context) {
-      await context.characterState.setAction(ActionId.Go_To_Supermarket_From_Coast);
-      await context.characterState.setLocation({
-        major: MajorScene.BusinessDistrict,
-        minor: BusinessDistrictSubScene.Supermarket,
-      });
-      await context.characterState.changeStamina(-7);
-      await context.characterState.changeSatiety(-5);
-    },
-    durationMin: 30,
-  },
-  {
-    action: ActionId.Go_To_Diner_From_Coast,
-    description: "从月汐海岸回到日和食堂，路程较远。[体力-7][饱腹-5][耗时30分钟]",
-    proactiveShare: {
-      enabled: true,
-    },
-    precondition(context) {
-      return isAtCoast(context);
-    },
-    async executor(context) {
-      await context.characterState.setAction(ActionId.Go_To_Diner_From_Coast);
-      await context.characterState.setLocation({
-        major: MajorScene.BusinessDistrict,
-        minor: BusinessDistrictSubScene.Diner,
-      });
-      await context.characterState.changeStamina(-7);
-      await context.characterState.changeSatiety(-5);
-    },
-    durationMin: 30,
+    durationMin: 15,
   },
 ];

@@ -43,6 +43,8 @@ export enum ActionId {
   Go_To_School_From_Shop = "从商店去学校",
   /** 从商店去超市 */
   Go_To_Supermarket_From_Shop = "从商店去超市",
+  /** 从商店去星见町站 */
+  Go_To_Train_Station_From_Shop = "从商店去星见町站",
 
   /** 在商店购买物品 */
   Buy_Item_At_Shop = "在商店购买物品",
@@ -57,8 +59,8 @@ export enum ActionId {
   Go_To_School_From_Cafe = "从咖啡店去学校",
   /** 从咖啡店去日和食堂 */
   Go_To_Diner_From_Cafe = "从咖啡店去日和食堂",
-  /** 从咖啡店去月汐海岸 */
-  Go_To_Coast_From_Cafe = "从咖啡店去月汐海岸",
+  /** 从咖啡店去星见町站 */
+  Go_To_Train_Station_From_Cafe = "从咖啡店去星见町站",
 
   /** 喝咖啡 */
   Drink_Coffee = "喝咖啡",
@@ -96,8 +98,6 @@ export enum ActionId {
   /** 在水音池钓鱼 */
   Fish_At_Pond = "钓鱼",
 
-  /** 从商店去月汐海岸 */
-  Go_To_Coast_From_Shop = "从商店去月汐海岸",
   /** 从超市回家 */
   Go_Home_From_Supermarket = "从超市回家",
   /** 从超市去学校 */
@@ -106,8 +106,8 @@ export enum ActionId {
   Go_To_Shop_From_Supermarket = "从超市去商店",
   /** 从超市去日和食堂 */
   Go_To_Diner_From_Supermarket = "从超市去日和食堂",
-  /** 从超市去月汐海岸 */
-  Go_To_Coast_From_Supermarket = "从超市去月汐海岸",
+  /** 从超市去星见町站 */
+  Go_To_Train_Station_From_Supermarket = "从超市去星见町站",
   /** 从日和食堂回家 */
   Go_Home_From_Diner = "从日和食堂回家",
   /** 从日和食堂去学校 */
@@ -116,16 +116,20 @@ export enum ActionId {
   Go_To_Supermarket_From_Diner = "从日和食堂去超市",
   /** 从日和食堂去咖啡店 */
   Go_To_Cafe_From_Diner = "从日和食堂去咖啡店",
-  /** 从日和食堂去月汐海岸 */
-  Go_To_Coast_From_Diner = "从日和食堂去月汐海岸",
-  /** 从月汐海岸回商店 */
-  Go_To_Shop_From_Coast = "从月汐海岸去商店",
-  /** 从月汐海岸回超市 */
-  Go_To_Supermarket_From_Coast = "从月汐海岸去超市",
-  /** 从月汐海岸回日和食堂 */
-  Go_To_Diner_From_Coast = "从月汐海岸去日和食堂",
-  /** 从月汐海岸回咖啡店 */
-  Go_To_Cafe_From_Coast = "从月汐海岸去咖啡店",
+  /** 从日和食堂去星见町站 */
+  Go_To_Train_Station_From_Diner = "从日和食堂去星见町站",
+  /** 从星见町站去商店 */
+  Go_To_Shop_From_Train_Station = "从星见町站去商店",
+  /** 从星见町站去超市 */
+  Go_To_Supermarket_From_Train_Station = "从星见町站去超市",
+  /** 从星见町站去日和食堂 */
+  Go_To_Diner_From_Train_Station = "从星见町站去日和食堂",
+  /** 从星见町站去咖啡店 */
+  Go_To_Cafe_From_Train_Station = "从星见町站去咖啡店",
+  /** 从星见町站乘电车去月汐海岸 */
+  Take_Train_To_Coast_From_Train_Station = "从星见町站乘电车去月汐海岸",
+  /** 从月汐海岸乘电车回星见町站 */
+  Take_Train_To_Train_Station_From_Coast = "从月汐海岸乘电车回星见町站",
   /** 在月汐海岸散步 */
   Walk_In_Coast = "在月汐海岸散步",
 }

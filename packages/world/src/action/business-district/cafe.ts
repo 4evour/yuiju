@@ -8,7 +8,6 @@ import {
   type CafeCoffee,
   type CafeCoffeeName,
   type ChoiceOption,
-  CoastAreaSubScene,
   HomeSubScene,
   MajorScene,
   planManager,
@@ -231,8 +230,8 @@ export const cafeAction: ActionMetadata[] = [
     durationMin: 5,
   },
   {
-    action: ActionId.Go_To_Coast_From_Cafe,
-    description: "从薄暮咖啡前往月汐海岸。[体力-7][饱腹-5][耗时30分钟]",
+    action: ActionId.Go_To_Train_Station_From_Cafe,
+    description: "从薄暮咖啡前往星见町站。[体力-1][饱腹-1][耗时5分钟]",
     proactiveShare: {
       enabled: true,
     },
@@ -240,14 +239,14 @@ export const cafeAction: ActionMetadata[] = [
       return isAtCafe(context);
     },
     async executor(context) {
-      await context.characterState.setAction(ActionId.Go_To_Coast_From_Cafe);
+      await context.characterState.setAction(ActionId.Go_To_Train_Station_From_Cafe);
       await context.characterState.setLocation({
-        major: MajorScene.CoastArea,
-        minor: CoastAreaSubScene.Beach,
+        major: MajorScene.BusinessDistrict,
+        minor: BusinessDistrictSubScene.TrainStation,
       });
-      await context.characterState.changeStamina(-7);
-      await context.characterState.changeSatiety(-5);
+      await context.characterState.changeStamina(-1);
+      await context.characterState.changeSatiety(-1);
     },
-    durationMin: 30,
+    durationMin: 5,
   },
 ];

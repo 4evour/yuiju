@@ -21,6 +21,7 @@ export type WorldMapMinorPlaceId =
   | "SUPERMARKET"
   | "DINER"
   | "CAFE"
+  | "TRAIN_STATION"
   | "PARK"
   | "POND"
   | "SHRINE"
@@ -72,7 +73,7 @@ export const worldMapMajorLinks: WorldMapLink<WorldMapMajorPlaceId>[] = [
   {
     from: "BUSINESS_DISTRICT",
     to: "COAST_AREA",
-    timeMinutes: 30,
+    timeMinutes: 15,
     stamina: -7,
     satiety: -5,
     dir: "E",
@@ -80,7 +81,7 @@ export const worldMapMajorLinks: WorldMapLink<WorldMapMajorPlaceId>[] = [
   {
     from: "COAST_AREA",
     to: "BUSINESS_DISTRICT",
-    timeMinutes: 30,
+    timeMinutes: 15,
     stamina: -7,
     satiety: -5,
     dir: "W",
@@ -98,6 +99,7 @@ export const worldMapMinorPlacesByMajor: Record<
     { id: "SUPERMARKET", name: BusinessDistrictSubScene.Supermarket },
     { id: "DINER", name: BusinessDistrictSubScene.Diner },
     { id: "CAFE", name: BusinessDistrictSubScene.Cafe },
+    { id: "TRAIN_STATION", name: BusinessDistrictSubScene.TrainStation },
   ],
   PARK_AREA: [
     { id: "PARK", name: ParkAreaSubScene.Park },
@@ -120,6 +122,28 @@ export const worldMapMinorLinksByMajor: Record<
     { from: "DINER", to: "SUPERMARKET", timeMinutes: 5, stamina: -1, satiety: -1, dir: "W" },
     { from: "DINER", to: "CAFE", timeMinutes: 5, stamina: -1, satiety: -1, dir: "E" },
     { from: "CAFE", to: "DINER", timeMinutes: 5, stamina: -1, satiety: -1, dir: "W" },
+    { from: "SHOP", to: "TRAIN_STATION", timeMinutes: 5, stamina: -1, satiety: -1, dir: "E" },
+    { from: "TRAIN_STATION", to: "SHOP", timeMinutes: 5, stamina: -1, satiety: -1, dir: "W" },
+    {
+      from: "SUPERMARKET",
+      to: "TRAIN_STATION",
+      timeMinutes: 5,
+      stamina: -1,
+      satiety: -1,
+      dir: "S",
+    },
+    {
+      from: "TRAIN_STATION",
+      to: "SUPERMARKET",
+      timeMinutes: 5,
+      stamina: -1,
+      satiety: -1,
+      dir: "N",
+    },
+    { from: "DINER", to: "TRAIN_STATION", timeMinutes: 5, stamina: -1, satiety: -1, dir: "N" },
+    { from: "TRAIN_STATION", to: "DINER", timeMinutes: 5, stamina: -1, satiety: -1, dir: "S" },
+    { from: "CAFE", to: "TRAIN_STATION", timeMinutes: 5, stamina: -1, satiety: -1, dir: "W" },
+    { from: "TRAIN_STATION", to: "CAFE", timeMinutes: 5, stamina: -1, satiety: -1, dir: "E" },
   ],
   PARK_AREA: [
     { from: "PARK", to: "POND", timeMinutes: 5, stamina: -3, satiety: -2, dir: "SE" },
@@ -194,8 +218,8 @@ export const worldMapTerminalUi = `
                    │
                ┌───┴────┐
                │ 商业区  │──────┌────────┐
-               │商店/超市│      │  海岸  │
-               │食堂/咖啡│
+               │店/超/食/咖│    │  海岸  │
+               │ 星见町站 │
                └───┬────┘──────└────────┘
                    │
                ┌───┴────┐

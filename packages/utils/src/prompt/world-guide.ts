@@ -58,7 +58,7 @@ export const worldGuidePlaceIntroductions = [
       ActionId.Go_Home_From_Shop,
       ActionId.Go_To_School_From_Shop,
       ActionId.Go_To_Supermarket_From_Shop,
-      ActionId.Go_To_Coast_From_Shop,
+      ActionId.Go_To_Train_Station_From_Shop,
     ],
   },
   {
@@ -71,7 +71,7 @@ export const worldGuidePlaceIntroductions = [
       ActionId.Go_To_School_From_Supermarket,
       ActionId.Go_To_Shop_From_Supermarket,
       ActionId.Go_To_Diner_From_Supermarket,
-      ActionId.Go_To_Coast_From_Supermarket,
+      ActionId.Go_To_Train_Station_From_Supermarket,
     ],
   },
   {
@@ -83,7 +83,7 @@ export const worldGuidePlaceIntroductions = [
       ActionId.Go_To_School_From_Diner,
       ActionId.Go_To_Supermarket_From_Diner,
       ActionId.Go_To_Cafe_From_Diner,
-      ActionId.Go_To_Coast_From_Diner,
+      ActionId.Go_To_Train_Station_From_Diner,
     ],
   },
   {
@@ -95,7 +95,18 @@ export const worldGuidePlaceIntroductions = [
       ActionId.Go_Home_From_Cafe,
       ActionId.Go_To_School_From_Cafe,
       ActionId.Go_To_Diner_From_Cafe,
-      ActionId.Go_To_Coast_From_Cafe,
+      ActionId.Go_To_Train_Station_From_Cafe,
+    ],
+  },
+  {
+    name: `${MajorScene.BusinessDistrict}-${BusinessDistrictSubScene.TrainStation}`,
+    introduction: "商业区中心的电车站，可以乘电车前往月汐海岸，单程车费 3 元。",
+    availableActions: [
+      ActionId.Go_To_Shop_From_Train_Station,
+      ActionId.Go_To_Supermarket_From_Train_Station,
+      ActionId.Go_To_Diner_From_Train_Station,
+      ActionId.Go_To_Cafe_From_Train_Station,
+      ActionId.Take_Train_To_Coast_From_Train_Station,
     ],
   },
   {
@@ -124,13 +135,7 @@ export const worldGuidePlaceIntroductions = [
   },
   {
     name: `${MajorScene.CoastArea}-${CoastAreaSubScene.Beach}`,
-    introduction: "位于小町商店东边的海岸步道，路程较远，适合散步放松。",
-    availableActions: [
-      ActionId.Walk_In_Coast,
-      ActionId.Go_To_Shop_From_Coast,
-      ActionId.Go_To_Cafe_From_Coast,
-      ActionId.Go_To_Supermarket_From_Coast,
-      ActionId.Go_To_Diner_From_Coast,
-    ],
+    introduction: "需要从星见町站乘电车抵达的海岸步道，适合散步放松。",
+    availableActions: [ActionId.Walk_In_Coast, ActionId.Take_Train_To_Train_Station_From_Coast],
   },
 ];

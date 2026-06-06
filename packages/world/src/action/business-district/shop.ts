@@ -5,7 +5,6 @@ import {
   allTrue,
   BusinessDistrictSubScene,
   type ChoiceOption,
-  CoastAreaSubScene,
   HomeSubScene,
   InventoryItemCategory,
   MajorScene,
@@ -222,8 +221,8 @@ export const shopAction: ActionMetadata[] = [
     durationMin: 5,
   },
   {
-    action: ActionId.Go_To_Coast_From_Shop,
-    description: "从小町商店前往月汐海岸。[体力-7][饱腹-5][耗时30分钟]",
+    action: ActionId.Go_To_Train_Station_From_Shop,
+    description: "从小町商店前往星见町站。[体力-1][饱腹-1][耗时5分钟]",
     proactiveShare: {
       enabled: true,
     },
@@ -231,14 +230,14 @@ export const shopAction: ActionMetadata[] = [
       return isAtShop(context);
     },
     async executor(context) {
-      await context.characterState.setAction(ActionId.Go_To_Coast_From_Shop);
+      await context.characterState.setAction(ActionId.Go_To_Train_Station_From_Shop);
       await context.characterState.setLocation({
-        major: MajorScene.CoastArea,
-        minor: CoastAreaSubScene.Beach,
+        major: MajorScene.BusinessDistrict,
+        minor: BusinessDistrictSubScene.TrainStation,
       });
-      await context.characterState.changeStamina(-7);
-      await context.characterState.changeSatiety(-5);
+      await context.characterState.changeStamina(-1);
+      await context.characterState.changeSatiety(-1);
     },
-    durationMin: 30,
+    durationMin: 5,
   },
 ];
