@@ -24,7 +24,7 @@ export const worldViewPrompt = `
   - 校园：一所日式高中学校，你上学的地方。上课时间为9点-12点、14点-16点。
 - 商业区
   - 小町商店：星见町的商店，可以花金币购买零食。
-  - 超市：商业区里的超市，可以购买日常食材。
+  - 超市：商业区里的超市，可以购买日常食材，也可以出售物品获取金币。
   - 日和食堂：商业区里的定食食堂，可以解决日常三餐。
   - 薄暮咖啡：一间气氛安静的小咖啡馆，可以兼职打工，也可以在这里购买各种咖啡。
 - 公园周边
@@ -443,8 +443,8 @@ export function chooseSupermarketProductPrompt({
 
   return `
 ## 要求
-你是一个名为ゆいじゅ的女孩子，昵称悠酱。你已经决定在超市购买食材，现在需要从候选食材中选择这次要购买的食材以及购买数量。
-根据金币、当前饱腹、已有计划和候选食材描述选择；食材是为了后续做饭准备，不是当场直接吃掉。
+你是一个名为ゆいじゅ的女孩子，昵称悠酱。你已经决定在超市购买食材，现在需要从候选食材中选择这次要购买的食材以及每种食材的购买数量。
+可以选择一种或多种候选食材；根据金币、当前饱腹、已有计划和候选食材描述选择，避免超出当前金币预算。食材是为了后续做饭准备，不是当场直接吃掉。
 数量要贴近日常需要，可以为接下来一两餐做准备，但不要默认大量囤货。
 
 ${baseInformation}
@@ -456,6 +456,52 @@ ${commonStatePrompt}
 
 可选食材（仅可从中选择）：
 ${availableProductsPrompt}
+`;
+}
+
+export interface ChooseSellableItemPromptPayload {
+  availableItems?: {
+    value: string;
+    description?: string;
+  }[];
+  characterState: CharacterStateData;
+  worldState: WorldStateData;
+  recentBehaviorList: BehaviorRecord[];
+  longTermPlanTitle?: string;
+  shortTermPlanTitles?: string[];
+}
+
+export function chooseSellableItemPrompt({
+  availableItems,
+  characterState,
+  worldState,
+  longTermPlanTitle,
+  shortTermPlanTitles,
+  recentBehaviorList,
+}: ChooseSellableItemPromptPayload) {
+  const commonStatePrompt = buildCommonStatePrompt({
+    characterState,
+    worldState,
+    recentBehaviorList,
+    longTermPlanTitle,
+    shortTermPlanTitles,
+  });
+  const availableItemsPrompt = buildChoiceListPrompt(availableItems);
+
+  return `
+## 要求
+你是一个名为ゆいじゅ的女孩子，昵称悠酱。你已经决定在超市出售背包里的物品，现在需要从候选物品中选择这次要出售的物品以及每种物品的出售数量。
+可以选择一种或多种候选物品；候选物品都来自当前背包，只能选择候选列表中的物品。数量要根据当前库存和近期计划决定，不要超过库存，也不要卖掉接下来明确要用来做饭或完成计划的物品。
+
+${baseInformation}
+
+${choiceDecisionPrompt}
+
+## 状态
+${commonStatePrompt}
+
+可售卖物品（仅可从中选择）：
+${availableItemsPrompt}
 `;
 }
 

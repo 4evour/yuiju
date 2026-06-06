@@ -31,8 +31,6 @@
 
 # Architecture
 
-> 项目还处于早期开发阶段，有些功能并为按照架构图实现
-
 ![](./docs/architecture.png)
 
 # 相关文档

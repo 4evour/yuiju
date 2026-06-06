@@ -2,10 +2,11 @@ import type { ActionContext, BehaviorRecord, ChoiceOption, PlanState } from "@yu
 import {
   chooseCafeCoffeePrompt,
   chooseDinerMealPrompt,
+  chooseSellableItemPrompt,
   chooseShopProductPrompt,
   chooseSupermarketProductPrompt,
+  flashModel,
   generateStructuredOutput,
-  visionModel,
 } from "@yuiju/utils";
 import { Output } from "ai";
 import dayjs from "dayjs";
@@ -43,9 +44,9 @@ export async function chooseShopProductAgent(
   for (let i = 0; i < RETRY_COUNT; i++) {
     try {
       const { output } = await generateStructuredOutput({
-        model: visionModel,
+        model: flashModel,
         providerOptions: {
-          vision: {
+          flash: {
             enable_thinking: false,
           },
         },
@@ -96,9 +97,9 @@ export async function chooseCafeCoffeeAgent(
   for (let i = 0; i < RETRY_COUNT; i++) {
     try {
       const { output } = await generateStructuredOutput({
-        model: visionModel,
+        model: flashModel,
         providerOptions: {
-          vision: {
+          flash: {
             enable_thinking: false,
           },
         },
@@ -128,7 +129,7 @@ export async function chooseSupermarketProductAgent(
   context: ActionContext,
   actionMemoryList: BehaviorRecord[],
   planState: PlanState,
-): Promise<ParameterAgentSelectedItem | undefined> {
+): Promise<ParameterAgentSelectedItem[] | undefined> {
   if (productList.length === 0) {
     return;
   }
@@ -149,25 +150,90 @@ export async function chooseSupermarketProductAgent(
   for (let i = 0; i < RETRY_COUNT; i++) {
     try {
       const { output } = await generateStructuredOutput({
-        model: visionModel,
+        model: flashModel,
         providerOptions: {
-          vision: {
+          flash: {
             enable_thinking: false,
           },
         },
         output: Output.object({
           schema: z.object({
-            value: z.enum(productList.map((item) => item.value)).describe("选择的食材名称"),
-            quantity: z.number().describe("购买数量"),
+            selectedList: z
+              .array(
+                z.object({
+                  value: z.enum(productList.map((item) => item.value)).describe("选择的食材名称"),
+                  quantity: z.number().describe("购买数量"),
+                }),
+              )
+              .describe("本次选择购买的食材列表"),
           }),
         }),
         prompt: systemPrompt,
       });
 
       logger.info("[chooseSupermarketProductAgent] 选择食材结果", output);
-      return output;
+      return output.selectedList;
     } catch (error) {
       logger.error("[chooseSupermarketProductAgent] 选择食材失败", error);
+    }
+  }
+}
+
+/**
+ *
+ * 选择售卖物品
+ */
+export async function chooseSellableItemAgent(
+  itemList: ChoiceOption[],
+  context: ActionContext,
+  actionMemoryList: BehaviorRecord[],
+  planState: PlanState,
+): Promise<ParameterAgentSelectedItem[] | undefined> {
+  if (itemList.length === 0) {
+    return;
+  }
+
+  const systemPrompt = chooseSellableItemPrompt({
+    availableItems: itemList,
+    characterState: context.characterStateData,
+    worldState: context.worldState,
+    longTermPlanTitle: planState.longTermPlan?.title,
+    shortTermPlanTitles: planState.shortTermPlans.map((plan) => plan.title),
+    recentBehaviorList: actionMemoryList.map((item) => ({
+      behavior: item.behavior,
+      description: item.description,
+      time: dayjs(item.timestamp),
+    })),
+  });
+
+  for (let i = 0; i < RETRY_COUNT; i++) {
+    try {
+      const { output } = await generateStructuredOutput({
+        model: flashModel,
+        providerOptions: {
+          flash: {
+            enable_thinking: false,
+          },
+        },
+        output: Output.object({
+          schema: z.object({
+            selectedList: z
+              .array(
+                z.object({
+                  value: z.enum(itemList.map((item) => item.value)).describe("选择的物品名称"),
+                  quantity: z.number().describe("售卖数量"),
+                }),
+              )
+              .describe("本次选择售卖的物品列表"),
+          }),
+        }),
+        prompt: systemPrompt,
+      });
+
+      logger.info("[chooseSellableItemAgent] 选择售卖物品结果", output);
+      return output.selectedList;
+    } catch (error) {
+      logger.error("[chooseSellableItemAgent] 选择售卖物品失败", error);
     }
   }
 }
@@ -202,9 +268,9 @@ export async function chooseDinerMealAgent(
   for (let i = 0; i < RETRY_COUNT; i++) {
     try {
       const { output } = await generateStructuredOutput({
-        model: visionModel,
+        model: flashModel,
         providerOptions: {
-          vision: {
+          flash: {
             enable_thinking: false,
           },
         },

@@ -67,6 +67,8 @@ export enum ActionId {
 
   /** 在超市购买食材 */
   Buy_Ingredient_At_Supermarket = "在超市购买食材",
+  /** 在超市售卖物品 */
+  Sell_Item_At_Supermarket = "在超市售卖物品",
   /** 在日和食堂店内就餐 */
   Eat_At_Diner = "在日和食堂就餐",
 

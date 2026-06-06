@@ -63,9 +63,10 @@ export const worldGuidePlaceIntroductions = [
   },
   {
     name: `${MajorScene.BusinessDistrict}-${BusinessDistrictSubScene.Supermarket}`,
-    introduction: "商业区里的超市，货架上有日常食材和生活用品。",
+    introduction: "商业区里的超市，货架上有日常食材和生活用品，也可以出售物品获得金币。",
     availableActions: [
       ActionId.Buy_Ingredient_At_Supermarket,
+      ActionId.Sell_Item_At_Supermarket,
       ActionId.Go_Home_From_Supermarket,
       ActionId.Go_To_School_From_Supermarket,
       ActionId.Go_To_Shop_From_Supermarket,
