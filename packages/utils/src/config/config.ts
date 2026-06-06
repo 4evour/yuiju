@@ -64,21 +64,3 @@ export function getYuijuProjectRoot(): string {
   cachedProjectRoot = resolve(currentDir, "../../../../");
   return cachedProjectRoot;
 }
-
-export type { YuijuConfig } from "./config-schema";
-export {
-  defineYuijuConfig,
-  type YuijuAppConfig,
-  type YuijuDatabaseConfig,
-  type YuijuLarkConfig,
-  type YuijuLlmConfig,
-  type YuijuLlmModelConfig,
-  type YuijuLlmModelSourcesConfig,
-  type YuijuLlmModelsConfig,
-  type YuijuMessageConfig,
-  type YuijuMessageInternalApiConfig,
-  type YuijuMessageWebSocketReconnectConfig,
-  type YuijuOneBotConfig,
-  type YuijuStickerConfig,
-  type YuijuStickerMap,
-} from "./config-schema";

@@ -12,17 +12,21 @@ import {
   planManager,
   SchoolSubScene,
 } from "@yuiju/utils";
-import { chooseCookingIngredientsAgent } from "@/llm/agent";
+import { planHomeCookingAgent } from "@/llm/agent";
 import { generateDiaryForDate, resolveDiaryDateForSleep } from "@/memory/diary";
 import { logger } from "@/utils/logger";
 import {
   type CookingIngredientSnapshot,
-  chooseCookedMealName,
   getAvailableCookingIngredientOptions,
-  readCookingStartContext,
 } from "../../utils/cooking-utils";
 import { resolveFoodRecoveryPerUnit } from "../../utils/food-utils";
 import { isAfternoon, isEvening, isMorning, isNight, isWeekday, isWeekend } from "../utils";
+
+interface HomeCookingStartContext {
+  ingredients: CookingIngredientSnapshot[];
+  cookedMealName: string;
+  cookedMealDescription: string;
+}
 
 function isAtHomeHouse(context: ActionContext) {
   return (
@@ -255,20 +259,20 @@ export const homeAction: ActionMetadata[] = [
         return { executionResult: "没有可以用来做饭的食材。" };
       }
 
-      const selectedIngredientNames = await chooseCookingIngredientsAgent(
+      const cookingPlan = await planHomeCookingAgent(
         ingredientOptions,
         context,
         [],
         await planManager.getState(),
       );
 
-      if (!selectedIngredientNames?.length) {
-        return { executionResult: "没有选择做饭食材。" };
+      if (!cookingPlan?.ingredients.length) {
+        return { executionResult: "没有生成做饭方案。" };
       }
 
       const ingredients: CookingIngredientSnapshot[] = [];
 
-      for (const selectedIngredientName of selectedIngredientNames) {
+      for (const selectedIngredientName of cookingPlan.ingredients) {
         const ingredientOption = ingredientOptions.find(
           (option) => option.value === selectedIngredientName,
         );
@@ -299,21 +303,19 @@ export const homeAction: ActionMetadata[] = [
       }
 
       return {
-        executionResult: `开始用${ingredients.map((ingredient) => ingredient.name).join("、")}做饭`,
+        executionResult: `开始用${ingredients.map((ingredient) => ingredient.name).join("、")}做${cookingPlan.cookedMealName}`,
         startContext: {
           ingredients,
+          cookedMealName: cookingPlan.cookedMealName,
+          cookedMealDescription: cookingPlan.cookedMealDescription,
         },
       };
     },
     durationMin: 30,
     async completionEvent(context, runningAction) {
-      const cookingContext = readCookingStartContext(runningAction.startContext);
-      if (!cookingContext) {
-        return { eventDescription: "料理没有做成功。" };
-      }
+      const cookingContext = runningAction.startContext as unknown as HomeCookingStartContext;
 
       const ingredientNames = cookingContext.ingredients.map((ingredient) => ingredient.name);
-      const cookedMealName = chooseCookedMealName(ingredientNames);
 
       let stamina = 0;
       let satiety = 0;
@@ -337,14 +339,15 @@ export const homeAction: ActionMetadata[] = [
       return {
         completionContext: {
           cookedMeal: {
-            name: cookedMealName,
+            name: cookingContext.cookedMealName,
+            description: cookingContext.cookedMealDescription,
             stamina,
             satiety,
             mood,
           },
           ingredients: cookingContext.ingredients,
         },
-        eventDescription: `用${ingredientNames.join("、")}做出${cookedMealName}吃掉了，体力、饱腹和心情恢复了`,
+        eventDescription: `用${ingredientNames.join("、")}做出${cookingContext.cookedMealName}吃掉了，${cookingContext.cookedMealDescription}，体力、饱腹和心情恢复了`,
       };
     },
   },

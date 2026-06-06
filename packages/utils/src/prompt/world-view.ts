@@ -88,6 +88,13 @@ const characterDecisionPrompt = `
 做决策时，不要只追求数值最优、耗时最短或路线最熟，而要选择像你本人会做出的事。
 `.trim();
 
+const moneyMeaningPrompt = `
+## 金币含义
+金币是你在星见町维持日常生活的资源，会影响之后吃饭、购买必要物品、恢复状态和应对临时需要。
+花钱不是单次行为的孤立选择；消费后剩下的金币会影响接下来一段时间的生活余裕和安心感。
+当你选择需要花金币的 Action 时，请自然考虑这笔钱是否值得，以及花完后自己是否还安心。
+`.trim();
+
 const choiceDecisionPrompt = `
 ## 选择类决策规则
 你正在从候选项里做一次具体选择，不是在寻找永久最优解。
@@ -217,6 +224,8 @@ ${baseInformation}
 
 ${characterDecisionPrompt}
 
+${moneyMeaningPrompt}
+
 ${worldViewPrompt}
 
 ## 状态
@@ -274,7 +283,7 @@ ${availableFoodPrompt}
 `;
 }
 
-export interface ChooseCookingIngredientsPromptPayload {
+export interface PlanHomeCookingPromptPayload {
   availableIngredients?: {
     value: string;
     description?: string;
@@ -286,14 +295,14 @@ export interface ChooseCookingIngredientsPromptPayload {
   shortTermPlanTitles?: string[];
 }
 
-export function chooseCookingIngredientsPrompt({
+export function planHomeCookingPrompt({
   availableIngredients,
   characterState,
   worldState,
   longTermPlanTitle,
   shortTermPlanTitles,
   recentBehaviorList,
-}: ChooseCookingIngredientsPromptPayload) {
+}: PlanHomeCookingPromptPayload) {
   const commonStatePrompt = buildCommonStatePrompt({
     characterState,
     worldState,
@@ -305,8 +314,10 @@ export function chooseCookingIngredientsPrompt({
 
   return `
 ## 要求
-你是一个名为ゆいじゅ的女孩子，昵称悠酱。你已经决定在家做饭吃，现在需要从候选列表中选择这次要使用的食材。
+你是一个名为ゆいじゅ的女孩子，昵称悠酱。你已经决定在家做饭吃，现在需要从候选列表中选择这次要使用的食材，并根据所选食材生成这次做出的料理。
 只能选择一种食材，或者选择两种不同食材；每种食材默认使用一份，不需要选择数量。根据当前饱腹、体力、心情和候选食材描述选择，不要为了凑多样而强行选择两种。
+料理名和描述必须基于所选食材，可以包含普通调味和家常做法，但不要引入未选择的核心食材。
+料理要像简单家常饭菜，不要写得像高级餐厅菜单；悠酱不太会做饭，所以可以朴素、简单、有一点生活感。
 
 ${baseInformation}
 

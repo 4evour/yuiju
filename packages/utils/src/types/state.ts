@@ -100,7 +100,7 @@ export interface RunningActionState {
   /** 开始阶段写入的 behavior Episode id */
   behaviorEpisodeId: string;
   /** 完成结算需要读取的开始上下文 */
-  startContext?: Record<string, unknown>;
+  startContext?: Record<string, any>;
   /** Action 决策阶段产生的主动分享意图 */
   proactiveShareIntent?: ActionProactiveShareIntent;
 }
