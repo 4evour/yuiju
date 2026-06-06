@@ -1,6 +1,7 @@
 import {
   buildChatPlanProposalPrompt,
   buildMessageHistoryUserPrompt,
+  changeCharacterMoodByChat,
   chatModel,
   chatReplyRulesPrompt,
   createChatPlanChangesProposalTool,
@@ -9,6 +10,7 @@ import {
   generateStructuredOutput,
   getCharacterCardPrompt,
   getPersonMemoryTool,
+  initCharacterStateData,
   listPersonMemoriesTool,
   messageHistorySchemaPrompt,
   NICKNAME,
@@ -165,6 +167,7 @@ export class LLMManager {
     });
 
     const { historyJson, summary } = await this.groupSession.getHistoryJson(sessionKey);
+    const characterState = await initCharacterStateData();
 
     const systemPrompt = [
       getCharacterCardPrompt(),
@@ -191,6 +194,7 @@ export class LLMManager {
             content: buildMessageHistoryUserPrompt({
               summary,
               historyJson,
+              characterState,
             }),
           },
         ],
@@ -216,15 +220,31 @@ export class LLMManager {
         output: Output.object({
           schema: z.object({
             shouldReply: z.boolean().describe("是否回复"),
-            reply: z
-              .string()
-              .describe(
-                "回复内容，可以包含合法的 [[sticker:key]] 表情包标记；shouldReply为false时，这个字段应该是空字符",
-              ),
+            reply: z.string().describe("回复内容，shouldReply为false时，这个字段应该是空字符"),
             noReplyReason: z.string().describe("不回复的简短原因"),
+            moodDelta: z
+              .union([z.literal(-1), z.literal(1)])
+              .optional()
+              .describe("心情变化"),
           }),
         }),
       });
+
+      if (result.output.moodDelta !== undefined) {
+        const moodChange = await changeCharacterMoodByChat(result.output.moodDelta);
+        this.groupSession.recordMoodChange({
+          sessionId: sessionKey,
+          delta: moodChange.delta,
+        });
+        if (moodChange.delta !== 0) {
+          logger.info("[message.mood.group] 聊天消息影响心情", {
+            groupName: getGroupDisplayName(message),
+            sender: getProtocolMessageSenderName(message),
+            delta: moodChange.delta,
+            currentMood: moodChange.currentMood,
+          });
+        }
+      }
 
       if (!this.isLatestGroupChatRequest(sessionKey, requestId)) {
         return { status: "cancelled" };
@@ -270,6 +290,7 @@ export class LLMManager {
   public async chatWithLLM(message: StoredSatoriPrivateMessage) {
     const sessionId = this.buildPrivateSessionKey(message);
     const { historyJson, summary } = await this.privateSession.getHistoryJson(sessionId);
+    const characterState = await initCharacterStateData();
     const sessionLabel = getProtocolMessageSenderName(message);
     const systemPrompt = [
       getCharacterCardPrompt(),
@@ -294,6 +315,7 @@ export class LLMManager {
             content: buildMessageHistoryUserPrompt({
               summary,
               historyJson,
+              characterState,
             }),
           },
         ],
@@ -324,9 +346,28 @@ export class LLMManager {
                 "回复内容，可以包含合法的 [[sticker:key]] 表情包标记；shouldReply为false时，这个字段应该是空字符",
               ),
             noReplyReason: z.string().describe("不回复的简短原因"),
+            moodDelta: z
+              .union([z.literal(-1), z.literal(1)])
+              .optional()
+              .describe("最新消息导致的心情变化；没有明确变化时不要输出这个字段"),
           }),
         }),
       });
+
+      if (result.output.moodDelta !== undefined) {
+        const moodChange = await changeCharacterMoodByChat(result.output.moodDelta);
+        this.privateSession.recordMoodChange({
+          sessionId,
+          delta: moodChange.delta,
+        });
+        if (moodChange.delta !== 0) {
+          logger.info("[message.mood.private] 聊天消息影响心情", {
+            sessionLabel,
+            delta: moodChange.delta,
+            currentMood: moodChange.currentMood,
+          });
+        }
+      }
 
       logger.info("[message.llm.private] LLM 返回私聊决策", {
         sessionLabel,

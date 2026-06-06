@@ -17,7 +17,7 @@ import {
   type StoredSatoriGroupMessage,
   type StoredSatoriPrivateMessage,
 } from "@/utils/message";
-import { buildConversationEpisode } from "../memory/episode-builder";
+import { buildConversationEpisode, type ChatMoodChange } from "../memory/episode-builder";
 import {
   writePersonMemoryUpdatesForGroupChatWindow,
   writePersonMemoryUpdatesForPrivateChatWindow,
@@ -109,6 +109,7 @@ export interface EpisodeWindowState<TMessage> {
   windowStartMs: number;
   lastTsMs: number;
   messages: TMessage[];
+  moodChanges: ChatMoodChange[];
 }
 
 interface ChatSessionManagerInput {
@@ -155,6 +156,19 @@ export class ChatSessionManager<TMessage extends StoredSatoriChatMessage> {
     this.appendConversationEntry(input);
     this.appendSummaryChunkMessage(input);
     this.appendEpisodeMessage(input);
+  }
+
+  recordMoodChange(input: { sessionId: string; delta: number }) {
+    if (input.delta === 0) {
+      return;
+    }
+
+    const episodeState = this.episodeStateBySessionId.get(input.sessionId);
+    if (!episodeState) {
+      return;
+    }
+
+    episodeState.moodChanges.push({ delta: input.delta });
   }
 
   async getHistoryJson(sessionId: string, limit?: number): Promise<SessionHistoryContext> {
@@ -304,6 +318,7 @@ export class ChatSessionManager<TMessage extends StoredSatoriChatMessage> {
       windowStartMs: messageTimeMs,
       lastTsMs: messageTimeMs,
       messages: [input.message],
+      moodChanges: [],
     };
   }
 

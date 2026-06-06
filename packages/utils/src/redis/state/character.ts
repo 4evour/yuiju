@@ -284,6 +284,28 @@ export const changeCharacterMoney = async (
   };
 };
 
+export const changeCharacterMoodByChat = async (
+  delta: -1 | 1,
+): Promise<{ previousMood: number; currentMood: number; delta: number }> => {
+  const state = await initCharacterStateData();
+  let currentMood = state.mood + delta;
+  if (delta < 0) {
+    currentMood = state.mood <= 30 ? state.mood : Math.max(30, currentMood);
+  } else {
+    currentMood = Math.min(100, currentMood);
+  }
+
+  if (currentMood !== state.mood) {
+    await updateCharacterStateData({ mood: currentMood });
+  }
+
+  return {
+    previousMood: state.mood,
+    currentMood,
+    delta: currentMood - state.mood,
+  };
+};
+
 export const setCharacterMoney = async (
   amount: number,
 ): Promise<{ previousMoney: number; currentMoney: number; delta: number }> => {

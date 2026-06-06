@@ -1,8 +1,10 @@
 import { NICKNAME, SUBJECT_NAME } from "../constants";
+import type { CharacterStateData } from "../types";
 
 export interface MessageHistoryUserPromptInput {
   summary?: string;
   historyJson: string;
+  characterState: CharacterStateData;
 }
 
 export interface MessageSummaryPromptInput {
@@ -52,6 +54,8 @@ export const chatReplyRulesPrompt = `
 需要回复时，回复要贴合当前聊天话题，优先接住最新上下文，不要突然转移话题、泛泛寒暄或机械总结历史。
 回复要短一点，普通回复优先一句话；认真回答或情绪回应也不要说满，超过约 45 个中文字符时请用换行符拆成 2 到 3 行。
 聊天场景对回复延时比较敏感；当需要调用多个彼此独立的工具时，应尽量在同一轮并行调用，避免不必要的串行等待。
+你需要同时判断最新消息是否让你的心情产生变化：看到夸赞表达时心情 +1；看到不礼貌、攻击性、羞辱性或恶意行为时心情 -1；没有明确变化时不要输出心情变化字段。
+当你心情很差时，最新消息发送者表现不礼貌时，可以选择不回复。
 `.trim();
 
 /**
@@ -62,7 +66,19 @@ export const chatReplyRulesPrompt = `
  * - 历史 JSON 只承载消息投影，不混入额外控制信息。
  */
 export function buildMessageHistoryUserPrompt(input: MessageHistoryUserPromptInput): string {
+  const characterState = {
+    stamina: input.characterState.stamina,
+    satiety: input.characterState.satiety,
+    mood: input.characterState.mood,
+  };
+
   return `
+## 当前状态
+
+\`\`\`json
+${JSON.stringify(characterState, null, 2)}
+\`\`\`
+
 ## 最近会话摘要
 ${input.summary || "null"}
 
