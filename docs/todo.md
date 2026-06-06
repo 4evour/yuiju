@@ -1,6 +1,5 @@
 ## TODO
 
-- action context 数据结构调整
 - 增加海岸描述
 - 上学 Action 不执行会有惩罚，课程安排
 

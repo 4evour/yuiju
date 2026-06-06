@@ -8,8 +8,11 @@ import {
 } from "../../constants/world";
 import {
   type WorldGuideTopic,
+  worldGuideCoastIntroduction,
   worldGuidePlaceIntroductions,
+  worldGuideShrineIntroduction,
   worldGuideTopics,
+  worldGuideTrainStationIntroduction,
 } from "../../prompt/world-guide";
 import { getWorldMapMajorPlaceId, worldMapDsl } from "../../prompt/world-map";
 import { initCharacterStateData } from "../../redis";
@@ -47,8 +50,23 @@ const staticGuideResultByTopic = {
   }),
   placeIntroductions: () => ({
     topic: "placeIntroductions",
-    title: "星见町地点介绍",
+    title: "星见町地点简介",
     places: worldGuidePlaceIntroductions,
+  }),
+  coastGuide: () => ({
+    topic: "coastGuide",
+    title: "月汐海岸详细介绍",
+    introduction: worldGuideCoastIntroduction,
+  }),
+  trainStationGuide: () => ({
+    topic: "trainStationGuide",
+    title: "星见町站详细介绍",
+    introduction: worldGuideTrainStationIntroduction,
+  }),
+  shrineGuide: () => ({
+    topic: "shrineGuide",
+    title: "结灯神社详细介绍",
+    introduction: worldGuideShrineIntroduction,
   }),
 } satisfies Record<WorldGuideTopic, () => unknown | Promise<unknown>>;
 
@@ -65,6 +83,9 @@ export const queryStaticGuideTool = tool({
 - dinerMenu：日和食堂可点餐品、价格、描述与店内就餐恢复效果
 - cafeMenu：薄暮咖啡可点的咖啡、价格、描述与饮用效果
 - placeIntroductions：星见町所有主要地点的简要介绍与可执行 Action
+- coastGuide：月汐海岸的详细景观介绍与季节特征
+- trainStationGuide：星见町站与运行列车的详细介绍
+- shrineGuide：结灯神社的详细介绍与可俯瞰的小镇风景
 `),
   }),
   execute: async ({ topics }) => {
