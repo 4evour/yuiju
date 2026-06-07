@@ -5,9 +5,13 @@ import {
   type ActionMetadata,
   allTrue,
   HomeSubScene,
+  logger,
   MajorScene,
+  PARK_FRUIT_ITEMS,
   ParkAreaSubScene,
+  WorldSubScene,
 } from "@yuiju/utils";
+import { worldRunner } from "@/engine/world";
 import { isNight } from "../utils";
 
 type ParkWalkTier = {
@@ -61,7 +65,7 @@ export const parkAction: ActionMetadata[] = [
   {
     action: ActionId.Walk_In_Park,
     description:
-      "在南风公园散步放松，可以按 10/30/60/120 分钟四档安排时长，时间越久心情提升越多。[耗时需要给出]",
+      "在南风公园散步放松，可以按 10/30/60/120 分钟四档安排时长，时间越久心情提升越多。散步时可以捡到公园的水果。[耗时需要给出]",
     proactiveShare: {
       enabled: true,
     },
@@ -85,10 +89,56 @@ export const parkAction: ActionMetadata[] = [
         durationMin: number;
         moodGain: number;
       };
+      const worldStateData = await context.worldState.getData();
+      const parkResources = worldStateData.scenes[WorldSubScene.Park].resources ?? [];
+      const collectedResources = parkResources.filter((resource) => resource.amount > 0);
+      const consumeCommands = collectedResources.map((resource) => ({
+        type: "consume_scene_resource" as const,
+        scene: WorldSubScene.Park,
+        resource: resource.name,
+        amount: resource.amount,
+      }));
+
+      if (consumeCommands.length > 0) {
+        await worldRunner.consumeCommandsAndRunTick(consumeCommands, new Date());
+      }
+
+      for (const resource of collectedResources) {
+        const item = PARK_FRUIT_ITEMS.find((candidate) => candidate.name === resource.name);
+        if (!item) {
+          logger.error(`Park walk resource item not found: ${resource.name}`);
+          continue;
+        }
+
+        await context.characterState.addItem(
+          {
+            name: item.name,
+            description: item.description,
+            categories: item.categories,
+            metadata: item.metadata,
+          },
+          resource.amount,
+        );
+      }
+
       await context.characterState.changeMood(walkContext.moodGain);
+
+      const collectedItemText =
+        collectedResources.length > 0
+          ? `，捡到了${collectedResources
+              .map((resource) => `${resource.name}${resource.amount}个`)
+              .join("、")}`
+          : "，但这次没有捡到任何东西";
+
       return {
-        completionContext: walkContext,
-        eventDescription: `在南风公园散步了${walkContext.durationMin}分钟，心情提升了${walkContext.moodGain}点`,
+        completionContext: {
+          ...walkContext,
+          collectedItems: collectedResources.map((resource) => ({
+            name: resource.name,
+            quantity: resource.amount,
+          })),
+        },
+        eventDescription: `在南风公园散步了${walkContext.durationMin}分钟，心情提升了${walkContext.moodGain}点${collectedItemText}`,
       };
     },
     async durationMin(_context, selectedAction?: ActionAgentDecision) {

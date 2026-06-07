@@ -54,6 +54,17 @@ export class WorldStateRunner {
     this.commands.push(command);
   }
 
+  async consumeCommandsAndRunTick(
+    commands: WorldCommand[],
+    toTime: Date = new Date(),
+  ): Promise<void> {
+    for (const command of commands) {
+      this.enqueueCommand(command);
+    }
+
+    await this.runTick(toTime);
+  }
+
   async recoverToNow(): Promise<void> {
     await this.runTick(new Date());
   }

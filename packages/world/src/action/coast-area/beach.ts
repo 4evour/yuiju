@@ -5,9 +5,13 @@ import {
   type ActionMetadata,
   allTrue,
   BusinessDistrictSubScene,
+  COAST_VALUABLE_ITEMS,
   CoastAreaSubScene,
+  logger,
   MajorScene,
+  WorldSubScene,
 } from "@yuiju/utils";
+import { worldRunner } from "@/engine/world";
 
 type CoastWalkTier = {
   durationMin: number;
@@ -65,7 +69,7 @@ export const coastAction: ActionMetadata[] = [
   {
     action: ActionId.Walk_In_Coast,
     description:
-      "在月汐海岸散步放松，可以按 10/30/60/120 分钟四档安排时长，时间越久心情提升越多。[耗时需要给出]",
+      "在月汐海岸散步放松，可以按 10/30/60/120 分钟四档安排时长，时间越久心情提升越多。散步时可能会捡到海岸的高价值物品。[耗时需要给出]",
     proactiveShare: {
       enabled: true,
     },
@@ -90,10 +94,59 @@ export const coastAction: ActionMetadata[] = [
         durationMin: number;
         moodGain: number;
       };
+      const worldStateData = await context.worldState.getData();
+      const coastResources = worldStateData.scenes[WorldSubScene.Coast].resources ?? [];
+      const collectedResources = coastResources.filter((resource) => resource.amount > 0);
+      const consumeCommands = collectedResources.map((resource) => ({
+        type: "consume_scene_resource" as const,
+        scene: WorldSubScene.Coast,
+        resource: resource.name,
+        amount: resource.amount,
+      }));
+
+      if (consumeCommands.length > 0) {
+        await worldRunner.consumeCommandsAndRunTick(consumeCommands, new Date());
+      }
+
+      for (const resource of collectedResources) {
+        const item = COAST_VALUABLE_ITEMS.find((candidate) => candidate.name === resource.name);
+        if (!item) {
+          logger.error(
+            "[action: walk in coast]",
+            `Coast walk resource item not found: ${resource.name}`,
+          );
+          continue;
+        }
+
+        await context.characterState.addItem(
+          {
+            name: item.name,
+            description: item.description,
+            categories: item.categories,
+            metadata: item.metadata,
+          },
+          resource.amount,
+        );
+      }
+
       await context.characterState.changeMood(walkContext.moodGain);
+
+      const collectedItemText =
+        collectedResources.length > 0
+          ? `，捡到了${collectedResources
+              .map((resource) => `${resource.name}${resource.amount}个`)
+              .join("、")}`
+          : "，但这次没有捡到任何东西";
+
       return {
-        completionContext: walkContext,
-        eventDescription: `在月汐海岸散步了${walkContext.durationMin}分钟，心情提升了${walkContext.moodGain}点`,
+        completionContext: {
+          ...walkContext,
+          collectedItems: collectedResources.map((resource) => ({
+            name: resource.name,
+            quantity: resource.amount,
+          })),
+        },
+        eventDescription: `在月汐海岸散步了${walkContext.durationMin}分钟，心情提升了${walkContext.moodGain}点${collectedItemText}`,
       };
     },
     async durationMin(_context, selectedAction?: ActionAgentDecision) {
