@@ -76,6 +76,8 @@ function createFallbackModel(
               throw error;
             }
 
+            logger.error("[llm", error);
+
             logger.error("[llm] 模型来源调用失败，切换到备用来源", {
               modelType: name,
               modelName: sources[index]?.model,

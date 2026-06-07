@@ -48,7 +48,7 @@ const textFormat = winston.format.printf((info: winston.Logform.TransformableInf
       return value;
     }
     if (value === undefined) {
-      return "";
+      return "undefined";
     }
     if (value instanceof Error) {
       return value.stack || value.message || String(value);
