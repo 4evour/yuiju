@@ -6,7 +6,6 @@ import {
   type CharacterStateData,
   CoastAreaSubScene,
   HomeSubScene,
-  type Location,
   MajorScene,
   ParkAreaSubScene,
   type RunningActionState,
@@ -44,37 +43,37 @@ const isActionId = (value: string): value is ActionId => {
   return (Object.values(ActionId) as string[]).includes(value);
 };
 
-const isLocation = (value: unknown): value is Location => {
+const isLocation = (value: string) => {
   if (!value || typeof value !== "object" || !("major" in value) || !("minor" in value)) {
     return false;
   }
 
-  const location = value as { major: unknown; minor: unknown };
+  const location = value as { major: string; minor: string };
 
   if (location.major === MajorScene.Home) {
-    return (Object.values(HomeSubScene) as unknown[]).includes(location.minor);
+    return (Object.values(HomeSubScene) as string[]).includes(location.minor);
   }
   if (location.major === MajorScene.School) {
-    return (Object.values(SchoolSubScene) as unknown[]).includes(location.minor);
+    return (Object.values(SchoolSubScene) as string[]).includes(location.minor);
   }
   if (location.major === MajorScene.BusinessDistrict) {
-    return (Object.values(BusinessDistrictSubScene) as unknown[]).includes(location.minor);
+    return (Object.values(BusinessDistrictSubScene) as string[]).includes(location.minor);
   }
   if (location.major === MajorScene.ParkArea) {
-    return (Object.values(ParkAreaSubScene) as unknown[]).includes(location.minor);
+    return (Object.values(ParkAreaSubScene) as string[]).includes(location.minor);
   }
   if (location.major === MajorScene.CoastArea) {
-    return (Object.values(CoastAreaSubScene) as unknown[]).includes(location.minor);
+    return (Object.values(CoastAreaSubScene) as string[]).includes(location.minor);
   }
 
   return false;
 };
 
-const isValidIsoDateString = (value: unknown): value is string => {
+const isValidIsoDateString = (value?: string): value is string => {
   return typeof value === "string" && dayjs(value).isValid();
 };
 
-const parseRunningActionState = (value: unknown): RunningActionState | null => {
+const parseRunningActionState = (value: any): RunningActionState | null => {
   if (!value || typeof value !== "object") {
     return null;
   }
@@ -216,7 +215,7 @@ export const initCharacterStateData = async (
   }
 
   if (raw.location) {
-    const parsedLocation = safeParseJson<unknown>(raw.location);
+    const parsedLocation = safeParseJson<any>(raw.location);
     if (isLocation(parsedLocation)) {
       state.location = parsedLocation;
     }
@@ -243,7 +242,7 @@ export const initCharacterStateData = async (
   }
 
   if (raw.dailyActionsDoneToday) {
-    const parsedDaily = safeParseJson<unknown>(raw.dailyActionsDoneToday);
+    const parsedDaily = safeParseJson<any>(raw.dailyActionsDoneToday);
     if (Array.isArray(parsedDaily)) {
       state.dailyActionsDoneToday = parsedDaily
         .filter((item): item is string => typeof item === "string")
@@ -254,7 +253,7 @@ export const initCharacterStateData = async (
   }
 
   if (raw.inventory) {
-    const parsedInventory = safeParseJson<unknown>(raw.inventory);
+    const parsedInventory = safeParseJson<any>(raw.inventory);
     if (Array.isArray(parsedInventory)) {
       state.inventory = parsedInventory as NonNullable<CharacterStateData["inventory"]>;
     } else {
@@ -263,7 +262,7 @@ export const initCharacterStateData = async (
   }
 
   if (raw.runningAction) {
-    const parsedRunningAction = safeParseJson<unknown>(raw.runningAction);
+    const parsedRunningAction = safeParseJson<any>(raw.runningAction);
     state.runningAction = parseRunningActionState(parsedRunningAction);
   }
 

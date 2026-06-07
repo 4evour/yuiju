@@ -15,7 +15,7 @@ import { resolveFoodRecoveryPerUnit } from "../utils/food-utils";
 function getAvailableFoodOptions(context: ActionContext): ChoiceOption[] {
   const inventory = context.characterStateData.inventory || [];
   const availableFood = inventory.filter(
-    (item) => item.categories.includes(InventoryItemCategory.Food) && item.quantity > 0,
+    (item) => item?.categories?.includes(InventoryItemCategory.Food) && item.quantity > 0,
   );
 
   return availableFood.map((food) => {

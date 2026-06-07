@@ -16,7 +16,7 @@ export const queryAvailableInventoryItems = tool({
     const inventory = characterState.inventory || [];
     const availableItems = inventory.filter(
       (item) =>
-        item.categories.some((itemCategory) => category.includes(itemCategory)) &&
+        item.categories.some((itemCategory) => category?.includes(itemCategory)) &&
         item.quantity > 0,
     );
 

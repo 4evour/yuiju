@@ -15,7 +15,7 @@ export function getAvailableCookingIngredientOptions(context: ActionContext): Ch
   const inventory = context.characterStateData.inventory || [];
   return inventory
     .filter(
-      (item) => item.categories.includes(InventoryItemCategory.Ingredient) && item.quantity > 0,
+      (item) => item?.categories?.includes(InventoryItemCategory.Ingredient) && item.quantity > 0,
     )
     .map((item): ChoiceOption => {
       return {

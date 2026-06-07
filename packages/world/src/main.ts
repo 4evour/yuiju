@@ -20,6 +20,7 @@ async function main() {
     });
   });
   process.on("unhandledRejection", (reason) => {
+    console.log(reason);
     logger.error({ event: "process.unhandledRejection", error: String(reason) });
   });
 
