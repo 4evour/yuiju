@@ -18,8 +18,10 @@ export const queryStateTool: Tool = {
       currentTime: getTimeWithWeekday(now, "MM-DD HH:mm"),
       characterState,
       worldState: {
+        lastAdvancedAt: worldState.lastAdvancedAt,
         weather: worldState.weather?.type,
         temperatureLevel: worldState.weather?.temperatureLevel,
+        scenes: worldState.scenes,
       },
       planState: {
         longTermPlan: planState.longTermPlan?.title ?? null,

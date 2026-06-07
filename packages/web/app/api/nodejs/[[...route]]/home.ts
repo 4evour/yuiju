@@ -32,6 +32,7 @@ export interface HomeResponse {
     plans?: { longTerm?: string; shortTerm?: string[] };
     world?: {
       time?: string;
+      lastAdvancedAt?: string;
       weather?: {
         type?: string;
         temperatureLevel?: string;
@@ -39,6 +40,7 @@ export interface HomeResponse {
         periodEndAt?: string;
         updatedAt?: string;
       };
+      scenes?: Awaited<ReturnType<typeof initWorldStateData>>["scenes"];
     };
   };
 }
@@ -63,6 +65,7 @@ export interface HomeMapResponse {
 export function buildHomeWorldPayload(world: Awaited<ReturnType<typeof initWorldStateData>>) {
   return {
     time: world.time.format("YYYY-MM-DD HH:mm"),
+    lastAdvancedAt: world.lastAdvancedAt,
     weather: world.weather
       ? {
           type: world.weather.type,
@@ -72,6 +75,7 @@ export function buildHomeWorldPayload(world: Awaited<ReturnType<typeof initWorld
           updatedAt: world.weather.updatedAt,
         }
       : undefined,
+    scenes: world.scenes,
   };
 }
 

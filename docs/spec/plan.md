@@ -45,29 +45,33 @@
    interface WorldSceneState {
      isOpen?: boolean;
      changedAt?: string | null;
-     resources?: Record<string, WorldSceneResourceState>;
+     resources?: WorldSceneResourceState[];
    }
 
    interface WorldSceneResourceState {
+     name: string;
      amount: number;
-     capacity: number;
      lastRefreshedAt: string | null;
    }
    ```
 
-   `resources` 放在 scene 内部，例如：
+   `resources` 放在 scene 内部，直接存具体物品数组，例如：
 
    ```ts
    scenes: {
      park: {
-       resources: {
-         fruit: { amount: 0, capacity: 5, lastRefreshedAt: null },
-       },
+       resources: [
+         { name: "野莓", amount: 0, lastRefreshedAt: null },
+         { name: "青苹果", amount: 0, lastRefreshedAt: null },
+         { name: "南风桃", amount: 0, lastRefreshedAt: null },
+       ],
      },
      coast: {
-       resources: {
-         valuableItem: { amount: 0, capacity: 2, lastRefreshedAt: null },
-       },
+       resources: [
+         { name: "星砂贝壳", amount: 0, lastRefreshedAt: null },
+         { name: "海玻璃", amount: 0, lastRefreshedAt: null },
+         { name: "月汐珍珠", amount: 0, lastRefreshedAt: null },
+       ],
      },
    }
    ```
@@ -308,18 +312,17 @@ export interface WorldAdvanceContext {
 
 第一版资源设计：
 
-- `scenes.park.resources.fruit`
-  - 每天刷新。
-  - 表达南风公园可采集的水果。
-  - 定位为低到中价值资源。
-  - 采集到的水果是可食用、可料理的物品，写入背包时同时使用 `InventoryItemCategory.Food` 和 `InventoryItemCategory.Ingredient`。
+- `scenes.park.resources`
+  - 直接存南风公园可采集的具体水果物品。
+  - 每天刷新一次，当天水果总量随机为 `1~5`，再分配到各个水果物品上。
+  - 采集到的水果写入背包时，同时使用 `InventoryItemCategory.Food` 和 `InventoryItemCategory.Ingredient`。
   - 第一版水果池：
     - `野莓`：`metadata: { stamina: 3, satiety: 8, mood: 1, salePrice: 8 }`
     - `青苹果`：`metadata: { stamina: 5, satiety: 12, mood: 1, salePrice: 12 }`
     - `南风桃`：`metadata: { stamina: 6, satiety: 16, mood: 2, salePrice: 20 }`
-- `scenes.coast.resources.valuableItem`
-  - 每天刷新。
-  - 表达月汐海岸可拾取的高价值物品。
+- `scenes.coast.resources`
+  - 直接存月汐海岸可拾取的具体高价值物品。
+  - 每天刷新一次，当天高价值物品总量随机为 `0~2`，可能完全不刷新。
   - 定位为低频、高价值、可售卖资源。
   - 需要在 `InventoryItemCategory` 中新增 `Valuable = "valuable"`。
   - 第一版高价值物品池：
@@ -437,8 +440,8 @@ type WorldCommand = { type: 'consume_scene_resource'; scene: string; resource: s
 2. 场景资源状态接入 Action。
 
    例如：
-   - 采集公园水果时，读取并消耗 `scenes.park.resources.fruit`。
-   - 拾取海岸高价值物品时，读取并消耗 `scenes.coast.resources.valuableItem`。
+   - 采集公园水果时，在 `scenes.park.resources` 数组中按 `name` 找到 `野莓`、`青苹果`、`南风桃` 对应资源并消耗。
+   - 拾取海岸高价值物品时，在 `scenes.coast.resources` 数组中按 `name` 找到 `星砂贝壳`、`海玻璃`、`月汐珍珠` 对应资源并消耗。
    - 水音池钓鱼不接入世界资源，继续按现有无限资源逻辑处理。
 
 ### 注意事项

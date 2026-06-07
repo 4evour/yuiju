@@ -7,9 +7,15 @@ export const queryAvailableInventoryItems = tool({
   description: "查询背包的可用物品的信息",
   inputSchema: z.object({
     category: z
-      .array(z.enum([InventoryItemCategory.Food, InventoryItemCategory.Ingredient]))
+      .array(
+        z.enum([
+          InventoryItemCategory.Food,
+          InventoryItemCategory.Ingredient,
+          InventoryItemCategory.Valuable,
+        ]),
+      )
       .min(1)
-      .describe("物品类别。food 是可直接吃的食物，ingredient 是做饭食材。"),
+      .describe("物品类别。food 是可直接吃的食物，ingredient 是做饭食材，valuable 是高价值物品。"),
   }),
   execute: async ({ category }) => {
     const characterState = await initCharacterStateData();

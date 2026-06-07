@@ -1,16 +1,46 @@
 import {
+  COAST_VALUABLE_ITEMS,
   type IWorldState,
   initWorldStateData,
+  PARK_FRUIT_ITEMS,
   saveWorldStateData,
   type WeatherSnapshot,
+  type WorldSceneState,
   type WorldStateData,
+  WorldSubScene,
 } from "@yuiju/utils";
 import dayjs, { type Dayjs } from "dayjs";
 import { cloneDeep } from "lodash-es";
 
 export class WorldState implements IWorldState {
   public time: Dayjs = dayjs();
+  public lastAdvancedAt: string = dayjs().toISOString();
   public weather: WeatherSnapshot | null = null;
+  public scenes: Record<WorldSubScene, WorldSceneState> = {
+    [WorldSubScene.House]: {},
+    [WorldSubScene.School]: { isOpen: false, changedAt: null },
+    [WorldSubScene.Shop]: { isOpen: false, changedAt: null },
+    [WorldSubScene.Supermarket]: { isOpen: false, changedAt: null },
+    [WorldSubScene.Diner]: { isOpen: false, changedAt: null },
+    [WorldSubScene.Cafe]: { isOpen: false, changedAt: null },
+    [WorldSubScene.TrainStation]: {},
+    [WorldSubScene.Park]: {
+      resources: PARK_FRUIT_ITEMS.map((item) => ({
+        name: item.name,
+        amount: 0,
+        lastRefreshedAt: null,
+      })),
+    },
+    [WorldSubScene.Pond]: {},
+    [WorldSubScene.Shrine]: {},
+    [WorldSubScene.Coast]: {
+      resources: COAST_VALUABLE_ITEMS.map((item) => ({
+        name: item.name,
+        amount: 0,
+        lastRefreshedAt: null,
+      })),
+    },
+  };
 
   private static instance: WorldState | null = null;
 
@@ -22,14 +52,31 @@ export class WorldState implements IWorldState {
   async load() {
     const data = await initWorldStateData();
     this.time = data.time;
+    this.lastAdvancedAt = data.lastAdvancedAt;
     this.weather = data.weather;
+    this.scenes = cloneDeep(data.scenes);
   }
 
   async save() {
     await saveWorldStateData({
       time: this.time,
+      lastAdvancedAt: this.lastAdvancedAt,
       weather: this.weather,
+      scenes: this.scenes,
     });
+  }
+
+  public async getData(): Promise<WorldStateData> {
+    await this.load();
+    return this.log();
+  }
+
+  public async setData(data: WorldStateData) {
+    this.time = data.time;
+    this.lastAdvancedAt = data.lastAdvancedAt;
+    this.weather = data.weather ? cloneDeep(data.weather) : null;
+    this.scenes = cloneDeep(data.scenes);
+    await this.save();
   }
 
   public async updateTime(newTime?: Dayjs) {
@@ -60,14 +107,42 @@ export class WorldState implements IWorldState {
 
   public async reset() {
     this.time = dayjs();
+    this.lastAdvancedAt = this.time.toISOString();
     this.weather = null;
+    this.scenes = {
+      [WorldSubScene.House]: {},
+      [WorldSubScene.School]: { isOpen: false, changedAt: null },
+      [WorldSubScene.Shop]: { isOpen: false, changedAt: null },
+      [WorldSubScene.Supermarket]: { isOpen: false, changedAt: null },
+      [WorldSubScene.Diner]: { isOpen: false, changedAt: null },
+      [WorldSubScene.Cafe]: { isOpen: false, changedAt: null },
+      [WorldSubScene.TrainStation]: {},
+      [WorldSubScene.Park]: {
+        resources: PARK_FRUIT_ITEMS.map((item) => ({
+          name: item.name,
+          amount: 0,
+          lastRefreshedAt: null,
+        })),
+      },
+      [WorldSubScene.Pond]: {},
+      [WorldSubScene.Shrine]: {},
+      [WorldSubScene.Coast]: {
+        resources: COAST_VALUABLE_ITEMS.map((item) => ({
+          name: item.name,
+          amount: 0,
+          lastRefreshedAt: null,
+        })),
+      },
+    };
     await this.save();
   }
 
   public log(): WorldStateData {
     return cloneDeep({
       time: this.time,
+      lastAdvancedAt: this.lastAdvancedAt,
       weather: this.weather,
+      scenes: this.scenes,
     });
   }
 }

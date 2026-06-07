@@ -11,35 +11,50 @@ export enum MajorScene {
   CoastArea = "海岸",
 }
 
-// 家的小场景
-export enum HomeSubScene {
+// 世界具体小场景
+export enum WorldSubScene {
   House = "屋内",
-}
-
-// 星见丘高校的小场景
-export enum SchoolSubScene {
-  Campus = "校园",
-}
-
-// 商业区的小场景
-export enum BusinessDistrictSubScene {
+  School = "校园",
   Shop = "小町商店",
   Supermarket = "超市",
   Diner = "日和食堂",
   Cafe = "薄暮咖啡",
   TrainStation = "星见町站",
+  Park = "南风公园",
+  Pond = "水音池",
+  Shrine = "结灯神社",
+  Coast = "月汐海岸",
+}
+
+// 家的小场景
+export enum HomeSubScene {
+  House = WorldSubScene.House,
+}
+
+// 星见丘高校的小场景
+export enum SchoolSubScene {
+  Campus = WorldSubScene.School,
+}
+
+// 商业区的小场景
+export enum BusinessDistrictSubScene {
+  Shop = WorldSubScene.Shop,
+  Supermarket = WorldSubScene.Supermarket,
+  Diner = WorldSubScene.Diner,
+  Cafe = WorldSubScene.Cafe,
+  TrainStation = WorldSubScene.TrainStation,
 }
 
 // 公园周边的小场景
 export enum ParkAreaSubScene {
-  Park = "南风公园",
-  Pond = "水音池",
-  Shrine = "结灯神社",
+  Park = WorldSubScene.Park,
+  Pond = WorldSubScene.Pond,
+  Shrine = WorldSubScene.Shrine,
 }
 
 // 海岸的小场景
 export enum CoastAreaSubScene {
-  Beach = "月汐海岸",
+  Beach = WorldSubScene.Coast,
 }
 
 // 位置类型（判别联合）
@@ -64,6 +79,7 @@ export type InventoryItemMetadata = {
 export enum InventoryItemCategory {
   Food = "food",
   Ingredient = "ingredient",
+  Valuable = "valuable",
 }
 
 /**
@@ -165,12 +181,31 @@ export interface ICharacterState {
   getItemQuantity(itemName: string): Promise<number>;
 }
 
+export interface WorldSceneResourceState {
+  name: string;
+  amount: number;
+  lastRefreshedAt: string | null;
+}
+
+export interface WorldSceneState {
+  /**
+   * 场景开放状态。没有该字段代表永久开放。
+   */
+  isOpen?: boolean;
+  changedAt?: string | null;
+  resources?: WorldSceneResourceState[];
+}
+
 export interface WorldStateData {
   time: Dayjs;
+  lastAdvancedAt: string;
   weather: WeatherSnapshot | null;
+  scenes: Record<WorldSubScene, WorldSceneState>;
 }
 
 export interface IWorldState extends WorldStateData {
+  getData(): Promise<WorldStateData>;
+  setData(data: WorldStateData): Promise<void>;
   log(): WorldStateData;
   updateTime(newTime?: Dayjs): Promise<void>;
   setWeather(snapshot: WeatherSnapshot): Promise<void>;
