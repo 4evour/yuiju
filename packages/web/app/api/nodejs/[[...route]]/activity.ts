@@ -8,7 +8,6 @@ import {
   normalizeActivityPageSize,
   queryActivityEvents,
 } from "@/lib/activity/activity-query";
-import { rejectPublicRequest } from "./public-guard";
 
 export const activityRoute = new Hono();
 

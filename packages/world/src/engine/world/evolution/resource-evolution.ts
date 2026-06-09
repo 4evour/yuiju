@@ -42,7 +42,7 @@ export class ResourceEvolution extends WorldEvolution {
       context.toTime,
       refreshedAt,
       0,
-      2,
+      3,
     );
 
     return {

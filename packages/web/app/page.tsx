@@ -36,7 +36,7 @@ export default function HomePage() {
   }, [homeData]);
 
   return (
-    <main className="max-w-[1200px] mx-auto px-[18px] pt-[18px] pb-[36px]">
+    <main className="max-w-300 mx-auto px-[18px] pt-[18px] pb-[36px]">
       <HomePageHeader summary={summary} />
 
       <div className="grid grid-cols-[360px_1fr] max-[1020px]:grid-cols-1 gap-[14px] items-start">
