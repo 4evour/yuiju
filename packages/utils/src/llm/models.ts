@@ -69,6 +69,14 @@ function createFallbackModel(
           try {
             return await models[index].doGenerate(params);
           } catch (error: any) {
+            if (
+              params.abortSignal?.aborted ||
+              error?.name === "AbortError" ||
+              error?.message === "replaced by newer group chat request"
+            ) {
+              throw error;
+            }
+
             const now = Date.now();
             availability.markFailed(index, now);
 
@@ -97,6 +105,14 @@ function createFallbackModel(
           try {
             return await models[index].doStream(params);
           } catch (error: any) {
+            if (
+              params.abortSignal?.aborted ||
+              error?.name === "AbortError" ||
+              error?.message === "replaced by newer group chat request"
+            ) {
+              throw error;
+            }
+
             const now = Date.now();
             availability.markFailed(index, now);
 
