@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="480" viewBox="0 0 960 480" role="img" aria-labelledby="title desc">
+  <title id="title">角色行为推进流程</title>
+  <desc id="desc">展示角色行为从读取角色状态、世界状态和历史经历开始，经过可执行行为计算、LLM 选择、Action 执行、状态更新和行为记录，进入下一轮的流程。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#4b5563" />
+    </marker>
+    <style>
+      .bg { fill: #f8fafc; }
+      .panel { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.5; }
+      .input { fill: #eff6ff; stroke: #60a5fa; stroke-width: 1.5; }
+      .decision { fill: #f5f3ff; stroke: #a78bfa; stroke-width: 1.5; }
+      .action { fill: #f0fdf4; stroke: #86efac; stroke-width: 1.5; }
+      .output { fill: #fff7ed; stroke: #fdba74; stroke-width: 1.5; }
+      .title { fill: #111827; font: 700 22px sans-serif; }
+      .text { fill: #1f2937; font: 600 16px sans-serif; }
+      .small { fill: #475569; font: 14px sans-serif; }
+      .line { stroke: #4b5563; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect class="bg" width="960" height="480" rx="20" />
+  <text class="title" x="40" y="52">角色行为推进</text>
+  <text class="small" x="40" y="82">负责让角色根据当前状态和世界环境持续行动，并把行动结果沉淀为历史。</text>
+
+  <rect class="input" x="54" y="132" width="178" height="118" rx="12" />
+  <text class="text" x="143" y="164" text-anchor="middle">输入上下文</text>
+  <text class="small" x="143" y="190" text-anchor="middle">角色状态</text>
+  <text class="small" x="143" y="214" text-anchor="middle">世界状态</text>
+  <text class="small" x="143" y="238" text-anchor="middle">历史经历</text>
+
+  <path class="line" d="M 232 191 H 286" />
+
+  <rect class="panel" x="286" y="132" width="176" height="118" rx="12" />
+  <text class="text" x="374" y="164" text-anchor="middle">计算候选行为</text>
+  <text class="small" x="374" y="194" text-anchor="middle">根据状态和规则</text>
+  <text class="small" x="374" y="218" text-anchor="middle">过滤可执行 Action</text>
+
+  <path class="line" d="M 462 191 H 516" />
+
+  <rect class="decision" x="516" y="132" width="176" height="118" rx="12" />
+  <text class="text" x="604" y="164" text-anchor="middle">LLM 选择</text>
+  <text class="small" x="604" y="194" text-anchor="middle">只在候选行为中决策</text>
+  <text class="small" x="604" y="218" text-anchor="middle">补充行动理由和参数</text>
+
+  <path class="line" d="M 692 191 H 746" />
+
+  <rect class="action" x="746" y="132" width="160" height="118" rx="12" />
+  <text class="text" x="826" y="164" text-anchor="middle">执行 Action</text>
+  <text class="small" x="826" y="194" text-anchor="middle">产生状态变化</text>
+  <text class="small" x="826" y="218" text-anchor="middle">等待行为完成</text>
+
+  <path class="line" d="M 826 250 V 314" />
+
+  <rect class="output" x="654" y="314" width="172" height="96" rx="12" />
+  <text class="text" x="740" y="348" text-anchor="middle">更新角色状态</text>
+  <text class="small" x="740" y="376" text-anchor="middle">位置、体力、心情等</text>
+
+  <path class="line" d="M 654 362 H 520" />
+
+  <rect class="output" x="342" y="314" width="178" height="96" rx="12" />
+  <text class="text" x="431" y="348" text-anchor="middle">记录行为历史</text>
+  <text class="small" x="431" y="376" text-anchor="middle">供记忆、日记、回复使用</text>
+
+  <path class="line" d="M 342 362 H 208 V 250" />
+  <text class="small" x="210" y="392" text-anchor="middle">进入下一轮行为推进</text>
+</svg>

@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="680" viewBox="0 0 1040 680" role="img" aria-labelledby="title desc">
+  <title id="title">Memory 记忆上下文架构</title>
+  <desc id="desc">展示四类记忆来源汇入记忆检索与上下文组装层，再进入 Action 决策、消息回复和主动分享，并由新的行动与聊天反向沉淀记忆。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#4b5563" />
+    </marker>
+    <style>
+      .bg { fill: #f8fafc; }
+      .source { fill: #eff6ff; stroke: #60a5fa; stroke-width: 1.5; }
+      .center { fill: #f5f3ff; stroke: #a78bfa; stroke-width: 2; }
+      .llm { fill: #f0fdf4; stroke: #86efac; stroke-width: 1.5; }
+      .feedback { fill: #fff7ed; stroke: #fdba74; stroke-width: 1.5; }
+      .title { fill: #111827; font: 700 22px sans-serif; }
+      .text { fill: #1f2937; font: 600 16px sans-serif; }
+      .small { fill: #475569; font: 14px sans-serif; }
+      .line { stroke: #4b5563; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .softline { stroke: #64748b; stroke-width: 2; fill: none; stroke-dasharray: 7 6; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1040" height="680" rx="20" />
+  <text class="title" x="40" y="52">Memory 记忆上下文</text>
+  <text class="small" x="40" y="82">不同记忆来源不会直接塞进 Prompt，而是先经过检索和组装，变成当前场景需要的上下文。</text>
+
+  <rect class="source" x="74" y="132" width="190" height="92" rx="14" />
+  <text class="text" x="169" y="166" text-anchor="middle">长短期计划</text>
+  <text class="small" x="169" y="194" text-anchor="middle">角色接下来想做什么</text>
+
+  <rect class="source" x="304" y="132" width="190" height="92" rx="14" />
+  <text class="text" x="399" y="166" text-anchor="middle">当天 Action 记录</text>
+  <text class="small" x="399" y="194" text-anchor="middle">今天真实发生过什么</text>
+
+  <rect class="source" x="544" y="132" width="190" height="92" rx="14" />
+  <text class="text" x="639" y="166" text-anchor="middle">日记</text>
+  <text class="small" x="639" y="194" text-anchor="middle">更早经历的叙事归档</text>
+
+  <rect class="source" x="774" y="132" width="190" height="92" rx="14" />
+  <text class="text" x="869" y="166" text-anchor="middle">用户文件记忆</text>
+  <text class="small" x="869" y="194" text-anchor="middle">称呼、喜好、雷区、互动</text>
+
+  <path class="line" d="M 169 224 C 169 292 392 292 466 336" />
+  <path class="line" d="M 399 224 C 399 278 466 292 493 336" />
+  <path class="line" d="M 639 224 C 639 278 574 292 547 336" />
+  <path class="line" d="M 869 224 C 869 292 648 292 574 336" />
+
+  <rect class="center" x="344" y="336" width="352" height="126" rx="18" />
+  <text class="text" x="520" y="374" text-anchor="middle">记忆检索与上下文组装</text>
+  <text class="small" x="520" y="406" text-anchor="middle">按当前场景选择需要的记忆</text>
+  <text class="small" x="520" y="432" text-anchor="middle">压缩、筛选，再注入 Prompt</text>
+
+  <path class="line" d="M 520 462 V 518" />
+
+  <rect class="llm" x="234" y="518" width="172" height="92" rx="14" />
+  <text class="text" x="320" y="552" text-anchor="middle">Action 决策</text>
+  <text class="small" x="320" y="580" text-anchor="middle">选择下一步行动</text>
+
+  <rect class="llm" x="434" y="518" width="172" height="92" rx="14" />
+  <text class="text" x="520" y="552" text-anchor="middle">消息回复</text>
+  <text class="small" x="520" y="580" text-anchor="middle">生成对话内容</text>
+
+  <rect class="llm" x="634" y="518" width="172" height="92" rx="14" />
+  <text class="text" x="720" y="552" text-anchor="middle">主动分享</text>
+  <text class="small" x="720" y="580" text-anchor="middle">分享角色生活</text>
+
+  <path class="line" d="M 520 462 C 520 492 320 492 320 518" />
+  <path class="line" d="M 520 462 V 518" />
+  <path class="line" d="M 520 462 C 520 492 720 492 720 518" />
+
+  <rect class="feedback" x="60" y="374" width="190" height="98" rx="14" />
+  <text class="text" x="155" y="408" text-anchor="middle">新行动 / 新聊天</text>
+  <text class="small" x="155" y="436" text-anchor="middle">继续产生 Episode、日记材料</text>
+  <text class="small" x="155" y="458" text-anchor="middle">或更新用户记忆</text>
+
+  <path class="softline" d="M 234 564 C 136 564 92 514 155 472" />
+  <path class="softline" d="M 434 564 C 298 564 190 522 155 472" />
+  <path class="softline" d="M 634 564 C 424 644 160 592 155 472" />
+  <path class="softline" d="M 155 374 C 155 292 74 292 74 178" />
+  <text class="small" x="130" y="338" text-anchor="middle">沉淀回记忆</text>
+</svg>

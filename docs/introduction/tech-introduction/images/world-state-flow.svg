@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="560" viewBox="0 0 960 560" role="img" aria-labelledby="title desc">
+  <title id="title">世界状态 Loop</title>
+  <desc id="desc">展示世界状态推进引擎按固定间隔触发，读取当前世界状态，合并外部世界命令，构造推进上下文，按配置执行 Evolution 列表，计算下一份世界状态并写回。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#4b5563" />
+    </marker>
+    <style>
+      .bg { fill: #f8fafc; }
+      .box { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.5; }
+      .trigger { fill: #eff6ff; stroke: #60a5fa; stroke-width: 1.5; }
+      .context { fill: #f5f3ff; stroke: #a78bfa; stroke-width: 1.5; }
+      .evolution { fill: #f0fdf4; stroke: #86efac; stroke-width: 1.5; }
+      .state { fill: #fff7ed; stroke: #fdba74; stroke-width: 1.5; }
+      .title { fill: #111827; font: 700 22px sans-serif; }
+      .text { fill: #1f2937; font: 600 16px sans-serif; }
+      .small { fill: #475569; font: 14px sans-serif; }
+      .line { stroke: #4b5563; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .loop { stroke: #64748b; stroke-width: 2; fill: none; stroke-dasharray: 7 6; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect class="bg" width="960" height="560" rx="20" />
+  <text class="title" x="40" y="52">世界状态 Loop</text>
+  <text class="small" x="40" y="82">按固定间隔推进世界状态，每一轮通过可配置的 Evolution 列表计算下一份世界状态。</text>
+
+  <rect class="trigger" x="70" y="142" width="172" height="82" rx="12" />
+  <text class="text" x="156" y="174" text-anchor="middle">固定间隔触发</text>
+  <text class="small" x="156" y="200" text-anchor="middle">开始一轮推进</text>
+
+  <path class="line" d="M 242 183 H 300" />
+
+  <rect class="box" x="300" y="142" width="172" height="82" rx="12" />
+  <text class="text" x="386" y="174" text-anchor="middle">读取当前状态</text>
+  <text class="small" x="386" y="200" text-anchor="middle">以上一轮结果为起点</text>
+
+  <path class="line" d="M 472 183 H 530" />
+
+  <rect class="context" x="530" y="142" width="172" height="82" rx="12" />
+  <text class="text" x="616" y="174" text-anchor="middle">构造推进上下文</text>
+  <text class="small" x="616" y="200" text-anchor="middle">时间差 / 状态 / 命令</text>
+
+  <rect class="context" x="530" y="40" width="172" height="70" rx="12" />
+  <text class="text" x="616" y="70" text-anchor="middle">外部世界命令</text>
+  <text class="small" x="616" y="94" text-anchor="middle">进入本轮上下文</text>
+  <path class="line" d="M 616 110 V 142" />
+
+  <path class="line" d="M 616 224 V 276" />
+
+  <rect class="evolution" x="236" y="276" width="480" height="130" rx="14" />
+  <text class="text" x="476" y="310" text-anchor="middle">执行 Evolution 列表（可配置）</text>
+  <text class="small" x="476" y="338" text-anchor="middle">每个 Evolution 读取本轮上下文，计算并返回下一份世界状态</text>
+
+  <rect class="box" x="276" y="354" width="104" height="34" rx="8" />
+  <text class="small" x="328" y="376" text-anchor="middle">天气</text>
+  <rect class="box" x="424" y="354" width="104" height="34" rx="8" />
+  <text class="small" x="476" y="376" text-anchor="middle">场景</text>
+  <rect class="box" x="572" y="354" width="104" height="34" rx="8" />
+  <text class="small" x="624" y="376" text-anchor="middle">资源 / ...</text>
+
+  <path class="line" d="M 716 341 H 772" />
+
+  <rect class="state" x="772" y="300" width="130" height="82" rx="12" />
+  <text class="text" x="837" y="332" text-anchor="middle">下一份</text>
+  <text class="text" x="837" y="356" text-anchor="middle">世界状态</text>
+
+  <path class="line" d="M 837 382 V 438 H 530" />
+
+  <rect class="state" x="366" y="410" width="164" height="82" rx="12" />
+  <text class="text" x="448" y="442" text-anchor="middle">写回世界状态</text>
+  <text class="small" x="448" y="468" text-anchor="middle">成为下一轮起点</text>
+
+  <path class="loop" d="M 366 451 H 156 V 224" />
+  <text class="small" x="170" y="466">等待下一次触发</text>
+</svg>
