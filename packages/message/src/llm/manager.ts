@@ -225,7 +225,9 @@ export class LLMManager {
             moodDelta: z
               .union([z.literal(-1), z.literal(1)])
               .optional()
-              .describe("心情变化"),
+              .describe(
+                "最新消息导致的心情变化；没有明确变化时不要输出这个字段；这个字段不代表回复语气强度，回复语气仍要参考当前状态里的心情",
+              ),
           }),
         }),
       });
@@ -349,7 +351,9 @@ export class LLMManager {
             moodDelta: z
               .union([z.literal(-1), z.literal(1)])
               .optional()
-              .describe("最新消息导致的心情变化；没有明确变化时不要输出这个字段"),
+              .describe(
+                "最新消息导致的心情变化；没有明确变化时不要输出这个字段；这个字段不代表回复语气强度，回复语气仍要参考当前状态里的心情",
+              ),
           }),
         }),
       });
