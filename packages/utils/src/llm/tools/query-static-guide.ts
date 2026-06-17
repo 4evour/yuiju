@@ -24,7 +24,7 @@ const staticGuideResultByTopic = {
 
     return {
       topic: "worldMap",
-      title: "星见町世界地图",
+      title: "羽浦町世界地图",
       dsl: worldMapDsl(major),
     };
   },
@@ -50,7 +50,7 @@ const staticGuideResultByTopic = {
   }),
   placeIntroductions: () => ({
     topic: "placeIntroductions",
-    title: "星见町地点简介",
+    title: "羽浦町地点简介",
     places: worldGuidePlaceIntroductions,
   }),
   coastGuide: () => ({
@@ -60,7 +60,7 @@ const staticGuideResultByTopic = {
   }),
   trainStationGuide: () => ({
     topic: "trainStationGuide",
-    title: "星见町站详细介绍",
+    title: "羽浦町站详细介绍",
     introduction: worldGuideTrainStationIntroduction,
   }),
   shrineGuide: () => ({
@@ -77,14 +77,14 @@ export const queryStaticGuideTool = tool({
       .array(z.enum(worldGuideTopics))
       .min(1)
       .describe(`
-- worldMap：星见町世界地图 DSL，包括地点关系、路径、方向与移动耗时
+- worldMap：羽浦町世界地图 DSL，包括地点关系、路径、方向与移动耗时
 - shopProducts：小町商店售卖的商品、价格、描述与食用效果
 - supermarketProducts：超市售卖的食材、价格与描述
 - dinerMenu：日和食堂可点餐品、价格、描述与店内就餐恢复效果
 - cafeMenu：薄暮咖啡可点的咖啡、价格、描述与饮用效果
-- placeIntroductions：星见町所有主要地点的简要介绍与可执行 Action
+- placeIntroductions：羽浦町所有主要地点的简要介绍与可执行 Action
 - coastGuide：月汐海岸的详细景观介绍与季节特征
-- trainStationGuide：星见町站与运行列车的详细介绍
+- trainStationGuide：羽浦町站与运行列车的详细介绍
 - shrineGuide：结灯神社的详细介绍与可俯瞰的小镇风景
 `),
   }),

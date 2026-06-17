@@ -155,7 +155,7 @@ export const coastAction: ActionMetadata[] = [
   },
   {
     action: ActionId.Take_Train_To_Train_Station_From_Coast,
-    description: "从月汐海岸乘电车回星见町站。[金币-3][体力-7][饱腹-5][耗时15分钟]",
+    description: "从月汐海岸乘电车回羽浦町站。[金币-3][体力-7][饱腹-5][耗时15分钟]",
     proactiveShare: {
       enabled: true,
     },

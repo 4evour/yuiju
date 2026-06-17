@@ -33,7 +33,6 @@
 2. 在 `InventoryItemCategory` 中增加 `Valuable = "valuable"`。
 
    作用：
-
    - 表达海岸可拾取的高价值物品。
    - 这类物品主要用于售卖，不参与食用和料理。
 
@@ -248,7 +247,7 @@ export interface WorldAdvanceContext {
 - 公园
 - 水音池
 - 结灯神社
-- 星见町站
+- 羽浦町站
 - 海岸
 
 第一版状态重点：

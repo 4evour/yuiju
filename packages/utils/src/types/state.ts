@@ -19,7 +19,7 @@ export enum WorldSubScene {
   Supermarket = "超市",
   Diner = "日和食堂",
   Cafe = "薄暮咖啡",
-  TrainStation = "星见町站",
+  TrainStation = "羽浦町站",
   Park = "南风公园",
   Pond = "水音池",
   Shrine = "结灯神社",

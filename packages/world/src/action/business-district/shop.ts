@@ -223,7 +223,7 @@ export const shopAction: ActionMetadata[] = [
   },
   {
     action: ActionId.Go_To_Train_Station_From_Shop,
-    description: "从小町商店前往星见町站。[体力-1][饱腹-1][耗时5分钟]",
+    description: "从小町商店前往羽浦町站。[体力-1][饱腹-1][耗时5分钟]",
     proactiveShare: {
       enabled: true,
     },

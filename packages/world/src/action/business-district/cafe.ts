@@ -232,7 +232,7 @@ export const cafeAction: ActionMetadata[] = [
   },
   {
     action: ActionId.Go_To_Train_Station_From_Cafe,
-    description: "从薄暮咖啡前往星见町站。[体力-1][饱腹-1][耗时5分钟]",
+    description: "从薄暮咖啡前往羽浦町站。[体力-1][饱腹-1][耗时5分钟]",
     proactiveShare: {
       enabled: true,
     },
