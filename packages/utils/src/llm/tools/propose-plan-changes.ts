@@ -1,8 +1,9 @@
 import { tool } from "ai";
 import { z } from "zod";
+import { saveMemoryEpisode } from "../../db";
 import { isDev } from "../../env";
 import { logger } from "../../logger";
-import { buildPlanUpdateEpisodes, emitMemoryEpisode, planManager } from "../../memory";
+import { buildPlanUpdateEpisodes, planManager } from "../../memory";
 import type { AgentPlanChange } from "../../types";
 import { reviewPlanChanges } from "./review-plan-changes";
 import { agentPlanChangeSchema } from "./schema";
@@ -57,7 +58,7 @@ async function reviewAndApplyChatPlanChanges(input: {
   });
 
   for (const planEpisode of planEpisodes) {
-    await emitMemoryEpisode(planEpisode);
+    await saveMemoryEpisode(planEpisode);
   }
 
   logger.info(`${logPrefix} ${sceneText}计划变更已应用`, {

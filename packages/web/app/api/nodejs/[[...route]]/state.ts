@@ -1,9 +1,9 @@
 import {
   changeCharacterMoney,
-  emitMemoryEpisode,
   initCharacterStateData,
   isDev,
   SUBJECT_NAME,
+  saveMemoryEpisode,
   setCharacterMoney,
   syncCharacterMoney,
 } from "@yuiju/utils";
@@ -124,7 +124,7 @@ stateRoute.post("/allowance", async (context) => {
       : `翊小久设置金币：${previousMoney} -> ${currentMoney}`;
 
   try {
-    await emitMemoryEpisode({
+    await saveMemoryEpisode({
       source: "system",
       type: "system",
       subject: SUBJECT_NAME,

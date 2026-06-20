@@ -138,6 +138,11 @@ export interface ActionContext {
   characterState: ICharacterState;
   characterStateData: CharacterStateData;
   worldState: IWorldState;
+  runtimeState: {
+    actionStartedAt: Date;
+    actionEndedAt?: Date;
+    actionSummaryText?: string;
+  };
   eventDescription?: string;
 }
 

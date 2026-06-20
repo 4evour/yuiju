@@ -4,13 +4,13 @@ import {
   type ActionContext,
   ActionId,
   buildPlanUpdateEpisodes,
-  emitMemoryEpisode,
   getMemoryEpisodeById,
   getRecentMemoryEpisodes,
   isDev,
   type PlanChange,
   planManager,
   SUBJECT_NAME,
+  saveMemoryEpisode,
   updateMemoryEpisodeById,
 } from "@yuiju/utils";
 import dayjs from "dayjs";
@@ -48,6 +48,7 @@ interface ActionStartTickResult {
     actionStartedAt: string;
     reason: string;
     durationMinutes: number;
+    behaviorEpisodeId: string;
     executionResult?: string;
     startContext?: Record<string, any>;
     proactiveShareIntent?: ActionAgentDecision["proactiveShareIntent"];
@@ -58,19 +59,12 @@ interface ActionStartTickResult {
  * 选择并开始一个 Action。
  *
  * 流程：
- * - 构建 ActionContext，并让 LLM 在当前可执行 Action 中选择一个；
+ * - 使用本轮 ActionContext，让 LLM 在当前可执行 Action 中选择一个；
  * - 应用本次决策携带的 planChanges；
  * - 执行 Action executor，完成“开始 Action”的即时副作用；
  * - 计算持续时间，并把进入 running 阶段所需的信息返回给后续流程。
  */
-async function startAction(eventDescription?: string): Promise<ActionStartTickResult> {
-  const context: ActionContext = {
-    characterState,
-    characterStateData: await characterState.getData(),
-    worldState,
-    eventDescription,
-  };
-
+async function startAction(context: ActionContext): Promise<ActionStartTickResult> {
   const actionList = getActionList(context);
   const planState = await planManager.getState();
 
@@ -103,8 +97,6 @@ async function startAction(eventDescription?: string): Promise<ActionStartTickRe
   const actionMetadata = actionList.find((item) => item.action === selectedAction?.action);
 
   if (actionMetadata && selectedAction) {
-    const actionStartedAt = new Date();
-
     // 计划变更逻辑
     let planChanges: PlanChange[] = [];
     const agentPlanChanges = selectedAction.planChanges;
@@ -128,7 +120,7 @@ async function startAction(eventDescription?: string): Promise<ActionStartTickRe
 
       for (const planEpisode of planEpisodes) {
         try {
-          await emitMemoryEpisode(planEpisode);
+          await saveMemoryEpisode(planEpisode);
           logger.info("[action-lifecycle] built plan_update episode", planEpisode);
         } catch (error) {
           logger.error("[action-lifecycle] write plan_update episode failed", error);
@@ -136,35 +128,56 @@ async function startAction(eventDescription?: string): Promise<ActionStartTickRe
       }
     }
 
+    context.runtimeState.actionSummaryText = [
+      `悠酱在「${context.characterStateData.location.major}${context.characterStateData.location.minor ? `-${context.characterStateData.location.minor}` : ""}」开始执行行为「${selectedAction.action}」`,
+      `原因：${selectedAction.reason}`,
+    ].join("；");
+
     const actionStartResult = await actionMetadata.executor(context, selectedAction);
-    const updatedContext: ActionContext = {
-      ...context,
-      characterStateData: await characterState.getData(),
-    };
+    context.characterStateData = await characterState.getData();
 
-    await updatedContext.worldState.updateTime();
+    await context.worldState.updateTime();
 
-    const durationMin = await getDurationTime(
-      actionMetadata.durationMin,
-      updatedContext,
-      selectedAction,
-    );
+    const durationMin = await getDurationTime(actionMetadata.durationMin, context, selectedAction);
 
     logger.info(
       `[action-lifecycle startAction] Duration ${durationMin} min, selectedAction: `,
       selectedAction,
     );
 
+    const runningAction = {
+      action: selectedAction.action,
+      actionStartedAt: context.runtimeState.actionStartedAt.toISOString(),
+      reason: selectedAction.reason,
+      durationMinutes: durationMin,
+      executionResult: actionStartResult?.executionResult,
+      startContext: actionStartResult?.startContext,
+      proactiveShareIntent: selectedAction.proactiveShareIntent,
+    };
+    const behaviorEpisode = buildRunningBehaviorEpisode({
+      context,
+      selectedAction: {
+        action: runningAction.action,
+        reason: runningAction.reason,
+      },
+      executionResult: runningAction.executionResult,
+      startContext: runningAction.startContext,
+      durationMinutes: runningAction.durationMinutes,
+      happenedAt: new Date(runningAction.actionStartedAt),
+      isDev: isDev(),
+    });
+
+    if (!behaviorEpisode) {
+      return { nextTickInMinutes: durationMin };
+    }
+
+    const savedBehaviorEpisode = await saveMemoryEpisode(behaviorEpisode);
+
     return {
       nextTickInMinutes: durationMin,
       runningAction: {
-        action: selectedAction.action,
-        actionStartedAt: actionStartedAt.toISOString(),
-        reason: selectedAction.reason,
-        durationMinutes: durationMin,
-        executionResult: actionStartResult?.executionResult,
-        startContext: actionStartResult?.startContext,
-        proactiveShareIntent: selectedAction.proactiveShareIntent,
+        ...runningAction,
+        behaviorEpisodeId: savedBehaviorEpisode.id,
       },
     };
   } else {
@@ -185,7 +198,7 @@ async function startAction(eventDescription?: string): Promise<ActionStartTickRe
  * - 使用 behaviorEpisodeId 将同一条 behavior Episode 从 running 更新为 completed；
  * - Episode 更新成功后清理 Redis 运行态。
  */
-export async function recoverRunningAction(): Promise<string | undefined> {
+export async function recoverRunningAction(context?: ActionContext): Promise<string | undefined> {
   const runningAction = await characterState.getRunningAction();
 
   if (!runningAction) {
@@ -198,27 +211,39 @@ export async function recoverRunningAction(): Promise<string | undefined> {
     await setTimeout(remainingMs);
   }
 
-  const context: ActionContext = {
-    characterState,
-    characterStateData: await characterState.getData(),
-    worldState,
-  };
-  const actionMetadata = getActionById(runningAction.action);
-  const completionResult = await actionMetadata.completionEvent?.(context, runningAction);
-  const updatedContext: ActionContext = {
-    ...context,
-    characterStateData: await characterState.getData(),
-  };
+  if (!context) {
+    context = {
+      characterState,
+      characterStateData: await characterState.getData(),
+      worldState,
+      runtimeState: {
+        actionStartedAt: new Date(runningAction.actionStartedAt),
+      },
+    };
+  }
 
+  context.runtimeState.actionEndedAt = new Date();
+  context.characterStateData = await characterState.getData();
+
+  const actionMetadata = getActionById(runningAction.action);
   const runningEpisode = await getMemoryEpisodeById(runningAction.behaviorEpisodeId);
   if (!runningEpisode) {
     throw new Error(`Running behavior episode not found: ${runningAction.behaviorEpisodeId}`);
   }
 
+  const runningPayload = runningEpisode.payload as BehaviorEpisodePayload;
+  context.runtimeState.actionSummaryText = [
+    `悠酱在${context.characterStateData.location.major}-${context.characterStateData.location.minor}完成了行为「${runningAction.action}」`,
+    `原因：${runningPayload.reason}`,
+  ].join("；");
+
+  const completionResult = await actionMetadata.completionEvent?.(context, runningAction);
+  context.characterStateData = await characterState.getData();
+
   const completedEpisode = buildCompletedBehaviorEpisodeUpdate({
-    context: updatedContext,
+    context: context as ActionContext,
     runningAction,
-    runningPayload: runningEpisode.payload as BehaviorEpisodePayload,
+    runningPayload,
     completionContext: completionResult?.completionContext,
     eventDescription: completionResult?.eventDescription,
   });
@@ -237,8 +262,8 @@ export async function recoverRunningAction(): Promise<string | undefined> {
     runningAction,
     eventDescription: completionResult?.eventDescription,
     completionContext: completionResult?.completionContext,
-    characterStateSnapshot: updatedContext.characterStateData,
-    worldStateSnapshot: updatedContext.worldState.log(),
+    characterStateSnapshot: context.characterStateData,
+    worldStateSnapshot: context.worldState.log(),
   });
 
   await characterState.clearRunningAction();
@@ -251,14 +276,22 @@ export async function recoverRunningAction(): Promise<string | undefined> {
  * 流程：
  * - 更新时间并开始一次 Action；
  * - 如果没有需要等待的 Action，按返回的分钟数等待后结束本轮；
- * - 如果 Action 进入 running，先写 running behavior Episode；
  * - 将 behaviorEpisodeId 和 startContext 写入 Redis runningAction；
  * - 进入恢复/完成流程，最终返回下一次 tick 的事件描述。
  */
 export async function runNextAction(eventDescription?: string): Promise<string | undefined> {
   await worldState.updateTime();
+  const context: ActionContext = {
+    characterState,
+    characterStateData: await characterState.getData(),
+    worldState,
+    runtimeState: {
+      actionStartedAt: new Date(),
+    },
+    eventDescription,
+  };
 
-  const actionStartResult = await startAction(eventDescription);
+  const actionStartResult = await startAction(context);
 
   if (!actionStartResult.runningAction) {
     await setTimeout(actionStartResult.nextTickInMinutes * 60 * 1000);
@@ -266,43 +299,14 @@ export async function runNextAction(eventDescription?: string): Promise<string |
   }
 
   const waitUntil = dayjs().add(actionStartResult.nextTickInMinutes, "minute").toISOString();
-  const characterStateData = await characterState.getData();
-  const behaviorEpisode = buildRunningBehaviorEpisode({
-    context: {
-      characterState,
-      characterStateData,
-      worldState,
-    },
-    selectedAction: {
-      action: actionStartResult.runningAction.action,
-      reason: actionStartResult.runningAction.reason,
-    },
-    executionResult: actionStartResult.runningAction.executionResult,
-    startContext: actionStartResult.runningAction.startContext,
-    durationMinutes: actionStartResult.runningAction.durationMinutes,
-    happenedAt: new Date(actionStartResult.runningAction.actionStartedAt),
-    isDev: isDev(),
-  });
-
-  if (!behaviorEpisode) {
-    await setTimeout(actionStartResult.nextTickInMinutes * 60 * 1000);
-    return undefined;
-  }
-
-  // TODO：需要重命名一下
-  const behaviorEpisodeId = await emitMemoryEpisode(behaviorEpisode);
-  if (!behaviorEpisodeId) {
-    throw new Error("[action-lifecycle] write running behavior episode failed");
-  }
-
   await characterState.setRunningAction({
     action: actionStartResult.runningAction.action,
     actionStartedAt: actionStartResult.runningAction.actionStartedAt,
     waitUntil,
-    behaviorEpisodeId,
+    behaviorEpisodeId: actionStartResult.runningAction.behaviorEpisodeId,
     startContext: actionStartResult.runningAction.startContext,
     proactiveShareIntent: actionStartResult.runningAction.proactiveShareIntent,
   });
 
-  return recoverRunningAction();
+  return recoverRunningAction(context);
 }

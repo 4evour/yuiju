@@ -1,9 +1,9 @@
 import {
   buildMessageSummaryPrompt,
-  emitMemoryEpisode,
   flashModel,
   getTimeWithWeekday,
   isDev,
+  saveMemoryEpisode,
   summarizeConversationMessages,
 } from "@yuiju/utils";
 import { generateText } from "ai";
@@ -434,7 +434,7 @@ export class ChatSessionManager<TMessage extends StoredSatoriChatMessage> {
     });
 
     await Promise.all([
-      emitMemoryEpisode(episode),
+      saveMemoryEpisode(episode),
       this.writePersonMemoryUpdatesForChatWindow(input.state).catch((error) => {
         console.error(`Failed to update ${this.sceneLabel} person memory:`, error);
       }),

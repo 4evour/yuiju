@@ -1,4 +1,4 @@
-import { emitMemoryEpisode, type IWorldState, isDev, type WeatherSnapshot } from "@yuiju/utils";
+import { type IWorldState, isDev, saveMemoryEpisode, type WeatherSnapshot } from "@yuiju/utils";
 import dayjs from "dayjs";
 import { buildWeatherChangedEpisode } from "@/memory/episode-builder";
 import { worldState } from "@/state/world-state";
@@ -17,7 +17,7 @@ export interface WeatherSyncResult {
 interface SyncWeatherOptions {
   now?: Date;
   state?: Pick<IWorldState, "getWeather" | "setWeather">;
-  emitEpisode?: typeof emitMemoryEpisode;
+  emitEpisode?: typeof saveMemoryEpisode;
   isDev?: boolean;
 }
 
@@ -47,7 +47,7 @@ export async function syncCurrentWeather(
 async function doSyncCurrentWeather(options: SyncWeatherOptions): Promise<WeatherSyncResult> {
   const now = options.now ?? new Date();
   const state = options.state ?? worldState;
-  const emitEpisode = options.emitEpisode ?? emitMemoryEpisode;
+  const emitEpisode = options.emitEpisode ?? saveMemoryEpisode;
   const devFlag = options.isDev ?? isDev();
   const currentPeriod = resolveWeatherPeriod(now);
   const storedWeather = state.getWeather();

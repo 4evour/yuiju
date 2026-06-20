@@ -50,21 +50,12 @@ export function buildRunningBehaviorEpisode(
     return null;
   }
 
-  const summaryText = [
-    `悠酱在「${input.context.characterStateData.location.major}${input.context.characterStateData.location.minor ? `-${input.context.characterStateData.location.minor}` : ""}」开始执行行为「${input.selectedAction.action}」`,
-    `原因：${input.selectedAction.reason}`,
-    input.executionResult ? `开始结果：${input.executionResult}` : undefined,
-    `预计持续时间：${input.durationMinutes} 分钟`,
-  ]
-    .filter(Boolean)
-    .join("；");
-
   return {
     source: "world_tick",
     type: "behavior",
     subject: SUBJECT_NAME,
     happenedAt: input.happenedAt,
-    summaryText,
+    summaryText: input.context.runtimeState.actionSummaryText!,
     isDev: input.isDev,
     payload: {
       action: input.selectedAction.action,
@@ -90,32 +81,14 @@ export interface BuildCompletedBehaviorEpisodeUpdateInput {
 export function buildCompletedBehaviorEpisodeUpdate(
   input: BuildCompletedBehaviorEpisodeUpdateInput,
 ): Pick<MemoryEpisode<BehaviorEpisodePayload>, "summaryText" | "payload"> {
-  const durationMinutes =
-    typeof input.runningPayload.durationMinutes === "number"
-      ? input.runningPayload.durationMinutes
-      : Math.max(
-          0,
-          Math.round(
-            (Date.parse(input.runningAction.waitUntil) -
-              Date.parse(input.runningAction.actionStartedAt)) /
-              60000,
-          ),
-        );
-
-  const summaryText = [
-    `悠酱在${input.context.characterStateData.location.major}-${input.context.characterStateData.location.minor}完成了行为「${input.runningAction.action}」`,
-    `原因：${input.runningPayload.reason}`,
-    input.eventDescription ? `事件：${input.eventDescription}` : undefined,
-    input.runningPayload.executionResult
-      ? `结果：${input.runningPayload.executionResult}`
-      : undefined,
-    `持续时间：${durationMinutes} 分钟`,
-  ]
-    .filter(Boolean)
-    .join("；");
+  const durationMinutes = Math.round(
+    (input.context.runtimeState.actionEndedAt!.getTime() -
+      input.context.runtimeState.actionStartedAt.getTime()) /
+      60000,
+  );
 
   return {
-    summaryText,
+    summaryText: input.context.runtimeState.actionSummaryText!,
     payload: {
       ...input.runningPayload,
       action: input.runningAction.action,
