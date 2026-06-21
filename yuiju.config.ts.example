@@ -11,8 +11,6 @@ const config = defineYuijuConfig({
     redisUrl: "redis://localhost:6379",
   },
   llm: {
-    deepseekApiKey: "xxx",
-    siliconflowApiKey: "xxx",
     models: {
       chat: [
         {

@@ -112,8 +112,6 @@ export interface YuijuLlmModelsConfig {
 }
 
 export interface YuijuLlmConfig {
-  deepseekApiKey: string;
-  siliconflowApiKey: string;
   models: YuijuLlmModelsConfig;
 }
 

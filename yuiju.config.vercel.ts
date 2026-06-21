@@ -13,8 +13,6 @@ const config = defineYuijuConfig({
     syncRedisUrl: process.env.YUIJU_SYNC_REDIS_URL,
   },
   llm: {
-    deepseekApiKey: "",
-    siliconflowApiKey: "",
     models: {
       chat: [
         {

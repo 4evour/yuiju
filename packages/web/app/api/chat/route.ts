@@ -88,19 +88,6 @@ export const runtime = "nodejs";
 export const maxDuration = 30;
 
 export async function POST(request: Request) {
-  const config = getYuijuConfig();
-
-  if (!config.llm.deepseekApiKey.trim()) {
-    return Response.json(
-      {
-        code: 503,
-        data: null,
-        message: "yuiju.config.ts 中未配置 llm.deepseekApiKey",
-      },
-      { status: 503 },
-    );
-  }
-
   const clientIP = getClientIP(request);
 
   if (isPublicDeployment()) {
