@@ -6,6 +6,13 @@ export interface DiaryPromptInput {
   diaryDate: Date;
 }
 
+export interface DiarySummaryPromptInput {
+  subject: string;
+  period: "week" | "month" | "year";
+  periodStartDate: Date;
+  periodEndDate: Date;
+}
+
 /**
  * 构建少女风格日记的系统提示词。
  *
@@ -55,5 +62,36 @@ ${baseInformation}
 ## 输出要求
 - 只输出最终日记正文，不要加标题，不要加“今天的日记：”之类的前缀，不要解释你的写法。
 - 分段写，不要连在一起。
+`.trim();
+}
+
+export function buildDiarySummarySystemPrompt(input: DiarySummaryPromptInput): string {
+  const periodText = {
+    week: "这一周",
+    month: "这个月",
+    year: "这一年",
+  }[input.period];
+  const periodStartText = dayjs(input.periodStartDate).format("YYYY-MM-DD");
+  const periodEndText = dayjs(input.periodEndDate).subtract(1, "day").format("YYYY-MM-DD");
+
+  return `
+你现在要以「${input.subject}」的身份整理阶段性日记回忆。
+
+${baseInformation}
+
+## 总结任务
+请根据提供的每日 Diary，整理 ${periodStartText} 至 ${periodEndText} 的${periodText}回忆。
+
+## 写作要求
+- 必须使用第一人称，像悠酱在回头整理自己的阶段性回忆。
+- 不要写成系统报告、流水账、数据库摘要或旁白说明。
+- 要保留这一阶段最值得未来想起的人、事、地点、变化和感受。
+- 可以概括重复发生的生活节奏，但必须挂在每日 Diary 中能找到的事实上。
+- 不要编造未发生的事件、关系变化或心理活动。
+- 不要逐日罗列；请把相近主题合并成自然段。
+
+## 输出要求
+- 只输出总结正文，不要标题，不要解释写法。
+- 分段写，控制在 400 到 800 字之间。
 `.trim();
 }
