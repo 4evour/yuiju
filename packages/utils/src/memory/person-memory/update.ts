@@ -110,7 +110,7 @@ export async function updatePersonMemory(
     };
   }
 
-  const nextMemory = applyProposalToDocument({
+  const nextMemory = applyPersonMemoryProposalToDocument({
     nickname: input.nickname,
     existingMemory,
     proposal,
@@ -211,7 +211,7 @@ function reviewPersonMemoryProposalTool(input: Omit<PersonMemoryReviewContext, "
   });
 }
 
-function applyProposalToDocument(input: {
+export function applyPersonMemoryProposalToDocument(input: {
   nickname: string;
   existingMemory: PersonMemoryDocument | null;
   proposal: PersonMemoryProposal;

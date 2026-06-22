@@ -7,4 +7,4 @@ export type {
   PersonMemoryUpdateInput,
   PersonMemoryUpdateResult,
 } from "./types";
-export { updatePersonMemory } from "./update";
+export { applyPersonMemoryProposalToDocument, updatePersonMemory } from "./update";
