@@ -8,7 +8,7 @@ export async function resolveSatoriImageDescription(
   element: h,
   session?: Session,
 ): Promise<string | undefined> {
-  const attrs = element.attrs as Record<string, unknown>;
+  const attrs = element.attrs as Record<string, any>;
   const summary = typeof attrs.summary === "string" ? attrs.summary.trim() : "";
   const stickerDescription = summary ? stickerState.getByKey(summary)?.description : undefined;
   if (stickerDescription) {
@@ -27,7 +27,7 @@ export async function resolveSatoriImageDescription(
     return generatedDescription;
   }
 
-  return summary || undefined;
+  return summary;
 }
 
 async function generateSatoriImageDescription(
