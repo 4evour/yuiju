@@ -1,14 +1,17 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import {
-  buildGroupMemoryUpdatePrompt,
+  buildGroupMemoryProposalPrompt,
+  buildGroupMemoryReviewPrompt,
+  createToolCallLoggingHooks,
   flashModel,
   formatProjectTime,
   generateStructuredOutput,
   getTimeWithWeekday,
   getYuijuConfig,
+  logger,
 } from "@yuiju/utils";
-import { Output } from "ai";
+import { Output, stepCountIs, tool } from "ai";
 import dayjs from "dayjs";
 import { z } from "zod";
 import {
@@ -19,14 +22,17 @@ import {
   type StoredSatoriGroupMessage,
 } from "@/utils/message";
 
+const GROUP_MEMORY_SECTION_KEYS = ["群聊印象"] as const;
+const GROUP_MEMORY_SECTION_MAX_LENGTH = 300;
+const EMPTY_GROUP_MEMORY_SECTION = "（暂无）";
+
+type GroupMemorySectionKey = (typeof GROUP_MEMORY_SECTION_KEYS)[number];
+
 export interface GroupMemoryDocument {
   sessionId: string;
   sessionLabel: string;
   lastUpdatedAt: string;
-  groupAtmosphere: string;
-  yuijuFeeling: string;
-  replyGuidance: string;
-  recentInteraction: string;
+  sections: Record<GroupMemorySectionKey, string>;
 }
 
 export interface GroupChatWindowState {
@@ -36,22 +42,54 @@ export interface GroupChatWindowState {
   messages: StoredSatoriGroupMessage[];
 }
 
-interface GroupMemoryUpdateOutput {
+interface GroupMemoryProposal {
   shouldUpdate: boolean;
-  groupAtmosphere: string;
-  yuijuFeeling: string;
-  replyGuidance: string;
-  recentInteraction: string;
+  changes: {
+    section: GroupMemorySectionKey;
+    content: string;
+    reason: string;
+  }[];
 }
 
-const EMPTY_GROUP_MEMORY_FIELD = "（暂无）";
+interface GroupMemoryProposalContext {
+  sessionLabel: string;
+  currentTime: string;
+  interactionMaterial: string;
+  existingMemory?: GroupMemoryDocument;
+}
 
-const groupMemoryUpdateSchema = z.strictObject({
+const groupMemorySectionsSchema = z.strictObject({
+  群聊印象: z.string(),
+});
+
+const groupMemoryDocumentSchema = z.strictObject({
+  sessionId: z.string().min(1),
+  sessionLabel: z.string().min(1),
+  lastUpdatedAt: z.string().min(1),
+  sections: groupMemorySectionsSchema,
+});
+
+const groupMemoryProposalSchema = z.strictObject({
   shouldUpdate: z.boolean().describe("这轮是否需要写回群聊记忆。"),
-  groupAtmosphere: z.string().describe("群聊氛围的完整正文。"),
-  yuijuFeeling: z.string().describe("悠酱对这个群的感受的完整正文。"),
-  replyGuidance: z.string().describe("后续在这个群里的回复节奏建议。"),
-  recentInteraction: z.string().describe("最近值得记住的群聊互动。"),
+  changes: z
+    .array(
+      z.strictObject({
+        section: z.enum(GROUP_MEMORY_SECTION_KEYS).describe("准备修改的群聊记忆标题。"),
+        content: z
+          .string()
+          .min(1)
+          .max(GROUP_MEMORY_SECTION_MAX_LENGTH)
+          .describe("该标题修改后的完整正文，必须用悠酱第一人称口吻记录。"),
+        reason: z.string().min(1).describe("为什么这样修改，依据必须来自本次群聊材料。"),
+      }),
+    )
+    .describe("要修改的标题列表。"),
+});
+
+const groupMemoryReviewSchema = z.strictObject({
+  approved: z.boolean().describe("是否通过审查。"),
+  reason: z.string().min(1).describe("审查结论。"),
+  issues: z.array(z.string().min(1)).optional().describe("未通过时需要修正的问题列表。"),
 });
 
 export async function getGroupMemory(sessionId: string): Promise<GroupMemoryDocument | null> {
@@ -76,17 +114,14 @@ export async function getGroupMemoryPromptSection(input: {
     return `
 ## 当前群聊长期感受
 群聊：${input.sessionLabel}
-当前还没有形成稳定群聊记忆。你需要根据最近会话判断是否自然参与，不要为了刷存在感而自言自语。
+当前还没有形成稳定群聊印象。
 `.trim();
   }
 
   return `
 ## 当前群聊长期感受
 群聊：${memory.sessionLabel}
-群聊氛围：${memory.groupAtmosphere}
-悠酱对这个群的感受：${memory.yuijuFeeling}
-回复节奏建议：${memory.replyGuidance}
-最近值得记住的群聊互动：${memory.recentInteraction}
+悠酱对这个群的印象：${memory.sections["群聊印象"]}
 `.trim();
 }
 
@@ -95,25 +130,24 @@ export async function updateGroupMemoryForChatWindow(input: {
   state: GroupChatWindowState;
 }): Promise<void> {
   const existingMemory = await getGroupMemory(input.sessionId);
-  const output = await generateGroupMemoryUpdate({
+  const currentTime = formatProjectTime(new Date(), "YYYY-MM-DD");
+  const proposal = await generateGroupMemoryProposal({
     sessionLabel: input.state.sessionLabel,
-    existingMemory,
+    currentTime,
+    existingMemory: existingMemory ?? undefined,
     interactionMaterial: buildGroupInteractionMaterial(input.state),
   });
 
-  if (!output.shouldUpdate) {
+  if (!proposal || !proposal.shouldUpdate) {
     return;
   }
 
-  const nextMemory: GroupMemoryDocument = {
+  const nextMemory = applyProposalToDocument({
     sessionId: input.sessionId,
     sessionLabel: input.state.sessionLabel,
-    lastUpdatedAt: formatProjectTime(new Date(), "YYYY-MM-DDTHH:mm:ssZ"),
-    groupAtmosphere: normalizeGroupMemoryField(output.groupAtmosphere),
-    yuijuFeeling: normalizeGroupMemoryField(output.yuijuFeeling),
-    replyGuidance: normalizeGroupMemoryField(output.replyGuidance),
-    recentInteraction: normalizeGroupMemoryField(output.recentInteraction),
-  };
+    existingMemory,
+    proposal,
+  });
 
   const filePath = getGroupMemoryFilePath(input.sessionId);
   await mkdir(dirname(filePath), { recursive: true });
@@ -125,49 +159,142 @@ function getGroupMemoryFilePath(sessionId: string): string {
 }
 
 function parseGroupMemoryJson(content: string): GroupMemoryDocument {
-  const parsed = JSON.parse(content) as GroupMemoryDocument;
+  const parsed = groupMemoryDocumentSchema.parse(JSON.parse(content));
+
   return {
     sessionId: parsed.sessionId,
     sessionLabel: parsed.sessionLabel,
     lastUpdatedAt: parsed.lastUpdatedAt,
-    groupAtmosphere: normalizeGroupMemoryField(parsed.groupAtmosphere),
-    yuijuFeeling: normalizeGroupMemoryField(parsed.yuijuFeeling),
-    replyGuidance: normalizeGroupMemoryField(parsed.replyGuidance),
-    recentInteraction: normalizeGroupMemoryField(parsed.recentInteraction),
+    sections: {
+      群聊印象: normalizeGroupMemorySection(parsed.sections["群聊印象"]),
+    },
   };
 }
 
-function normalizeGroupMemoryField(value: string): string {
+function normalizeGroupMemorySection(value: string): string {
   const normalized = value.trim();
-  return normalized || EMPTY_GROUP_MEMORY_FIELD;
+  return normalized || EMPTY_GROUP_MEMORY_SECTION;
 }
 
-async function generateGroupMemoryUpdate(input: {
-  sessionLabel: string;
-  existingMemory: GroupMemoryDocument | null;
-  interactionMaterial: string;
-}): Promise<GroupMemoryUpdateOutput> {
+async function generateGroupMemoryProposal(
+  input: GroupMemoryProposalContext,
+): Promise<GroupMemoryProposal | null> {
   const { output } = await generateStructuredOutput({
     model: flashModel,
     providerOptions: {
       flash: {
-        enable_thinking: false,
+        enable_thinking: true,
       },
     },
+    tools: {
+      reviewGroupMemoryProposal: reviewGroupMemoryProposalTool(input),
+    },
     output: Output.object({
-      schema: groupMemoryUpdateSchema,
+      schema: groupMemoryProposalSchema,
     }),
-    prompt: buildGroupMemoryUpdatePrompt({
+    prompt: buildGroupMemoryProposalPrompt({
       sessionLabel: input.sessionLabel,
-      currentTime: formatProjectTime(new Date(), "YYYY-MM-DD"),
+      currentTime: input.currentTime,
       existingMemoryText: input.existingMemory
         ? JSON.stringify(input.existingMemory, null, 2)
         : "（无，当前尚未建立群聊记忆）",
       interactionMaterial: input.interactionMaterial,
+      sectionKeys: GROUP_MEMORY_SECTION_KEYS,
+      sectionMaxLength: GROUP_MEMORY_SECTION_MAX_LENGTH,
+    }),
+    stopWhen: stepCountIs(20),
+    ...createToolCallLoggingHooks({
+      scene: "group-memory",
     }),
   });
 
-  return output;
+  return normalizeProposal(output);
+}
+
+function reviewGroupMemoryProposalTool(input: GroupMemoryProposalContext) {
+  return tool({
+    description: "审查候选群聊记忆提案是否合规。只有审查通过后，主 agent 才能输出最终 proposal。",
+    inputSchema: z.strictObject({
+      proposal: groupMemoryProposalSchema,
+    }),
+    execute: async ({ proposal }) => {
+      const normalizedProposal = normalizeProposal(proposal);
+      const { output } = await generateStructuredOutput({
+        model: flashModel,
+        providerOptions: {
+          flash: {
+            enable_thinking: true,
+          },
+        },
+        output: Output.object({
+          schema: groupMemoryReviewSchema,
+        }),
+        prompt: buildGroupMemoryReviewPrompt({
+          sessionLabel: input.sessionLabel,
+          currentTime: input.currentTime,
+          interactionMaterial: input.interactionMaterial,
+          existingMemoryText: input.existingMemory
+            ? JSON.stringify(input.existingMemory, null, 2)
+            : "（无，当前尚未建立群聊记忆）",
+          proposalJson: JSON.stringify(normalizedProposal, null, 2),
+          sectionMaxLength: GROUP_MEMORY_SECTION_MAX_LENGTH,
+        }),
+      });
+
+      const issues = output.issues?.map((item) => item.trim()).filter((item) => item.length > 0);
+
+      logger.debug("[group-memory] review", proposal, output);
+
+      return {
+        approved: output.approved,
+        reason: output.reason.trim(),
+        issues: issues?.length ? issues : undefined,
+      };
+    },
+  });
+}
+
+function applyProposalToDocument(input: {
+  sessionId: string;
+  sessionLabel: string;
+  existingMemory: GroupMemoryDocument | null;
+  proposal: GroupMemoryProposal;
+}): GroupMemoryDocument {
+  const sections = input.existingMemory
+    ? { ...input.existingMemory.sections }
+    : GROUP_MEMORY_SECTION_KEYS.reduce(
+        (result, section) => {
+          result[section] = EMPTY_GROUP_MEMORY_SECTION;
+          return result;
+        },
+        {} as Record<GroupMemorySectionKey, string>,
+      );
+
+  for (const change of input.proposal.changes) {
+    sections[change.section] = normalizeGroupMemorySection(change.content);
+  }
+
+  for (const section of GROUP_MEMORY_SECTION_KEYS) {
+    sections[section] = normalizeGroupMemorySection(sections[section]);
+  }
+
+  return {
+    sessionId: input.sessionId,
+    sessionLabel: input.sessionLabel,
+    lastUpdatedAt: formatProjectTime(new Date(), "YYYY-MM-DDTHH:mm:ssZ"),
+    sections,
+  };
+}
+
+function normalizeProposal(output: z.infer<typeof groupMemoryProposalSchema>): GroupMemoryProposal {
+  return {
+    shouldUpdate: output.shouldUpdate,
+    changes: output.changes.map((change) => ({
+      section: change.section,
+      content: normalizeGroupMemorySection(change.content),
+      reason: change.reason.trim(),
+    })),
+  };
 }
 
 function buildGroupInteractionMaterial(state: GroupChatWindowState): string {

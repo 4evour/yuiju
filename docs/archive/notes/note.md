@@ -49,3 +49,11 @@ docker run -d \
   -e HERMES_DASHBOARD_BASIC_AUTH_PASSWORD="$DASHBOARD_PASS" \
   nousresearch/hermes-agent:latest gateway run
 ```
+
+## 命令
+
+```sh
+rsync -av --delete \
+  packages/source/skills/mapillary/ \
+  xxx@xxx.xxx.xx.xxx:/home/yixiaojiu/.hermes/skills/mapillary/
+```

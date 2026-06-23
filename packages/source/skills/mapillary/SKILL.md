@@ -1,144 +1,79 @@
 ---
 name: mapillary
-description: "当用户需要街景图片、全景图，或希望通过 Mapillary 街景照片探索某个地点时使用。支持随机获取一个日本景点，并返回附近 Mapillary 街景图片 JSON 数据。Skill 只返回地点与图片元数据，不下载图片、不识图；需要描述图片时，由 Hermes Agent 使用返回的图片 URL 自行分析。"
-version: 1.0.0
+description: "当用户想随机进行日本云旅游，或指定一个日本景点/地点查看附近街景图片时使用。调用脚本返回地点信息和 Mapillary 图片 JSON；你需要使用返回的 thumb_1024_url 自行分析图片并描述感受。"
 author: ywxx252324
 license: MIT
 platforms: [linux, macos, windows]
 metadata:
   hermes:
-    tags: [Mapillary, street view, panorama, street-level, location, explore]
+    tags: [Mapillary, street view, panorama, Japan travel, location, explore]
     category: productivity
-    related_skills: [maps]
     requires_toolsets: [terminal]
 ---
 
-# Mapillary — 街景探索
+# Mapillary 日本云旅游
 
-通过 Wikidata 获取日本景点坐标，并通过 Mapillary API 获取附近街景图片和全景图像。也支持用户输入地点名称，返回该位置附近的街景图片 JSON 数据。
+使用这个 Skill 获取日本街景图片数据。Skill 只返回 JSON，不下载图片、不识图、不生成旅行感受。
 
-**前提：** 运行前必须提供 Mapillary access token。
+## 运行前提
 
-```bash
-export MAPILLARY_ACCESS_TOKEN="MLY|..."
-```
+运行环境必须已配置 `MAPILLARY_ACCESS_TOKEN`。你不需要读取、输出或修改这个环境变量；如果命令因缺少该变量失败，告诉用户运行环境未配置 Mapillary access token。
 
-```bash
-# 运行示例
-python3 scripts/mapillary_client.py random-japan
-# 应返回一个日本景点及其附近的 Mapillary 街景图片 JSON 数据
-```
+## 何时使用
 
-## 快速使用
+- 用户想随机去一个日本景点云旅游。
+- 用户指定一个日本景点、城市、街区或地点，想查看附近街景。
+
+## 命令
+
+先设置命令别名：
 
 ```bash
 MAP="python3 scripts/mapillary_client.py"
 ```
 
-## 命令说明
-
-### random-japan — 随机日本景点云旅游
+随机日本景点：
 
 ```bash
-# 从 Wikidata 随机获取一个日本景点，并返回附近 Mapillary 街景图片数据
-$MAP random-japan
 $MAP random-japan --limit 30 --image-limit 5 --radius 80
 ```
 
-**返回逻辑：**
-- 在脚本中随机选择一个 Wikidata 景点类型，查询一小批位于日本、带坐标的景点候选
-- 随机性由脚本完成，避免在 Wikidata SPARQL 中使用重排序查询
-- 逐个用候选坐标搜索 Mapillary 全景图
-- 找到有全景图的地点后，返回同序列图片详情
-- 只返回地点与图片 JSON 数据，不下载图片、不生成描述
-
-### search-address — 通过地址搜索（自动 geocode）
+指定地点：
 
 ```bash
-# 自动将地址转为坐标并搜索附近街景
-$MAP search-address "清水寺"
-$MAP search-address "伏見稲荷大社"
+$MAP search-address "清水寺" --limit 5
+$MAP search-address "伏見稲荷大社" --limit 5
 ```
 
-**返回逻辑：**
-- 1 个搜索结果：返回该序列前 9 张图片详情
-- 3 个及以上结果：随机抽取 3 个 ID，查各自序列，每序列随机抽 3 张（共最多 9 张）
+调用 `random-japan` 和 `search-address` 时必须显式传入 `--limit`。
 
-## 输出格式
+- `random-japan --limit`：每次从景点数据源查询的日本景点候选数量。候选越多，越容易找到附近有 Mapillary 全景图的地点，但请求可能更慢。
+- `search-address --limit`：每次在指定地点附近搜索 Mapillary 全景图 ID 的数量。它不是最终图片数量，最终返回数量还会受附近街景覆盖和序列图片数量影响。
 
-### random-japan 返回
+## 输出使用规则
 
-```json
-{
-  "spot": {
-    "name": "清水寺",
-    "wikidata_id": "Q...",
-    "lat": 34.9949,
-    "lon": 135.785,
-    "type": "temple"
-  },
-  "sequence_id": "0HXSH2hA0apL7DrQA-Yvpw",
-  "images": [
-    {
-      "id": "...",
-      "captured_at": "...",
-      "compass_angle": 45.2,
-      "is_pano": true,
-      "thumb_1024_url": "https://...",
-      "sequence": "0HXSH2hA0apL7DrQA-Yvpw",
-      "creator": "..."
-    }
-  ],
-  "count": 9
-}
-```
+- 只使用 `images[].thumb_1024_url` 作为图片 URL。
+- 不要假设其他 URL 字段可以作为图片使用。
+- 拿到图片 URL 后，你自己分析图片内容，再用自然语言描述看到的景色和感受。
+- 返回 `error` 时，告诉用户该地点附近暂时没有可用街景，或本次随机探索没有找到合适图片。
 
-### search-address 返回
+## 返回结构
 
 ```json
 {
   "spot": {
     "name": "清水寺",
     "lat": 34.9949,
-    "lon": 135.785,
-    "display_name": "..."
+    "lon": 135.785
   },
   "images": [
     {
       "id": "...",
-      "captured_at": "...",
-      "compass_angle": 45.2,
-      "is_pano": true,
       "thumb_1024_url": "https://...",
-      "sequence": "0HXSH2hA0apL7DrQA-Yvpw",
-      "creator": "..."
+      "is_pano": true,
+      "captured_at": 1524135844664
     }
   ],
-  "count": 9
+  "count": 1
 }
 ```
-
-## 命令参考
-
-| 命令 | 说明 |
-|------|------|
-| `random-japan` | 随机获取一个日本景点附近的街景图片数据 |
-| `search-address <地址>` | 搜索某一个景点或地点附近的街景图片数据 |
-
-## 注意事项
-
-- **频率限制**：Nominatim（geocode）有 1 req/s 限制，脚本已内置 sleep
-- **景点来源**：random-japan 使用 Wikidata SPARQL 查询日本景点坐标；为避免超时，不在 SPARQL 内使用随机排序
-- **序列数量**：sequence 接口最多返回 9 张图片
-- **全景优先**：search 默认只返回 `is_pano=true` 的全景图
-- **图片 URL**：Skill 返回的 `thumb_1024_url` 是可直接访问的图片 URL；Hermes Agent 需要基于该字段自行分析图片
-
-## 常见问题
-
-1. **无结果** — 该位置可能没有 Mapillary 街景覆盖
-2. **Nominatim 超时** — 检查网络，geocode 有 10s 超时
-3. **Wikidata 超时** — random-japan 依赖 Wikidata SPARQL 服务，网络或服务繁忙时可能失败
-
-## 相关
-
-- `maps` skill — OpenStreetMap 数据，用于地理编码和 POI 搜索（无街景）

@@ -132,7 +132,7 @@ async function generatePersonMemoryProposal(
     model: flashModel,
     providerOptions: {
       flash: {
-        enable_thinking: false,
+        enable_thinking: true,
       },
     },
     tools: {
@@ -180,7 +180,7 @@ function reviewPersonMemoryProposalTool(input: Omit<PersonMemoryReviewContext, "
         model: flashModel,
         providerOptions: {
           flash: {
-            enable_thinking: false,
+            enable_thinking: true,
           },
         },
         output: Output.object({

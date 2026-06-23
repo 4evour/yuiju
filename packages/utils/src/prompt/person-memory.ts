@@ -1,3 +1,5 @@
+import { messageHistorySchemaPrompt } from "./message";
+
 export interface PersonMemoryProposalPromptInput {
   scene: "private" | "group";
   nickname: string;
@@ -27,6 +29,9 @@ export function buildPersonMemoryProposalPrompt(input: PersonMemoryProposalPromp
 
 ## 旧人物记忆 JSON 对象
 ${input.existingMemoryText}
+
+## 本次互动材料里的消息结构
+${messageHistorySchemaPrompt}
 
 ## 本次互动材料
 ${input.interactionMaterial}
@@ -80,6 +85,9 @@ export function buildPersonMemoryReviewPrompt(input: PersonMemoryReviewPromptInp
 
 ## 旧人物记忆 JSON 对象
 ${input.existingMemoryText}
+
+## 本次互动材料里的消息结构
+${messageHistorySchemaPrompt}
 
 ## 本次互动材料
 ${input.interactionMaterial}

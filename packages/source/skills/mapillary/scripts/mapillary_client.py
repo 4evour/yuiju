@@ -6,6 +6,7 @@ mapillary_client.py - Mapillary 街景 CLI 工具
 用法：
     python3 mapillary_client.py search <lat> <lon>
     python3 mapillary_client.py search-address "天安门"
+    python3 mapillary_client.py random-japan-spot
     python3 mapillary_client.py random-japan
     python3 mapillary_client.py image <image_id>
     python3 mapillary_client.py sequence <image_id>
@@ -130,6 +131,14 @@ OFFSET {offset}
             })
         random.shuffle(spots)
         return spots
+
+    def random_japan_spot(self, limit: int = 20) -> dict:
+        """从 Wikidata 随机获取一个日本景点坐标。"""
+        for _ in range(5):
+            spots = self.random_japan_spots(limit=limit)
+            if spots:
+                return spots[0]
+        return {"error": "No Japan spots found from Wikidata"}
 
     def random_japan_street_view(self, limit: int = 20, image_limit: int = 5, radius: int = 80) -> dict:
         """随机获取一个日本景点附近的 Mapillary 街景图片数据。"""
@@ -335,6 +344,10 @@ def main():
     addr_parser.add_argument("address", help="地址名称")
     addr_parser.add_argument("--limit", type=int, default=5, help="最大返回数量（默认 5）")
 
+    # random-japan-spot [--limit N]
+    spot_parser = sub.add_parser("random-japan-spot", help="随机获取一个日本景点坐标")
+    spot_parser.add_argument("--limit", type=int, default=20, help="每次 Wikidata 查询的景点候选数（默认 20）")
+
     # random-japan [--limit N] [--image-limit N] [--radius N]
     japan_parser = sub.add_parser("random-japan", help="随机获取一个日本景点附近的街景图片数据")
     japan_parser.add_argument("--limit", type=int, default=20, help="每次 Wikidata 查询的景点候选数（默认 20）")
@@ -359,6 +372,11 @@ def main():
     elif args.command == "search-address":
         client = MapillaryApiClient(os.environ[MAPILLARY_ACCESS_TOKEN_ENV])
         data = client.search_by_address(args.address, limit=args.limit)
+        print(json.dumps(data, ensure_ascii=False, indent=2))
+    elif args.command == "random-japan-spot":
+        client = MapillaryApiClient("")
+        spot = client.random_japan_spot(limit=args.limit)
+        data = spot if "error" in spot else {"spot": spot}
         print(json.dumps(data, ensure_ascii=False, indent=2))
     elif args.command == "random-japan":
         client = MapillaryApiClient(os.environ[MAPILLARY_ACCESS_TOKEN_ENV])
