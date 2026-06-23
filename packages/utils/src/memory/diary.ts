@@ -7,40 +7,35 @@
  */
 export interface MemoryDiaryEntry {
   subject: string;
+  period: MemoryDiaryPeriod;
   diaryDate: Date;
-  text: string;
-  generatedAt?: Date;
-  updatedAt?: Date;
-  isDev?: boolean;
-}
-
-export type MemoryDiarySummaryPeriod = "week" | "month" | "year";
-
-export interface MemoryDiarySummaryEntry {
-  subject: string;
-  period: MemoryDiarySummaryPeriod;
-  periodStartDate: Date;
   periodEndDate: Date;
   text: string;
   generatedAt?: Date;
   updatedAt?: Date;
   isDev?: boolean;
 }
+
+export type MemoryDiaryPeriod = "day" | "week" | "month" | "year";
+export type MemoryDiarySummaryPeriod = Exclude<MemoryDiaryPeriod, "day">;
 
 /**
  * 当前项目中默认的日记主体。
  */
 export const DEFAULT_DIARY_SUBJECT = "ゆいじゅ";
 
-export function resolveDiarySummaryPeriodRange(input: {
-  period: MemoryDiarySummaryPeriod;
-  date: Date;
-}): {
+export function resolveDiarySummaryPeriodRange(input: { period: MemoryDiaryPeriod; date: Date }): {
   periodStartDate: Date;
   periodEndDate: Date;
 } {
   const date = new Date(input.date);
   const startOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+  if (input.period === "day") {
+    const periodEndDate = new Date(startOfDay);
+    periodEndDate.setDate(startOfDay.getDate() + 1);
+    return { periodStartDate: startOfDay, periodEndDate };
+  }
 
   if (input.period === "week") {
     const mondayOffset = (startOfDay.getDay() + 6) % 7;

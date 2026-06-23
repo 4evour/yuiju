@@ -7,12 +7,12 @@ import {
   getMemoryDiaries,
   getRecentMemoryEpisodes,
   type IMemoryEpisode,
+  type MemoryDiaryPeriod,
   type MemoryDiarySummaryPeriod,
   resolveDiarySummaryPeriodRange,
   SUBJECT_NAME,
   summarizeConversationDiaryMaterials,
   upsertMemoryDiary,
-  upsertMemoryDiarySummary,
 } from "@yuiju/utils";
 import { generateText } from "ai";
 import dayjs from "dayjs";
@@ -70,7 +70,8 @@ async function writeDiarySummaryText(input: {
   period: MemoryDiarySummaryPeriod;
   periodStartDate: Date;
   periodEndDate: Date;
-  dailyDiaries: { diaryDate: Date; text: string }[];
+  sourcePeriod: MemoryDiaryPeriod;
+  sourceDiaries: { diaryDate: Date; periodEndDate: Date; text: string }[];
 }): Promise<string> {
   const result = await generateText({
     model: flashModel,
@@ -84,12 +85,13 @@ async function writeDiarySummaryText(input: {
       period: input.period,
       periodStartDate: input.periodStartDate,
       periodEndDate: input.periodEndDate,
+      sourcePeriod: input.sourcePeriod,
     }),
     prompt: [
-      "以下是这一阶段已经生成的每日 Diary，请严格基于这些内容整理阶段性回忆。",
+      "以下是这一阶段已经生成的下级 Diary 或阶段总结，请严格基于这些内容整理阶段性回忆。",
       JSON.stringify(
-        input.dailyDiaries.map((diary) => ({
-          diaryDate: dayjs(diary.diaryDate).format("YYYY-MM-DD"),
+        input.sourceDiaries.map((diary) => ({
+          dateRange: `${dayjs(diary.diaryDate).format("YYYY-MM-DD")}~${dayjs(diary.periodEndDate).subtract(1, "day").format("YYYY-MM-DD")}`,
           text: diary.text,
         })),
       ),
@@ -241,53 +243,83 @@ export async function refreshDiarySummariesForDate(input: {
   isDev: boolean;
 }): Promise<void> {
   const subject = input.subject ?? DEFAULT_DIARY_SUBJECT;
-  const periods: MemoryDiarySummaryPeriod[] = ["week", "month", "year"];
 
-  for (const period of periods) {
-    const { periodStartDate, periodEndDate } = resolveDiarySummaryPeriodRange({
-      period,
-      date: input.diaryDate,
-    });
-    const dailyDiaries = await getMemoryDiaries({
-      subject,
-      isDev: input.isDev,
-      diaryDateAfter: periodStartDate,
-      diaryDateBefore: periodEndDate,
-      sortDirection: "asc",
-      limit: 400,
-    });
+  await refreshDiarySummaryForPeriod({
+    subject,
+    targetDate: input.diaryDate,
+    period: "week",
+    sourcePeriod: "day",
+    isDev: input.isDev,
+  });
+  await refreshDiarySummaryForPeriod({
+    subject,
+    targetDate: input.diaryDate,
+    period: "month",
+    sourcePeriod: "week",
+    isDev: input.isDev,
+  });
+  await refreshDiarySummaryForPeriod({
+    subject,
+    targetDate: input.diaryDate,
+    period: "year",
+    sourcePeriod: "month",
+    isDev: input.isDev,
+  });
+}
 
-    if (dailyDiaries.length === 0) {
-      continue;
-    }
+async function refreshDiarySummaryForPeriod(input: {
+  subject: string;
+  targetDate: Date;
+  period: MemoryDiarySummaryPeriod;
+  sourcePeriod: MemoryDiaryPeriod;
+  isDev: boolean;
+}): Promise<void> {
+  const { periodStartDate, periodEndDate } = resolveDiarySummaryPeriodRange({
+    period: input.period,
+    date: input.targetDate,
+  });
+  const sourceDiaries = await getMemoryDiaries({
+    subject: input.subject,
+    period: input.sourcePeriod,
+    isDev: input.isDev,
+    diaryDateBefore: periodEndDate,
+    periodEndDateAfter: periodStartDate,
+    sortDirection: "asc",
+    limit: 400,
+  });
 
-    const summaryText = await writeDiarySummaryText({
-      subject,
-      period,
-      periodStartDate,
-      periodEndDate,
-      dailyDiaries: dailyDiaries.map((diary) => ({
-        diaryDate: diary.diaryDate,
-        text: diary.text,
-      })),
-    });
-
-    if (!summaryText.trim()) {
-      logger.warn("[refreshDiarySummariesForDate] generated empty diary summary", {
-        subject,
-        period,
-        diaryDate: dayjs(input.diaryDate).format("YYYY-MM-DD"),
-      });
-      continue;
-    }
-
-    await upsertMemoryDiarySummary({
-      subject,
-      period,
-      periodStartDate,
-      periodEndDate,
-      text: summaryText,
-      isDev: input.isDev,
-    });
+  if (sourceDiaries.length === 0) {
+    return;
   }
+
+  const summaryText = await writeDiarySummaryText({
+    subject: input.subject,
+    period: input.period,
+    periodStartDate,
+    periodEndDate,
+    sourcePeriod: input.sourcePeriod,
+    sourceDiaries: sourceDiaries.map((diary) => ({
+      diaryDate: diary.diaryDate,
+      periodEndDate: diary.periodEndDate,
+      text: diary.text,
+    })),
+  });
+
+  if (!summaryText.trim()) {
+    logger.warn("[refreshDiarySummariesForDate] generated empty diary summary", {
+      subject: input.subject,
+      period: input.period,
+      diaryDate: dayjs(input.targetDate).format("YYYY-MM-DD"),
+    });
+    return;
+  }
+
+  await upsertMemoryDiary({
+    subject: input.subject,
+    period: input.period,
+    diaryDate: periodStartDate,
+    periodEndDate,
+    text: summaryText,
+    isDev: input.isDev,
+  });
 }

@@ -9,6 +9,7 @@ export interface DiaryPromptInput {
 export interface DiarySummaryPromptInput {
   subject: string;
   period: "week" | "month" | "year";
+  sourcePeriod: "day" | "week" | "month" | "year";
   periodStartDate: Date;
   periodEndDate: Date;
 }
@@ -71,6 +72,12 @@ export function buildDiarySummarySystemPrompt(input: DiarySummaryPromptInput): s
     month: "这个月",
     year: "这一年",
   }[input.period];
+  const sourceText = {
+    day: "每日 Diary",
+    week: "每周总结",
+    month: "每月总结",
+    year: "每年总结",
+  }[input.sourcePeriod];
   const periodStartText = dayjs(input.periodStartDate).format("YYYY-MM-DD");
   const periodEndText = dayjs(input.periodEndDate).subtract(1, "day").format("YYYY-MM-DD");
 
@@ -80,13 +87,13 @@ export function buildDiarySummarySystemPrompt(input: DiarySummaryPromptInput): s
 ${baseInformation}
 
 ## 总结任务
-请根据提供的每日 Diary，整理 ${periodStartText} 至 ${periodEndText} 的${periodText}回忆。
+请根据提供的${sourceText}，整理 ${periodStartText} 至 ${periodEndText} 的${periodText}回忆。
 
 ## 写作要求
 - 必须使用第一人称，像悠酱在回头整理自己的阶段性回忆。
 - 不要写成系统报告、流水账、数据库摘要或旁白说明。
 - 要保留这一阶段最值得未来想起的人、事、地点、变化和感受。
-- 可以概括重复发生的生活节奏，但必须挂在每日 Diary 中能找到的事实上。
+- 可以概括重复发生的生活节奏，但必须挂在输入材料中能找到的事实上。
 - 不要编造未发生的事件、关系变化或心理活动。
 - 不要逐日罗列；请把相近主题合并成自然段。
 

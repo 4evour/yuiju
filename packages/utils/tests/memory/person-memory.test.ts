@@ -7,6 +7,7 @@ import {
   type PersonMemoryDocument,
 } from "../../src/memory/person-memory/types";
 import { applyPersonMemoryProposalToDocument } from "../../src/memory/person-memory/update";
+import { buildPersonMemoryProposalPrompt, buildPersonMemoryReviewPrompt } from "../../src/prompt";
 
 function buildMemoryDocument(overrides: Partial<PersonMemoryDocument> = {}): PersonMemoryDocument {
   return {
@@ -133,5 +134,75 @@ describe("person memory proposal applying", () => {
         },
       }),
     ).toThrow(PersonMemoryFormatError);
+  });
+});
+
+describe("person memory update agent prompt", () => {
+  it("要求 proposal agent 不把 A 的事实写入 B 的人物记忆", () => {
+    const prompt = buildPersonMemoryProposalPrompt({
+      scene: "group",
+      nickname: "B",
+      currentTime: "2026-06-23",
+      existingMemoryText: "（无，当前尚未建立人物记忆）",
+      sectionKeys: PERSON_MEMORY_SECTION_KEYS,
+      interactionMaterial: [
+        "场景：群聊",
+        "会话：测试群",
+        "当前正在判断的人物：B",
+        "对话材料：",
+        JSON.stringify([
+          {
+            speaker: "A",
+            content: [{ type: "text", data: { text: "我最近在准备画稿。" } }],
+          },
+          {
+            speaker: "B",
+            content: [{ type: "text", data: { text: "加油。" } }],
+          },
+        ]),
+      ].join("\n"),
+    });
+
+    expect(prompt).toContain("当前人物是唯一允许被更新的人物");
+    expect(prompt).toContain("不能把 A 自述的近况、喜好、雷区或事件写进 B 的人物记忆");
+    expect(prompt).toContain("信息属于其他发言者或对象，而不是当前人物，就应该 shouldUpdate=false");
+  });
+
+  it("要求 review agent 驳回跨人物归因的候选提案", () => {
+    const prompt = buildPersonMemoryReviewPrompt({
+      scene: "group",
+      nickname: "B",
+      currentTime: "2026-06-23",
+      existingMemoryText: "（无，当前尚未建立人物记忆）",
+      interactionMaterial: [
+        "场景：群聊",
+        "会话：测试群",
+        "当前正在判断的人物：B",
+        "对话材料：",
+        JSON.stringify([
+          {
+            speaker: "A",
+            content: [{ type: "text", data: { text: "我最近在准备画稿。" } }],
+          },
+          {
+            speaker: "B",
+            content: [{ type: "text", data: { text: "加油。" } }],
+          },
+        ]),
+      ].join("\n"),
+      proposalJson: JSON.stringify({
+        shouldUpdate: true,
+        changes: [
+          {
+            section: "最近在忙什么",
+            content: "2026-06-23：在准备画稿。",
+            reason: "A 在群聊中说自己最近在准备画稿。",
+          },
+        ],
+      }),
+    });
+
+    expect(prompt).toContain("把其他发言者、被提到的人或旁观对象的事实写进当前人物记忆");
+    expect(prompt).toContain("A 自述的近况、喜好、雷区或事件不能被写到 B 的人物记忆里");
   });
 });

@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import { SUBJECT_NAME } from "../constants";
-import { getMemoryDiaries, getMemoryDiarySummaries, getRecentMemoryEpisodes } from "../db";
+import { getMemoryDiaries, getRecentMemoryEpisodes } from "../db";
 import { isDev } from "../env";
 import { formatProjectTime, parseProjectTime } from "../time";
 import { DEFAULT_DIARY_SUBJECT, type MemoryDiarySummaryPeriod } from "./diary";
@@ -103,27 +103,10 @@ export async function searchDiaries(input: DiarySearchInput): Promise<DiarySearc
     diaryDateBefore = dayjs().startOf("day").toDate();
   }
 
-  if (period !== "day") {
-    const summaries = await getMemoryDiarySummaries({
-      limit,
-      subject: DEFAULT_DIARY_SUBJECT,
-      period,
-      isDev: isDev(),
-      sortDirection: timeSort,
-      periodStartDateAfter: diaryDateAfter,
-      periodStartDateBefore: diaryDateBefore,
-    });
-
-    return summaries.map((summary) => ({
-      date: `${formatProjectTime(summary.periodStartDate, "YYYY-MM-DD")}~${formatProjectTime(dayjs(summary.periodEndDate).subtract(1, "day").toDate(), "YYYY-MM-DD")}`,
-      period: summary.period,
-      content: summary.text,
-    }));
-  }
-
   const diaries = await getMemoryDiaries({
     limit,
     subject: DEFAULT_DIARY_SUBJECT,
+    period,
     isDev: isDev(),
     sortDirection: timeSort,
     diaryDateAfter,
@@ -131,8 +114,11 @@ export async function searchDiaries(input: DiarySearchInput): Promise<DiarySearc
   });
 
   return diaries.map((diary) => ({
-    date: formatProjectTime(diary.diaryDate, "YYYY-MM-DD"),
-    period: "day",
+    date:
+      diary.period === "day"
+        ? formatProjectTime(diary.diaryDate, "YYYY-MM-DD")
+        : `${formatProjectTime(diary.diaryDate, "YYYY-MM-DD")}~${formatProjectTime(dayjs(diary.periodEndDate).subtract(1, "day").toDate(), "YYYY-MM-DD")}`,
+    period: diary.period,
     content: diary.text,
   }));
 }
