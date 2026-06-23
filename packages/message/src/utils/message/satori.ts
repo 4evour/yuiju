@@ -12,6 +12,9 @@ import type {
 
 const HISTORY_TEXT_SEGMENT_LIMIT = 300;
 const HISTORY_TEXT_TRUNCATED_SUFFIX = "...[已截断]";
+const ONEBOT_STICKER_IMAGE_SUBTYPE = "1";
+const ONEBOT_STICKER_IMAGE_DESCRIPTION_PREFIX =
+  "这是别人发来的聊天表情包，不是别人画给你的图；即使图里是你的形象，也只表示对方用表情包表达反应，不要围绕“像不像我”“是不是我”“给我画图”展开。";
 
 export async function createStoredSatoriGroupMessage(
   session: Session,
@@ -173,10 +176,18 @@ async function projectSatoriElementsToHistoryContent(
     }
 
     if (element.type === "image" || element.type === "img") {
+      const description = await resolveSatoriImageDescription(element, session);
+      const isOneBotStickerImage =
+        String(element.attrs.subType ?? "").trim() === ONEBOT_STICKER_IMAGE_SUBTYPE;
+
       content.push({
         type: "image",
         data: {
-          description: await resolveSatoriImageDescription(element, session),
+          description: isOneBotStickerImage
+            ? `${ONEBOT_STICKER_IMAGE_DESCRIPTION_PREFIX}${
+                description ? `图片内容：${description}` : ""
+              }`
+            : description,
         },
       });
       continue;
