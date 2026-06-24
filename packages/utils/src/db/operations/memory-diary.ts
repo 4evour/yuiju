@@ -7,7 +7,7 @@ export interface MemoryDiaryWriteInput {
   subject: string;
   period?: MemoryDiaryPeriod;
   diaryDate: Date;
-  periodEndDate?: Date;
+  diaryEndDate?: Date;
   text: string;
   isDev?: boolean;
 }
@@ -21,8 +21,8 @@ export interface GetMemoryDiariesOptions {
   onlyDate?: Date;
   diaryDateAfter?: Date;
   diaryDateBefore?: Date;
-  periodEndDateAfter?: Date;
-  periodEndDateBefore?: Date;
+  diaryEndDateAfter?: Date;
+  diaryEndDateBefore?: Date;
   sortDirection?: "asc" | "desc";
   readFrom?: MongoReadSource;
 }
@@ -31,7 +31,7 @@ function normalizeDiaryDate(value: Date): Date {
   return dayjs(value).startOf("day").toDate();
 }
 
-function resolvePeriodEndDate(period: MemoryDiaryPeriod, diaryDate: Date): Date {
+function resolveDiaryEndDate(period: MemoryDiaryPeriod, diaryDate: Date): Date {
   if (period === "day") {
     return dayjs(diaryDate).add(1, "day").toDate();
   }
@@ -75,13 +75,13 @@ function buildMemoryDiaryFilter(options: GetMemoryDiariesOptions = {}): Record<s
       (filter.diaryDate as Record<string, Date>).$lt = normalizeDiaryDate(options.diaryDateBefore);
     }
   }
-  if (options.periodEndDateAfter || options.periodEndDateBefore) {
-    filter.periodEndDate = {};
-    if (options.periodEndDateAfter) {
-      (filter.periodEndDate as Record<string, Date>).$gt = options.periodEndDateAfter;
+  if (options.diaryEndDateAfter || options.diaryEndDateBefore) {
+    filter.diaryEndDate = {};
+    if (options.diaryEndDateAfter) {
+      (filter.diaryEndDate as Record<string, Date>).$gt = options.diaryEndDateAfter;
     }
-    if (options.periodEndDateBefore) {
-      (filter.periodEndDate as Record<string, Date>).$lte = options.periodEndDateBefore;
+    if (options.diaryEndDateBefore) {
+      (filter.diaryEndDate as Record<string, Date>).$lte = options.diaryEndDateBefore;
     }
   }
 
@@ -94,7 +94,7 @@ function buildMemoryDiaryFilter(options: GetMemoryDiariesOptions = {}): Record<s
 export async function upsertMemoryDiary(input: MemoryDiaryWriteInput): Promise<IMemoryDiary> {
   const period = input.period ?? "day";
   const diaryDate = normalizeDiaryDate(input.diaryDate);
-  const periodEndDate = input.periodEndDate ?? resolvePeriodEndDate(period, diaryDate);
+  const diaryEndDate = input.diaryEndDate ?? resolveDiaryEndDate(period, diaryDate);
   const now = new Date();
   const model = await getMemoryDiaryModel();
 
@@ -108,7 +108,7 @@ export async function upsertMemoryDiary(input: MemoryDiaryWriteInput): Promise<I
       },
       {
         $set: {
-          periodEndDate,
+          diaryEndDate,
           text: input.text,
           generatedAt: now,
           updatedAt: now,
@@ -189,7 +189,7 @@ async function syncMemoryDiaryDocument(diary: IMemoryDiary): Promise<void> {
           subject: diary.subject,
           period: diary.period,
           diaryDate: diary.diaryDate,
-          periodEndDate: diary.periodEndDate,
+          diaryEndDate: diary.diaryEndDate,
           text: diary.text,
           generatedAt: diary.generatedAt,
           updatedAt: diary.updatedAt,

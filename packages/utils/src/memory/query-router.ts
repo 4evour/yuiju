@@ -117,7 +117,7 @@ export async function searchDiaries(input: DiarySearchInput): Promise<DiarySearc
     date:
       diary.period === "day"
         ? formatProjectTime(diary.diaryDate, "YYYY-MM-DD")
-        : `${formatProjectTime(diary.diaryDate, "YYYY-MM-DD")}~${formatProjectTime(dayjs(diary.periodEndDate).subtract(1, "day").toDate(), "YYYY-MM-DD")}`,
+        : `${formatProjectTime(diary.diaryDate, "YYYY-MM-DD")}~${formatProjectTime(dayjs(diary.diaryEndDate).subtract(1, "day").toDate(), "YYYY-MM-DD")}`,
     period: diary.period,
     content: diary.text,
   }));

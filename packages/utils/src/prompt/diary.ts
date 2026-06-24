@@ -11,7 +11,7 @@ export interface DiarySummaryPromptInput {
   period: "week" | "month" | "year";
   sourcePeriod: "day" | "week" | "month" | "year";
   periodStartDate: Date;
-  periodEndDate: Date;
+  diaryEndDate: Date;
 }
 
 /**
@@ -79,7 +79,7 @@ export function buildDiarySummarySystemPrompt(input: DiarySummaryPromptInput): s
     year: "每年总结",
   }[input.sourcePeriod];
   const periodStartText = dayjs(input.periodStartDate).format("YYYY-MM-DD");
-  const periodEndText = dayjs(input.periodEndDate).subtract(1, "day").format("YYYY-MM-DD");
+  const periodEndText = dayjs(input.diaryEndDate).subtract(1, "day").format("YYYY-MM-DD");
 
   return `
 你现在要以「${input.subject}」的身份整理阶段性日记回忆。

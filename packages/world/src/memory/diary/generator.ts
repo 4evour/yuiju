@@ -69,9 +69,9 @@ async function writeDiarySummaryText(input: {
   subject: string;
   period: MemoryDiarySummaryPeriod;
   periodStartDate: Date;
-  periodEndDate: Date;
+  diaryEndDate: Date;
   sourcePeriod: MemoryDiaryPeriod;
-  sourceDiaries: { diaryDate: Date; periodEndDate: Date; text: string }[];
+  sourceDiaries: { diaryDate: Date; diaryEndDate: Date; text: string }[];
 }): Promise<string> {
   const result = await generateText({
     model: flashModel,
@@ -84,14 +84,14 @@ async function writeDiarySummaryText(input: {
       subject: input.subject,
       period: input.period,
       periodStartDate: input.periodStartDate,
-      periodEndDate: input.periodEndDate,
+      diaryEndDate: input.diaryEndDate,
       sourcePeriod: input.sourcePeriod,
     }),
     prompt: [
       "以下是这一阶段已经生成的下级 Diary 或阶段总结，请严格基于这些内容整理阶段性回忆。",
       JSON.stringify(
         input.sourceDiaries.map((diary) => ({
-          dateRange: `${dayjs(diary.diaryDate).format("YYYY-MM-DD")}~${dayjs(diary.periodEndDate).subtract(1, "day").format("YYYY-MM-DD")}`,
+          dateRange: `${dayjs(diary.diaryDate).format("YYYY-MM-DD")}~${dayjs(diary.diaryEndDate).subtract(1, "day").format("YYYY-MM-DD")}`,
           text: diary.text,
         })),
       ),
@@ -274,7 +274,7 @@ async function refreshDiarySummaryForPeriod(input: {
   sourcePeriod: MemoryDiaryPeriod;
   isDev: boolean;
 }): Promise<void> {
-  const { periodStartDate, periodEndDate } = resolveDiarySummaryPeriodRange({
+  const { periodStartDate, diaryEndDate } = resolveDiarySummaryPeriodRange({
     period: input.period,
     date: input.targetDate,
   });
@@ -282,8 +282,8 @@ async function refreshDiarySummaryForPeriod(input: {
     subject: input.subject,
     period: input.sourcePeriod,
     isDev: input.isDev,
-    diaryDateBefore: periodEndDate,
-    periodEndDateAfter: periodStartDate,
+    diaryDateBefore: diaryEndDate,
+    diaryEndDateAfter: periodStartDate,
     sortDirection: "asc",
     limit: 400,
   });
@@ -296,11 +296,11 @@ async function refreshDiarySummaryForPeriod(input: {
     subject: input.subject,
     period: input.period,
     periodStartDate,
-    periodEndDate,
+    diaryEndDate,
     sourcePeriod: input.sourcePeriod,
     sourceDiaries: sourceDiaries.map((diary) => ({
       diaryDate: diary.diaryDate,
-      periodEndDate: diary.periodEndDate,
+      diaryEndDate: diary.diaryEndDate,
       text: diary.text,
     })),
   });
@@ -318,7 +318,7 @@ async function refreshDiarySummaryForPeriod(input: {
     subject: input.subject,
     period: input.period,
     diaryDate: periodStartDate,
-    periodEndDate,
+    diaryEndDate,
     text: summaryText,
     isDev: input.isDev,
   });
