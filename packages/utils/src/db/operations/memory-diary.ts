@@ -21,8 +21,6 @@ export interface GetMemoryDiariesOptions {
   onlyDate?: Date;
   diaryDateAfter?: Date;
   diaryDateBefore?: Date;
-  diaryEndDateAfter?: Date;
-  diaryEndDateBefore?: Date;
   sortDirection?: "asc" | "desc";
   readFrom?: MongoReadSource;
 }
@@ -75,16 +73,6 @@ function buildMemoryDiaryFilter(options: GetMemoryDiariesOptions = {}): Record<s
       (filter.diaryDate as Record<string, Date>).$lt = normalizeDiaryDate(options.diaryDateBefore);
     }
   }
-  if (options.diaryEndDateAfter || options.diaryEndDateBefore) {
-    filter.diaryEndDate = {};
-    if (options.diaryEndDateAfter) {
-      (filter.diaryEndDate as Record<string, Date>).$gt = options.diaryEndDateAfter;
-    }
-    if (options.diaryEndDateBefore) {
-      (filter.diaryEndDate as Record<string, Date>).$lte = options.diaryEndDateBefore;
-    }
-  }
-
   return filter;
 }
 

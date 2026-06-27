@@ -282,8 +282,8 @@ async function refreshDiarySummaryForPeriod(input: {
     subject: input.subject,
     period: input.sourcePeriod,
     isDev: input.isDev,
+    diaryDateAfter: periodStartDate,
     diaryDateBefore: diaryEndDate,
-    diaryEndDateAfter: periodStartDate,
     sortDirection: "asc",
     limit: 400,
   });

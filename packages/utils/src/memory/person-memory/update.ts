@@ -110,22 +110,6 @@ export async function updatePersonMemory(
     };
   }
 
-  const ownershipIssue = findPersonMemoryProposalOwnershipIssue({
-    scene: input.scene,
-    nickname: input.nickname,
-    interactionMaterial: input.interactionMaterial,
-    proposal,
-  });
-  if (ownershipIssue) {
-    logger.warn("[person-memory] proposal ownership rejected", {
-      nickname: input.nickname,
-      issue: ownershipIssue,
-    });
-    return {
-      status: "review_rejected",
-    };
-  }
-
   const nextMemory = applyPersonMemoryProposalToDocument({
     nickname: input.nickname,
     existingMemory,
@@ -310,66 +294,6 @@ async function pruneInactivePersonMemories(input: { protectedNickname: string })
     `${JSON.stringify(heatDocument, null, 2)}\n`,
     "utf8",
   );
-}
-
-export function findPersonMemoryProposalOwnershipIssue(input: {
-  scene: "private" | "group";
-  nickname: string;
-  interactionMaterial: string;
-  proposal: PersonMemoryProposal;
-}): string | null {
-  if (input.scene !== "group") {
-    return null;
-  }
-
-  const otherSpeakers = extractOtherSpeakersFromInteractionMaterial({
-    nickname: input.nickname,
-    interactionMaterial: input.interactionMaterial,
-  });
-  if (!otherSpeakers.length) {
-    return null;
-  }
-
-  for (const change of input.proposal.changes) {
-    const matchedSpeaker = otherSpeakers.find((speaker) => change.reason.includes(speaker));
-    if (!matchedSpeaker) {
-      continue;
-    }
-
-    return `候选人物记忆把「${matchedSpeaker}」的材料写入了「${input.nickname}」的记忆。`;
-  }
-
-  return null;
-}
-
-function extractOtherSpeakersFromInteractionMaterial(input: {
-  nickname: string;
-  interactionMaterial: string;
-}): string[] {
-  const marker = "对话材料：";
-  const markerIndex = input.interactionMaterial.indexOf(marker);
-  if (markerIndex < 0) {
-    return [];
-  }
-
-  const transcriptText = input.interactionMaterial.slice(markerIndex + marker.length).trim();
-  const transcript = JSON.parse(transcriptText) as Array<{ speaker?: unknown }>;
-  const speakers = new Set<string>();
-
-  for (const item of transcript) {
-    if (typeof item.speaker !== "string") {
-      continue;
-    }
-
-    const speaker = item.speaker.trim();
-    if (!speaker || speaker === input.nickname) {
-      continue;
-    }
-
-    speakers.add(speaker);
-  }
-
-  return Array.from(speakers);
 }
 
 function normalizeProposal(
