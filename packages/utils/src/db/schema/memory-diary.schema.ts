@@ -7,14 +7,20 @@ import { getMongoConnection, type MongoReadSource } from "../connect";
  *
  * 说明：
  * - period 表示 day/week/month/year，diaryDate 统一归一化为周期开始日；
- * - diaryEndDate 是排他结束时间，用于查询跨自然月/年的阶段总结素材；
+ * - diaryEndDate 是周期结束日，与 diaryDate 共同表达左闭右闭的日期范围；
  * - text 保留完整日记正文，不额外拆分标题、摘要等结构；
  * - generatedAt / updatedAt 手动维护，避免引入与业务无关的 createdAt。
  */
 export interface IMemoryDiary extends Document {
   subject: string;
   period: MemoryDiaryPeriod;
+  /**
+   * 日记开始时间
+   */
   diaryDate: Date;
+  /**
+   * 日记结束时间
+   */
   diaryEndDate: Date;
   text: string;
   generatedAt: Date;

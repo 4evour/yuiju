@@ -83,24 +83,28 @@ export async function searchDiaries(input: DiarySearchInput): Promise<DiarySearc
   const startDay = parsedStartTime ? dayjs(parsedStartTime).startOf("day").toDate() : undefined;
   const endDay = parsedEndTime ? dayjs(parsedEndTime).startOf("day").toDate() : undefined;
 
-  let diaryDateAfter: Date | undefined;
-  let diaryDateBefore: Date | undefined;
+  let startDate: Date | undefined;
+  let endDate: Date | undefined;
+  const today = dayjs().startOf("day");
+  const yesterday = today.subtract(1, "day").toDate();
 
   if (startDay || endDay) {
-    const candidates = [startDay, endDay].filter((value): value is Date => Boolean(value));
+    startDate = startDay;
+    endDate = endDay;
 
-    if (candidates.some((value) => dayjs(value).isSame(dayjs(), "day"))) {
+    if (startDate && endDate && startDate > endDate) {
+      [startDate, endDate] = [endDate, startDate];
+    }
+
+    // Diary 只保存今天之前的回忆；查询范围碰到今天或未来时，最多截到昨天。
+    if (startDate && dayjs(startDate).valueOf() >= today.valueOf()) {
       return [];
     }
-
-    diaryDateAfter = startDay;
-    diaryDateBefore = endDay ? dayjs(endDay).add(1, "day").toDate() : undefined;
-
-    if (diaryDateAfter && diaryDateBefore && diaryDateAfter > diaryDateBefore) {
-      [diaryDateAfter, diaryDateBefore] = [diaryDateBefore, diaryDateAfter];
+    if (endDate && dayjs(endDate).valueOf() >= today.valueOf()) {
+      endDate = yesterday;
     }
   } else {
-    diaryDateBefore = dayjs().startOf("day").toDate();
+    endDate = yesterday;
   }
 
   const diaries = await getMemoryDiaries({
@@ -109,15 +113,15 @@ export async function searchDiaries(input: DiarySearchInput): Promise<DiarySearc
     period,
     isDev: isDev(),
     sortDirection: timeSort,
-    diaryDateAfter,
-    diaryDateBefore,
+    startDate,
+    endDate,
   });
 
   return diaries.map((diary) => ({
     date:
       diary.period === "day"
         ? formatProjectTime(diary.diaryDate, "YYYY-MM-DD")
-        : `${formatProjectTime(diary.diaryDate, "YYYY-MM-DD")}~${formatProjectTime(dayjs(diary.diaryEndDate).subtract(1, "day").toDate(), "YYYY-MM-DD")}`,
+        : `${formatProjectTime(diary.diaryDate, "YYYY-MM-DD")}~${formatProjectTime(diary.diaryEndDate, "YYYY-MM-DD")}`,
     period: diary.period,
     content: diary.text,
   }));
