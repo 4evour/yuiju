@@ -26,6 +26,7 @@ export interface HomeResponse {
       satiety?: number;
       mood?: number;
       money?: number;
+      phoneBattery?: number;
     };
     todayActions?: string[];
     inventory?: { name: string; count: number }[];
@@ -106,6 +107,7 @@ homeRoute.get("/summary", async (context) => {
         satiety: state.satiety,
         mood: state.mood,
         money: state.money,
+        phoneBattery: state.phoneBattery,
       },
       todayActions: state.dailyActionsDoneToday,
       inventory,

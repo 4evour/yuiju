@@ -133,6 +133,8 @@ export interface CharacterStateData {
   mood: number;
   /** 金钱 */
   money: number;
+  /** 手机电量百分比 */
+  phoneBattery: number;
   /** 今日已执行的动作列表 */
   dailyActionsDoneToday: ActionId[];
   /** 背包物品列表 */
@@ -156,6 +158,10 @@ export interface ICharacterState {
   changeMood(delta: number): Promise<void>;
   /** 改变金钱 */
   changeMoney(delta: number): Promise<void>;
+  /** 设置手机电量百分比 */
+  setPhoneBattery(phoneBattery: number): Promise<void>;
+  /** 改变手机电量百分比 */
+  changePhoneBattery(delta: number): Promise<void>;
   /** 标记该动作已在今天执行 */
   markActionDoneToday(action: ActionId): Promise<void>;
   /** 清空今日动作 */

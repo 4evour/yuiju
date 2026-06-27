@@ -11,6 +11,7 @@ type HomeStatus = {
   satiety?: number;
   mood?: number;
   money?: number;
+  phoneBattery?: number;
 };
 
 type InventoryItem = {
@@ -82,6 +83,13 @@ export function HomeStatusCard({ status, todayActions, inventory, plans }: HomeS
           <div className="rounded-xl bg-[rgba(247,251,255,0.8)] border border-[rgba(217,230,245,0.8)] p-[10px]">
             <div className="text-xs text-[#6b7480]">金钱</div>
             <div className="mt-1.5 text-sm font-extrabold">¥ {displayStatus?.money ?? "—"}</div>
+          </div>
+          <div className="rounded-xl bg-[rgba(247,251,255,0.8)] border border-[rgba(217,230,245,0.8)] p-[10px]">
+            <div className="text-xs text-[#6b7480]">手机电量</div>
+            <div className="mt-1.5 text-sm font-extrabold">
+              {displayStatus?.phoneBattery ?? "—"}
+              <span className="text-[#6b7480]">%</span>
+            </div>
           </div>
         </div>
 

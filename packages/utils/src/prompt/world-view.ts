@@ -1,6 +1,7 @@
 import { getTimeWithWeekday } from "../time";
 import type { CharacterStateData, WorldStateData } from "../types/state";
 import { baseInformation } from "./character-card";
+import { phoneApplicationsPrompt } from "./phone";
 import { type BehaviorRecord, generateRecentBehaviorPrompt } from "./utils";
 
 export const worldViewPrompt = `
@@ -39,7 +40,11 @@ export const worldViewPrompt = `
   - 月汐海岸：需要从羽浦町站乘电车抵达，适合散步放松，恢复心情。散步时可能可以捡到高价值物品，可以卖个好价钱。
 
 ### 设备
-- 手机：可以接收到来自现实世界的信息。
+- 手机：可以接收到来自现实世界的信息，也可以使用以下应用程序
+${phoneApplicationsPrompt
+  .split("\n")
+  .map((line) => `   ${line}`)
+  .join("\n")}
 - 自行车：可以用于在羽浦町中移动。
 `.trim();
 
@@ -143,6 +148,7 @@ function buildCommonStatePrompt(input: {
 饱腹：${input.characterState.satiety}/100
 心情：${input.characterState.mood}/100
 金币：${input.characterState.money}
+手机电量：${input.characterState.phoneBattery}%
 长期计划：${input.longTermPlanTitle || "（无）"}
 短期计划：
 ${generateShortTermPlanPrompt(input.shortTermPlanTitles)}

@@ -378,6 +378,23 @@ export const homeAction: ActionMetadata[] = [
     durationMin: 60,
   },
   {
+    action: ActionId.Charge_Phone,
+    description: "给手机充电。[手机电量=100%][每10%电量耗时3分钟]",
+    precondition(context) {
+      return isAtHomeHouse(context) && context.characterStateData.phoneBattery < 100;
+    },
+    async executor(context) {
+      await context.characterState.setAction(ActionId.Charge_Phone);
+    },
+    async durationMin(context) {
+      return ((100 - context.characterStateData.phoneBattery) / 10) * 3;
+    },
+    async completionEvent(context) {
+      await context.characterState.setPhoneBattery(100);
+      return { eventDescription: "手机充好电了，电量恢复到 100%" };
+    },
+  },
+  {
     action: ActionId.Sleep,
     description: "睡觉。[耗时动态]",
     proactiveShare: {

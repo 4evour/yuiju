@@ -30,6 +30,7 @@ const DEFAULT_CHARACTER_STATE_DATA: CharacterStateData = {
   satiety: 70,
   mood: 60,
   money: 0,
+  phoneBattery: 100,
   dailyActionsDoneToday: [],
   inventory: [],
   runningAction: null,
@@ -132,6 +133,7 @@ export const saveCharacterStateData = async (state: CharacterStateData): Promise
     satiety: state.satiety,
     mood: state.mood,
     money: state.money,
+    phoneBattery: state.phoneBattery,
     dailyActionsDoneToday: JSON.stringify(state.dailyActionsDoneToday),
     inventory: JSON.stringify(state.inventory ?? []),
     runningAction: JSON.stringify(state.runningAction),
@@ -168,6 +170,9 @@ export const updateCharacterStateData = async (
   }
   if (fields.money !== undefined) {
     characterStateFields.money = fields.money;
+  }
+  if (fields.phoneBattery !== undefined) {
+    characterStateFields.phoneBattery = fields.phoneBattery;
   }
   if (fields.dailyActionsDoneToday !== undefined) {
     characterStateFields.dailyActionsDoneToday = JSON.stringify(fields.dailyActionsDoneToday);
@@ -239,6 +244,11 @@ export const initCharacterStateData = async (
   if (raw.money) {
     const money = Number.parseInt(raw.money, 10);
     if (Number.isFinite(money)) state.money = money;
+  }
+
+  if (raw.phoneBattery) {
+    const phoneBattery = Number.parseInt(raw.phoneBattery, 10);
+    if (Number.isFinite(phoneBattery)) state.phoneBattery = phoneBattery;
   }
 
   if (raw.dailyActionsDoneToday) {

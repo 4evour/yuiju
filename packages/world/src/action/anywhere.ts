@@ -8,7 +8,11 @@ import {
   type InventoryItemMetadata,
   planManager,
 } from "@yuiju/utils";
-import { chooseFoodAgent } from "@/llm/agent";
+import {
+  chooseFoodAgent,
+  generateHermesUserPromptFromPhoneReason,
+  runHermesPhoneAgent,
+} from "@/llm/agent";
 import { logger } from "@/utils/logger";
 import { resolveFoodRecoveryPerUnit } from "../utils/food-utils";
 
@@ -42,6 +46,78 @@ export const anywhereAction: ActionMetadata[] = [
     },
     async durationMin(_context, selectedAction) {
       return selectedAction?.durationMinute ?? 10;
+    },
+  },
+  {
+    action: ActionId.Use_Phone,
+    description:
+      "可以使用手机中的应用程序。选择该 Action 时需要在 reason 中说明准备用手机做什么。[手机电量-30%][动态耗时]",
+    proactiveShare: {
+      enabled: true,
+    },
+    precondition(context) {
+      return context.characterStateData.phoneBattery >= 30;
+    },
+    async executor(context, selectedAction) {
+      await context.characterState.setAction(ActionId.Use_Phone);
+
+      const phoneUsePlan = await generateHermesUserPromptFromPhoneReason(selectedAction.reason);
+      if (phoneUsePlan.isValidIntent) {
+        context.runtimeState.actionSummaryText = [
+          `悠酱在「${context.characterStateData.location.major}${context.characterStateData.location.minor ? `-${context.characterStateData.location.minor}` : ""}」开始使用手机里的「${phoneUsePlan.phoneApplication}」`,
+          `原因：${selectedAction.reason}`,
+        ].join("；");
+      } else {
+        context.runtimeState.actionSummaryText = [
+          `悠酱在「${context.characterStateData.location.major}${context.characterStateData.location.minor ? `-${context.characterStateData.location.minor}` : ""}」想使用手机`,
+          `但手机里没有能完成这件事的应用程序`,
+          `原因：${selectedAction.reason}`,
+        ].join("；");
+      }
+
+      await context.characterState.changePhoneBattery(-30);
+
+      return {
+        executionResult: phoneUsePlan.isValidIntent
+          ? `开始使用手机里的「${phoneUsePlan.phoneApplication}」`
+          : "手机里没有能完成这件事的应用程序",
+        startContext: {
+          isValidIntent: phoneUsePlan.isValidIntent,
+          phoneApplication: phoneUsePlan.phoneApplication,
+          hermesUserPrompt: phoneUsePlan.hermesUserPrompt,
+        },
+      };
+    },
+    durationMin: 10,
+    async completionEvent(context, runningAction) {
+      const phoneContext = runningAction.startContext as {
+        isValidIntent: boolean;
+        phoneApplication: string;
+        hermesUserPrompt: string;
+      };
+
+      let phoneText = "手机里的地图应用好像突然崩溃了，这次没能看到街景。";
+
+      if (phoneContext.isValidIntent) {
+        try {
+          phoneText = await runHermesPhoneAgent(phoneContext.hermesUserPrompt);
+        } catch (error) {
+          logger.error("[Use_Phone] 手机应用执行失败", error);
+        }
+      } else {
+        phoneText = "手机里没有能完成这件事的应用程序。";
+      }
+
+      context.runtimeState.actionSummaryText = phoneContext.isValidIntent
+        ? [`悠酱使用完手机里的「${phoneContext.phoneApplication}」`, phoneText].join("；")
+        : ["悠酱看了看手机", phoneText].join("；");
+
+      return {
+        completionContext: {
+          ...phoneContext,
+          phoneText,
+        },
+      };
     },
   },
   {

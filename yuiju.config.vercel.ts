@@ -43,6 +43,11 @@ const config = defineYuijuConfig({
         },
       ],
     },
+    hermesAgent: {
+      baseUrl: "",
+      apiKey: "",
+      model: "",
+    },
   },
   message: {
     internalApi: {

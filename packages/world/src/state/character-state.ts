@@ -13,6 +13,7 @@ import {
 const MAX_STAMINA = 100;
 const MAX_SATIETY = 100;
 const MAX_MOOD = 100;
+const MAX_PHONE_BATTERY = 100;
 
 export class CharacterState implements ICharacterState {
   private static instance: CharacterState | null = null;
@@ -67,6 +68,17 @@ export class CharacterState implements ICharacterState {
 
   async changeMoney(delta: number) {
     await changeCharacterMoney(delta);
+  }
+
+  async setPhoneBattery(phoneBattery: number) {
+    await updateCharacterStateData({
+      phoneBattery: Math.min(MAX_PHONE_BATTERY, Math.max(0, phoneBattery)),
+    });
+  }
+
+  async changePhoneBattery(delta: number) {
+    const data = await this.getData();
+    await this.setPhoneBattery(data.phoneBattery + delta);
   }
 
   async markActionDoneToday(action: ActionId): Promise<void> {

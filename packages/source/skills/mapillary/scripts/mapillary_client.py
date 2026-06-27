@@ -25,7 +25,13 @@ import urllib.request
 # ---------------------------------------------------------------------------
 # API 配置
 # ---------------------------------------------------------------------------
+MAPILLARY_ACCESS_TOKEN = ""
 MAPILLARY_ACCESS_TOKEN_ENV = "MAPILLARY_ACCESS_TOKEN"
+
+
+def get_mapillary_access_token() -> str:
+    """获取 Mapillary access token。"""
+    return os.environ.get(MAPILLARY_ACCESS_TOKEN_ENV) or MAPILLARY_ACCESS_TOKEN
 
 
 # ---------------------------------------------------------------------------
@@ -305,14 +311,14 @@ OFFSET {offset}
 
 def cmd_search(args) -> None:
     """search 子命令：通过坐标搜索街景 ID 列表。"""
-    client = MapillaryApiClient(os.environ[MAPILLARY_ACCESS_TOKEN_ENV])
+    client = MapillaryApiClient(get_mapillary_access_token())
     data = client.locationToImageID(lat=args.lat, lng=args.lon, limit=args.limit)
     print(json.dumps(data, ensure_ascii=False, indent=2))
 
 
 def cmd_image(args) -> None:
     """image 子命令：获取单张图片的完整详情。"""
-    client = MapillaryApiClient(os.environ[MAPILLARY_ACCESS_TOKEN_ENV])
+    client = MapillaryApiClient(get_mapillary_access_token())
     data = client.get_image_detail(args.image_id)
     if "error" in data:
         print(json.dumps(data, ensure_ascii=False, indent=2))
@@ -370,7 +376,7 @@ def main():
     if args.command == "search":
         cmd_search(args)
     elif args.command == "search-address":
-        client = MapillaryApiClient(os.environ[MAPILLARY_ACCESS_TOKEN_ENV])
+        client = MapillaryApiClient(get_mapillary_access_token())
         data = client.search_by_address(args.address, limit=args.limit)
         print(json.dumps(data, ensure_ascii=False, indent=2))
     elif args.command == "random-japan-spot":
@@ -379,7 +385,7 @@ def main():
         data = spot if "error" in spot else {"spot": spot}
         print(json.dumps(data, ensure_ascii=False, indent=2))
     elif args.command == "random-japan":
-        client = MapillaryApiClient(os.environ[MAPILLARY_ACCESS_TOKEN_ENV])
+        client = MapillaryApiClient(get_mapillary_access_token())
         data = client.random_japan_street_view(
             limit=args.limit,
             image_limit=args.image_limit,
@@ -389,7 +395,7 @@ def main():
     elif args.command == "image":
         cmd_image(args)
     elif args.command == "sequence":
-        client = MapillaryApiClient(os.environ[MAPILLARY_ACCESS_TOKEN_ENV])
+        client = MapillaryApiClient(get_mapillary_access_token())
         data = client.get_sequence_image_ids(args.image_id)
         print(json.dumps(data, ensure_ascii=False, indent=2))
 

@@ -22,6 +22,10 @@ export enum ActionId {
 
   /** 空闲/发呆 */
   Idle = "发呆",
+  /** 玩手机 */
+  Use_Phone = "玩手机",
+  /** 给手机充电 */
+  Charge_Phone = "给手机充电",
 
   /** 吃指定食物 */
   Eat_Item = "吃东西",

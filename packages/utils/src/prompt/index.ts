@@ -4,6 +4,7 @@ export * from "./everything";
 export * from "./group-memory";
 export * from "./message";
 export * from "./person-memory";
+export * from "./phone";
 export * from "./plan-review";
 export * from "./proactive-message";
 export * from "./world-guide";

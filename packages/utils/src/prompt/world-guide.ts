@@ -63,6 +63,7 @@ export const worldGuidePlaceIntroductions = [
       ActionId.Go_To_Shrine_From_Home,
       ActionId.Cook_And_Eat_At_Home,
       ActionId.Stay_At_Home,
+      ActionId.Charge_Phone,
       ActionId.Sleep,
     ],
   },

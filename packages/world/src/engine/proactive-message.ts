@@ -12,7 +12,6 @@ import {
   chatModel,
   chatReplyRulesPrompt,
   createToolCallLoggingHooks,
-  flashModel,
   generateStructuredOutput,
   getCharacterCardPrompt,
   getYuijuConfig,
@@ -82,7 +81,7 @@ async function shareActionCompletionToGroup(
       platform: "lark",
       groupId: config.message.proactive.larkGroupTargetId,
     },
-  ];
+  ].filter((item) => item.groupId) as ProactiveGroupTarget[];
 
   for (const target of targets) {
     const groupContext = await internalMessageApi.getGroupContext(

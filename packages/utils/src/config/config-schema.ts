@@ -71,8 +71,8 @@ export interface YuijuMessageConfig {
   lark: YuijuLarkConfig;
   internalApi: YuijuMessageInternalApiConfig;
   proactive: {
-    onebotGroupTargetId: number;
-    larkGroupTargetId: string;
+    onebotGroupTargetId?: number;
+    larkGroupTargetId?: string;
   };
   stickers: YuijuStickerMap;
 }
@@ -111,8 +111,18 @@ export interface YuijuLlmModelsConfig {
   vision: YuijuLlmModelSourcesConfig;
 }
 
+/**
+ * Hermes Agent 服务配置。
+ */
+export interface YuijuHermesAgentConfig {
+  baseUrl: string;
+  apiKey: string;
+  model: string;
+}
+
 export interface YuijuLlmConfig {
   models: YuijuLlmModelsConfig;
+  hermesAgent: YuijuHermesAgentConfig;
 }
 
 /**
