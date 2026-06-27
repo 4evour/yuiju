@@ -21,7 +21,7 @@ interface DiaryQueryParams {
   page: number;
   pageSize: number;
   startDate?: Date;
-  endDateExclusive?: Date;
+  endDate?: Date;
   startDateText?: string;
   endDateText?: string;
 }
@@ -45,7 +45,7 @@ const parseDateInput = (value: string | undefined): Date | undefined => {
  * 解析 diary 列表查询参数。
  *
  * 说明：
- * - 结束日期会被转换成“次日零点”的排他上界，和底层 schema 的 lt 语义保持一致；
+ * - 开始日期与结束日期都是闭区间边界；
  * - 当用户误填开始晚于结束时，自动交换，避免页面直接落成空列表。
  */
 const parseDiaryQueryParams = (request: Request): DiaryQueryParams => {
@@ -68,7 +68,7 @@ const parseDiaryQueryParams = (request: Request): DiaryQueryParams => {
     page,
     pageSize,
     startDate,
-    endDateExclusive: endDate ? dayjs(endDate).add(1, "day").toDate() : undefined,
+    endDate,
     startDateText: startDate ? dayjs(startDate).format("YYYY-MM-DD") : undefined,
     endDateText: endDate ? dayjs(endDate).format("YYYY-MM-DD") : undefined,
   };
@@ -95,8 +95,8 @@ diaryRoute.get("/index", async (context) => {
   const baseOptions = {
     subject: DEFAULT_DIARY_SUBJECT,
     isDev: isDev(),
-    diaryDateAfter: query.startDate,
-    diaryDateBefore: query.endDateExclusive,
+    startDate: query.startDate,
+    endDate: query.endDate,
     sortDirection: "desc" as const,
     readFrom,
   };

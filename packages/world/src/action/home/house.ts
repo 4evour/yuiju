@@ -13,7 +13,11 @@ import {
   SchoolSubScene,
 } from "@yuiju/utils";
 import { planHomeCookingAgent } from "@/llm/agent";
-import { generateDiaryForDate, resolveDiaryDateForSleep } from "@/memory/diary";
+import {
+  generateDiaryForDate,
+  refreshDiarySummariesForDate,
+  resolveDiaryDateForSleep,
+} from "@/memory/diary";
 import { logger } from "@/utils/logger";
 import {
   type CookingIngredientSnapshot,
@@ -407,13 +411,19 @@ export const homeAction: ActionMetadata[] = [
       await context.characterState.setAction(ActionId.Sleep);
       await context.characterState.clearDailyActions();
 
-      // 进入正式睡眠后，后台异步生成“当天日记”，不阻塞行为主链路。
-      generateDiaryForDate({
-        diaryDate: resolveDiaryDateForSleep(context.worldState.time.toDate()),
-        isDev: isDev(),
-      }).catch((error) => {
-        logger.error("[homeAction.Sleep] generate diary failed", error);
-      });
+      const diaryDate = resolveDiaryDateForSleep(context.worldState.time.toDate());
+      try {
+        await generateDiaryForDate({
+          diaryDate,
+          isDev: isDev(),
+        });
+        await refreshDiarySummariesForDate({
+          diaryDate,
+          isDev: isDev(),
+        });
+      } catch (error) {
+        logger.error("[homeAction.Sleep] diary tasks failed", error);
+      }
     },
     durationMin: async (context) => {
       const now = context.worldState.time.clone();

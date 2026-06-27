@@ -13,7 +13,6 @@ import { generateText } from "ai";
 import dayjs from "dayjs";
 import { logger } from "@/utils/logger";
 
-const MAX_EPISODES_PER_DAY = 500;
 const SLEEP_DIARY_ROLLOVER_HOUR = 6;
 const CONVERSATION_SUMMARY_CHAR_BUDGET = 20_000;
 
@@ -66,7 +65,7 @@ async function loadEpisodesForDiary(input: {
   isDev: boolean;
 }): Promise<IMemoryEpisode[]> {
   return await getRecentMemoryEpisodes({
-    limit: MAX_EPISODES_PER_DAY,
+    limit: 200,
     subject: input.subject,
     isDev: input.isDev,
     onlyDate: input.diaryDate,
@@ -178,6 +177,7 @@ export async function generateDiaryForDate(input: GenerateDiaryForDateInput): Pr
   await upsertMemoryDiary({
     subject,
     diaryDate: input.diaryDate,
+    diaryEndDate: input.diaryDate,
     text: diaryText,
     isDev: input.isDev,
   });

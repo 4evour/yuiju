@@ -1,10 +1,13 @@
 import dayjs from "dayjs";
+import type { MemoryDiaryPeriod } from "../../memory/diary";
 import { hasSyncMongoUri, type MongoReadSource } from "../connect";
 import { getMemoryDiaryModel, type IMemoryDiary } from "../schema/memory-diary.schema";
 
 export interface MemoryDiaryWriteInput {
   subject: string;
+  period?: MemoryDiaryPeriod;
   diaryDate: Date;
+  diaryEndDate?: Date;
   text: string;
   isDev?: boolean;
 }
@@ -13,10 +16,10 @@ export interface GetMemoryDiariesOptions {
   limit?: number;
   skip?: number;
   subject?: string;
+  period?: MemoryDiaryPeriod;
   isDev?: boolean;
-  onlyDate?: Date;
-  diaryDateAfter?: Date;
-  diaryDateBefore?: Date;
+  startDate?: Date;
+  endDate?: Date;
   sortDirection?: "asc" | "desc";
   readFrom?: MongoReadSource;
 }
@@ -30,7 +33,7 @@ function normalizeDiaryDate(value: Date): Date {
  *
  * 说明：
  * - 日期过滤在这里集中归一化，避免列表查询与总数统计出现条件漂移；
- * - `diaryDateBefore` 语义上是排他上界，便于调用方表达“结束日期 + 1 天”。
+ * - `startDate` / `endDate` 表示查询范围，返回结果的 Diary 期间必须完整落在范围内。
  */
 function buildMemoryDiaryFilter(options: GetMemoryDiariesOptions = {}): Record<string, unknown> {
   const filter: Record<string, unknown> = {};
@@ -38,29 +41,40 @@ function buildMemoryDiaryFilter(options: GetMemoryDiariesOptions = {}): Record<s
   if (options.subject) {
     filter.subject = options.subject;
   }
+  filter.period = options.period ?? "day";
   if (typeof options.isDev === "boolean") {
     filter.isDev = options.isDev;
   }
-  if (options.onlyDate) {
-    filter.diaryDate = normalizeDiaryDate(options.onlyDate);
-  } else if (options.diaryDateAfter || options.diaryDateBefore) {
+  if (options.startDate) {
     filter.diaryDate = {};
-    if (options.diaryDateAfter) {
-      (filter.diaryDate as Record<string, Date>).$gte = normalizeDiaryDate(options.diaryDateAfter);
-    }
-    if (options.diaryDateBefore) {
-      (filter.diaryDate as Record<string, Date>).$lt = normalizeDiaryDate(options.diaryDateBefore);
-    }
+    (filter.diaryDate as Record<string, Date>).$gte = normalizeDiaryDate(options.startDate);
   }
-
+  if (options.endDate) {
+    filter.diaryEndDate = {
+      $lte: normalizeDiaryDate(options.endDate),
+    };
+  }
   return filter;
 }
 
 /**
- * 按“同主体 + 同自然日”幂等写入或覆盖日记。
+ * 按“同主体 + 同周期 + 同周期开始日”幂等写入或覆盖日记。
  */
 export async function upsertMemoryDiary(input: MemoryDiaryWriteInput): Promise<IMemoryDiary> {
+  const period = input.period ?? "day";
   const diaryDate = normalizeDiaryDate(input.diaryDate);
+  let diaryEndDate = input.diaryEndDate;
+  if (!diaryEndDate) {
+    if (period === "day") {
+      diaryEndDate = diaryDate;
+    } else if (period === "week") {
+      diaryEndDate = dayjs(diaryDate).add(6, "day").toDate();
+    } else if (period === "month") {
+      diaryEndDate = dayjs(diaryDate).endOf("month").startOf("day").toDate();
+    } else {
+      diaryEndDate = dayjs(diaryDate).endOf("year").startOf("day").toDate();
+    }
+  }
   const now = new Date();
   const model = await getMemoryDiaryModel();
 
@@ -68,17 +82,20 @@ export async function upsertMemoryDiary(input: MemoryDiaryWriteInput): Promise<I
     .findOneAndUpdate(
       {
         subject: input.subject,
+        period,
         diaryDate,
         isDev: input.isDev ?? false,
       },
       {
         $set: {
+          diaryEndDate,
           text: input.text,
           generatedAt: now,
           updatedAt: now,
         },
         $setOnInsert: {
           subject: input.subject,
+          period,
           diaryDate,
           isDev: input.isDev ?? false,
         },
@@ -103,8 +120,8 @@ export async function upsertMemoryDiary(input: MemoryDiaryWriteInput): Promise<I
  * 查询 Diary 条目。
  *
  * 说明：
- * - onlyDate 用于自然日精确匹配；
- * - 区间查询统一按 diaryDate 过滤，适配昨天及更早的日记回忆。
+ * - 区间查询要求 Diary 期间完整落在 startDate / endDate 范围内；
+ * - startDate 和 endDate 都是闭区间边界。
  */
 export async function getMemoryDiaries(
   options: GetMemoryDiariesOptions = {},
@@ -141,11 +158,18 @@ async function syncMemoryDiaryDocument(diary: IMemoryDiary): Promise<void> {
     const syncModel = await getMemoryDiaryModel("sync");
     await syncModel
       .replaceOne(
-        { subject: diary.subject, diaryDate: diary.diaryDate, isDev: diary.isDev },
+        {
+          subject: diary.subject,
+          period: diary.period,
+          diaryDate: diary.diaryDate,
+          isDev: diary.isDev,
+        },
         {
           _id: diary._id,
           subject: diary.subject,
+          period: diary.period,
           diaryDate: diary.diaryDate,
+          diaryEndDate: diary.diaryEndDate,
           text: diary.text,
           generatedAt: diary.generatedAt,
           updatedAt: diary.updatedAt,

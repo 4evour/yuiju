@@ -20,6 +20,10 @@ const diarySearchInputSchema = z.strictObject({
   limit: z.number().int().min(1).max(20).optional().describe("返回结果上限，默认 2。"),
   startDate: z.string().optional().describe("开始日期，格式 YYYY-MM-DD。"),
   endDate: z.string().optional().describe("结束日期，格式 YYYY-MM-DD。"),
+  period: z
+    .enum(["day", "week", "month", "year"])
+    .optional()
+    .describe("查询粒度。day 查询每日 Diary；week/month/year 查询对应周期总结。默认 day。"),
 });
 
 export const todayEventSearchTool: Tool = {
@@ -50,6 +54,7 @@ export const diarySearchTool: Tool = {
   execute: async (input) => {
     const result = await searchDiaries({
       limit: input.limit,
+      period: input.period,
       startTime: input.startDate ? `${input.startDate} 00:00:00` : undefined,
       endTime: input.endDate ? `${input.endDate} 23:59:59` : undefined,
     });

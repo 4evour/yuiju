@@ -3,7 +3,7 @@ import { SUBJECT_NAME } from "../constants";
 import { getMemoryDiaries, getRecentMemoryEpisodes } from "../db";
 import { isDev } from "../env";
 import { formatProjectTime, parseProjectTime } from "../time";
-import { DEFAULT_DIARY_SUBJECT } from "./diary";
+import { DEFAULT_DIARY_SUBJECT, type MemoryDiarySummaryPeriod } from "./diary";
 
 export type MemoryQueryTimeSort = "asc" | "desc";
 
@@ -18,6 +18,7 @@ export interface DiarySearchInput {
   startTime?: string;
   endTime?: string;
   timeSort?: MemoryQueryTimeSort;
+  period?: "day" | MemoryDiarySummaryPeriod;
   /**
    * 默认2
    */
@@ -31,6 +32,7 @@ export interface EpisodeSearchResult {
 
 export interface DiarySearchResult {
   date: string;
+  period?: "day" | MemoryDiarySummaryPeriod;
   content: string;
 }
 
@@ -75,42 +77,52 @@ export async function searchEpisodes(input: EpisodeSearchInput): Promise<Episode
 export async function searchDiaries(input: DiarySearchInput): Promise<DiarySearchResult[]> {
   const limit = input.limit ?? 2;
   const timeSort = input.timeSort ?? "desc";
+  const period = input.period ?? "day";
   const parsedStartTime = parseProjectTime(input.startTime?.trim() ?? "", "YYYY-MM-DD HH:mm:ss");
   const parsedEndTime = parseProjectTime(input.endTime?.trim() ?? "", "YYYY-MM-DD HH:mm:ss");
   const startDay = parsedStartTime ? dayjs(parsedStartTime).startOf("day").toDate() : undefined;
   const endDay = parsedEndTime ? dayjs(parsedEndTime).startOf("day").toDate() : undefined;
 
-  let diaryDateAfter: Date | undefined;
-  let diaryDateBefore: Date | undefined;
+  let startDate: Date | undefined;
+  let endDate: Date | undefined;
+  const today = dayjs().startOf("day");
+  const yesterday = today.subtract(1, "day").toDate();
 
   if (startDay || endDay) {
-    const candidates = [startDay, endDay].filter((value): value is Date => Boolean(value));
+    startDate = startDay;
+    endDate = endDay;
 
-    if (candidates.some((value) => dayjs(value).isSame(dayjs(), "day"))) {
+    if (startDate && endDate && startDate > endDate) {
+      [startDate, endDate] = [endDate, startDate];
+    }
+
+    // Diary 只保存今天之前的回忆；查询范围碰到今天或未来时，最多截到昨天。
+    if (startDate && dayjs(startDate).valueOf() >= today.valueOf()) {
       return [];
     }
-
-    diaryDateAfter = startDay;
-    diaryDateBefore = endDay ? dayjs(endDay).add(1, "day").toDate() : undefined;
-
-    if (diaryDateAfter && diaryDateBefore && diaryDateAfter > diaryDateBefore) {
-      [diaryDateAfter, diaryDateBefore] = [diaryDateBefore, diaryDateAfter];
+    if (endDate && dayjs(endDate).valueOf() >= today.valueOf()) {
+      endDate = yesterday;
     }
   } else {
-    diaryDateBefore = dayjs().startOf("day").toDate();
+    endDate = yesterday;
   }
 
   const diaries = await getMemoryDiaries({
     limit,
     subject: DEFAULT_DIARY_SUBJECT,
+    period,
     isDev: isDev(),
     sortDirection: timeSort,
-    diaryDateAfter,
-    diaryDateBefore,
+    startDate,
+    endDate,
   });
 
   return diaries.map((diary) => ({
-    date: formatProjectTime(diary.diaryDate, "YYYY-MM-DD"),
+    date:
+      diary.period === "day"
+        ? formatProjectTime(diary.diaryDate, "YYYY-MM-DD")
+        : `${formatProjectTime(diary.diaryDate, "YYYY-MM-DD")}~${formatProjectTime(diary.diaryEndDate, "YYYY-MM-DD")}`,
+    period: diary.period,
     content: diary.text,
   }));
 }

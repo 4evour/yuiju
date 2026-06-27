@@ -7,12 +7,17 @@
  */
 export interface MemoryDiaryEntry {
   subject: string;
+  period: MemoryDiaryPeriod;
   diaryDate: Date;
+  diaryEndDate: Date;
   text: string;
   generatedAt?: Date;
   updatedAt?: Date;
   isDev?: boolean;
 }
+
+export type MemoryDiaryPeriod = "day" | "week" | "month" | "year";
+export type MemoryDiarySummaryPeriod = Exclude<MemoryDiaryPeriod, "day">;
 
 /**
  * 当前项目中默认的日记主体。
