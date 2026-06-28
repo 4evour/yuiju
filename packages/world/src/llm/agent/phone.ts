@@ -22,9 +22,7 @@ ${actionReason}
         phoneApplication: z
           .string()
           .describe("本次使用的手机应用程序名称，例如：「云旅游」；非法意图填“未知应用”"),
-        hermesUserPrompt: z
-          .string()
-          .describe("要发送给手机能力执行器的 user prompt；非法意图填空字符串"),
+        hermesUserPrompt: z.string().describe("要发送给手机能力执行器的直接任务指令"),
       }),
     }),
   });
@@ -37,7 +35,7 @@ export async function runHermesPhoneAgent(userPrompt: string) {
     model: hermesAgentModel,
     system: buildHermesPhoneSystemPrompt(),
     prompt: userPrompt,
-    timeout: 30_000,
+    timeout: 30 * 60 * 1000,
   });
 
   return text.trim();
