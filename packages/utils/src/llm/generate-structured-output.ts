@@ -88,9 +88,7 @@ export async function generateStructuredOutput<OUTPUT extends StructuredOutput>(
       };
     } catch (error) {
       if (NoObjectGeneratedError.isInstance(error)) {
-        logger.warn("[llm.structured-output] 未生成可解析 JSON", {
-          text: result.text,
-        });
+        logger.warn("[llm.structured-output] 未生成可解析 JSON", result.text);
       }
 
       lastError = error;
