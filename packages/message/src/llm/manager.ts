@@ -169,11 +169,10 @@ export class LLMManager {
 
     const { historyJson, summary } = await this.groupSession.getHistoryJson(sessionKey);
     const characterState = await initCharacterStateData();
-    // 等以后 Token 多了再开
-    // const groupMemoryPrompt = await getGroupMemoryPromptSection({
-    //   sessionId: sessionKey,
-    //   sessionLabel: getGroupDisplayName(message),
-    // });
+    const groupMemoryPrompt = await getGroupMemoryPromptSection({
+      sessionId: sessionKey,
+      sessionLabel: getGroupDisplayName(message),
+    });
 
     const systemPrompt = [
       getCharacterCardPrompt(),
@@ -181,7 +180,6 @@ export class LLMManager {
       messageHistorySchemaPrompt,
       chatReplyRulesPrompt,
       buildChatPlanProposalPrompt(),
-      // groupMemoryPrompt,
     ].join("\n\n");
 
     try {
@@ -200,6 +198,7 @@ export class LLMManager {
               summary,
               historyJson,
               characterState,
+              groupMemoryPrompt,
             }),
           },
         ],

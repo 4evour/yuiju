@@ -5,6 +5,7 @@ export interface MessageHistoryUserPromptInput {
   summary?: string;
   historyJson: string;
   characterState: CharacterStateData;
+  groupMemoryPrompt?: string;
 }
 
 export interface MessageSummaryPromptInput {
@@ -74,8 +75,10 @@ export function buildMessageHistoryUserPrompt(input: MessageHistoryUserPromptInp
   };
 
   return `
-## 当前状态
+## 群聊记忆
+${input.groupMemoryPrompt || "无"}
 
+## 当前状态
 \`\`\`json
 ${JSON.stringify(characterState, null, 2)}
 \`\`\`

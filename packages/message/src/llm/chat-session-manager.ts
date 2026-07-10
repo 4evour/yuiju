@@ -439,10 +439,9 @@ export class ChatSessionManager<TMessage extends StoredSatoriChatMessage> {
       this.writePersonMemoryUpdatesForChatWindow(input.state).catch((error) => {
         console.error(`Failed to update ${this.sceneLabel} person memory:`, error);
       }),
-      // 等以后 Token 多了再开 😭
-      // this.writeGroupMemoryForChatWindow(input.state).catch((error) => {
-      //   console.error("Failed to update group memory:", error);
-      // }),
+      this.writeGroupMemoryForChatWindow(input.state).catch((error) => {
+        console.error("Failed to update group memory:", error);
+      }),
     ]);
   }
 
