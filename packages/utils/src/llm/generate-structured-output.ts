@@ -59,23 +59,23 @@ export async function generateStructuredOutput<OUTPUT extends StructuredOutput>(
   let lastError: unknown;
 
   for (let attempt = 0; attempt < 3; attempt += 1) {
-    const result = await generateText({
-      ...options,
-      system,
-      output: Output.text(),
-    } as Parameters<typeof generateText>[0]);
-
-    const normalizedText = result.text
-      .trim()
-      .replace(/^```(?:json)?\s*/i, "")
-      .replace(/\s*```$/i, "")
-      .trim();
-
     try {
+      const result = await generateText({
+        ...options,
+        system,
+        output: Output.json(),
+      } as Parameters<typeof generateText>[0]);
+
+      const normalizedText = result.text
+        .trim()
+        .replace(/^```(?:json)?\s*/i, "")
+        .replace(/\s*```$/i, "")
+        .trim();
+
       const parsedOutput = (await options.output.parseCompleteOutput(
         { text: normalizedText },
         {
-          response: result.response,
+          response: result.finalStep.response,
           usage: result.usage,
           finishReason: result.finishReason,
         },
@@ -88,7 +88,7 @@ export async function generateStructuredOutput<OUTPUT extends StructuredOutput>(
       };
     } catch (error) {
       if (NoObjectGeneratedError.isInstance(error)) {
-        logger.warn("[llm.structured-output] 未生成可解析 JSON", result.text);
+        logger.warn("[llm.structured-output] 未生成可解析 JSON", error.text);
       }
 
       lastError = error;

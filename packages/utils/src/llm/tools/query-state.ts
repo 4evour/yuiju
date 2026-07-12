@@ -1,6 +1,6 @@
 import type { Tool } from "ai";
 import dayjs from "dayjs";
-import { z } from "zod";
+import z from "zod";
 import { initCharacterStateData, initPlanStateData, initWorldStateData } from "../../redis";
 import { getTimeWithWeekday } from "../../time";
 

@@ -72,12 +72,11 @@
     "vitest": "^4.0.13"
   },
   "dependencies": {
-    "@ai-sdk/deepseek": "^2.0.32",
-    "@ai-sdk/devtools": "^0.0.15",
-    "@ai-sdk/openai-compatible": "^2.0.35",
+    "@ai-sdk/devtools": "^1.0.4",
+    "@ai-sdk/openai-compatible": "^3.0.7",
     "@hono/node-server": "1.19.11",
     "@types/mongoose": "^5.11.97",
-    "ai": "^6.0.116",
+    "ai": "^7.0.22",
     "dayjs": "^1.11.19",
     "dotenv": "^16.6.1",
     "hono": "^4.12.2",

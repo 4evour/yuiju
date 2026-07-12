@@ -1,3 +1,3 @@
-import { main } from "./world-map";
+import { main } from "./structured-output";
 
 main();

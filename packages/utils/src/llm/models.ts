@@ -57,7 +57,7 @@ function createFallbackModel(
 
   return wrapLanguageModel({
     model: {
-      specificationVersion: "v3",
+      specificationVersion: "v4",
       provider: `yuiju-${name}`,
       modelId: sources.map((source) => source.model).join(" -> "),
       supportedUrls: models[0].supportedUrls,
