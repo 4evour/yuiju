@@ -245,7 +245,7 @@ export const homeAction: ActionMetadata[] = [
   {
     action: ActionId.Cook_And_Eat_At_Home,
     description:
-      "在家做饭吃，从背包中选择一到两种不同食材。[体力+?][饱腹+?][心情+?][耗时30分钟]（可调用 queryAvailableInventoryItems 查询可用食材）",
+      "在家做饭吃，从背包中选择至少一种不同食材。[体力+?][饱腹+?][心情+?][耗时30分钟]（可调用 queryAvailableInventoryItems 查询可用食材）",
     proactiveShare: {
       enabled: true,
     },

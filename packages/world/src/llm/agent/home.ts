@@ -50,9 +50,8 @@ export async function planHomeCookingAgent(
             ingredients: z
               .array(z.enum(ingredientList.map((item) => item.value)).describe("选择的食材名称"))
               .min(1)
-              .max(2)
               .refine((items) => new Set(items).size === items.length, {
-                message: "选择两种食材时不能重复",
+                message: "选择的食材不能重复",
               }),
             cookedMealName: z.string().describe("根据所选食材生成的料理名称"),
             cookedMealDescription: z
