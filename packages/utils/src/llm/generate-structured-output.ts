@@ -1,6 +1,7 @@
 import { generateText, NoObjectGeneratedError, Output } from "ai";
 import { logger } from "../logger";
 import { structuredOutputJsonPrompt } from "../prompt";
+import { extractLastJson } from "../utils/extract-last-json";
 
 type GenerateTextOptions = Parameters<typeof generateText>[0];
 type GenerateTextResult = Awaited<ReturnType<typeof generateText>>;
@@ -66,11 +67,7 @@ export async function generateStructuredOutput<OUTPUT extends StructuredOutput>(
         output: Output.json(),
       } as Parameters<typeof generateText>[0]);
 
-      const normalizedText = result.text
-        .trim()
-        .replace(/^```(?:json)?\s*/i, "")
-        .replace(/\s*```$/i, "")
-        .trim();
+      const normalizedText = extractLastJson(result.text) ?? result.text.trim();
 
       const parsedOutput = (await options.output.parseCompleteOutput(
         { text: normalizedText },

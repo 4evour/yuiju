@@ -9,6 +9,7 @@
     "./env": "./src/env.ts"
   },
   "scripts": {
+    "test": "NODE_ENV=development vitest run",
     "type-check": "tsc --noEmit"
   },
   "keywords": [],
