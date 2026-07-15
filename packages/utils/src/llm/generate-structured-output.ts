@@ -1,4 +1,10 @@
-import { generateText, NoObjectGeneratedError, Output } from "ai";
+import {
+  extractJsonMiddleware,
+  generateText,
+  NoObjectGeneratedError,
+  Output,
+  wrapLanguageModel,
+} from "ai";
 import { logger } from "../logger";
 import { structuredOutputJsonPrompt } from "../prompt";
 import { extractLastJson } from "../utils/extract-last-json";
@@ -63,14 +69,18 @@ export async function generateStructuredOutput<OUTPUT extends StructuredOutput>(
     try {
       const result = await generateText({
         ...options,
+        model: wrapLanguageModel({
+          model: options.model as Exclude<GenerateTextOptions["model"], string>,
+          middleware: extractJsonMiddleware({
+            transform: (text) => extractLastJson(text) ?? text.trim(),
+          }),
+        }),
         system,
         output: Output.json(),
       } as Parameters<typeof generateText>[0]);
 
-      const normalizedText = extractLastJson(result.text) ?? result.text.trim();
-
-      const parsedOutput = (await options.output.parseCompleteOutput(
-        { text: normalizedText },
+      const output = (await options.output.parseCompleteOutput(
+        { text: result.text },
         {
           response: result.finalStep.response,
           usage: result.usage,
@@ -78,11 +88,7 @@ export async function generateStructuredOutput<OUTPUT extends StructuredOutput>(
         },
       )) as StructuredOutputValue<OUTPUT>;
 
-      return {
-        ...result,
-        output: parsedOutput,
-        experimental_output: parsedOutput,
-      };
+      return { ...result, output, experimental_output: output };
     } catch (error) {
       if (NoObjectGeneratedError.isInstance(error)) {
         logger.warn("[llm.structured-output] 未生成可解析 JSON", error.text);

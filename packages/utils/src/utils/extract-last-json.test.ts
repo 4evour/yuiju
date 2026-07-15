@@ -23,6 +23,12 @@ describe("extractLastJson", () => {
     expect(extractLastJson(text)).toBe('{\n  "approved": false,\n  "issues": ["状态不一致"]\n}');
   });
 
+  it("提取闭合代码块紧贴 JSON 的对象", () => {
+    expect(extractLastJson('说明文本\n```json\n{"shouldUpdate":false,"changes":[]}```')).toBe(
+      '{"shouldUpdate":false,"changes":[]}',
+    );
+  });
+
   it("提取说明文本后未包裹代码块的对象", () => {
     const text = [
       "两个变更依据充分，与当前状态一致。",
