@@ -35,7 +35,7 @@ export async function runHermesPhoneAgent(userPrompt: string) {
     model: hermesAgentModel,
     system: buildHermesPhoneSystemPrompt(),
     prompt: userPrompt,
-    timeout: 30 * 60 * 1000,
+    timeout: 2 * 60 * 60 * 1000,
   });
 
   return text.trim();
