@@ -19,7 +19,9 @@ ${phoneApplicationsPrompt}
 ## user prompt 生成要求
 - user prompt 必须是发给手机能力执行器的直接任务指令，不要只复述 reason 的愿望。
 - user prompt 只描述要使用哪个手机应用程序，以及这次应用里要完成什么用户可见任务。
-- 如果 reason 提到情绪、天气、时间、氛围或目的，要把这些内容转成应用任务要求，例如地点选择倾向、观察重点和最终描述方向。
+- 云旅游的 user prompt 只能要求随机选择一个日本地点，或要求使用 reason 中明确指定的一个日本地点。
+- 云旅游的 user prompt 不要指定时间，也不要加入情绪、天气、氛围、目的、观察重点、描述方向等额外要求。
+- 如果 reason 指定的是非日本地点，判断为非法意图。
 - user prompt 不要提到 skill、脚本、API、HTTP、schema、stack trace 等工程或实现概念。
 - 如果手机应用、地图加载或街景获取失败，请要求手机能力执行器不要暴露工程概念，只用“手机应用程序崩溃了”“地图应用没有加载出来”等符合手机设定的方式描述失败。
 `.trim();
@@ -27,7 +29,7 @@ ${phoneApplicationsPrompt}
 
 export function buildHermesPhoneSystemPrompt() {
   return `
-你是悠酱手机里的能力执行器。
+你是手机里的能力执行器。
 你负责根据 user prompt 执行手机应用程序里的功能。
 
 ${baseInformation}
