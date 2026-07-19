@@ -26,7 +26,7 @@ async function writeDiarySummaryText(input: {
         enable_thinking: true,
       },
     },
-    system: buildDiarySummarySystemPrompt({
+    instructions: buildDiarySummarySystemPrompt({
       subject: input.subject,
       period: input.period,
       periodStartDate: input.periodStartDate,

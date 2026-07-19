@@ -28,11 +28,11 @@ type StructuredOutputValue<OUTPUT extends StructuredOutput> = Awaited<
 
 /**
  * 专门用于生成结构化 JSON。
- * 它会把 output 里的 JSON Schema 注入 system prompt，
+ * 它会把 output 里的 JSON Schema 注入 instructions，
  * 再复用 output 自带的解析逻辑完成最终校验。
  */
 export async function generateStructuredOutput<OUTPUT extends StructuredOutput>(
-  options: Omit<GenerateTextOptions, "output" | "experimental_output"> & {
+  options: Omit<GenerateTextOptions, "output" | "experimental_output" | "system"> & {
     output: OUTPUT;
   },
 ): Promise<
@@ -53,12 +53,12 @@ export async function generateStructuredOutput<OUTPUT extends StructuredOutput>(
     throw new Error("generateStructuredOutput 只支持携带 JSON Schema 的结构化 output。");
   }
 
-  if (options.system != null && typeof options.system !== "string") {
-    throw new Error("generateStructuredOutput 当前只支持 string 类型的 system prompt。");
+  if (options.instructions != null && typeof options.instructions !== "string") {
+    throw new Error("generateStructuredOutput 当前只支持 string 类型的 instructions。");
   }
 
-  const system = [
-    options.system,
+  const instructions = [
+    options.instructions,
     structuredOutputJsonPrompt,
     JSON.stringify(responseFormat.schema),
   ].join("\n");
@@ -75,7 +75,7 @@ export async function generateStructuredOutput<OUTPUT extends StructuredOutput>(
             transform: (text) => extractLastJson(text) ?? text.trim(),
           }),
         }),
-        system,
+        instructions,
         output: Output.json(),
       } as Parameters<typeof generateText>[0]);
 

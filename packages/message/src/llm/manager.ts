@@ -190,7 +190,7 @@ export class LLMManager {
             enable_thinking: true,
           },
         },
-        system: systemPrompt,
+        instructions: systemPrompt,
         messages: [
           {
             role: "user",
@@ -314,7 +314,7 @@ export class LLMManager {
             enable_thinking: true,
           },
         },
-        system: systemPrompt,
+        instructions: systemPrompt,
         messages: [
           {
             role: "user",

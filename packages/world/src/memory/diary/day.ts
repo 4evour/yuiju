@@ -40,7 +40,7 @@ async function writeDiaryText(input: {
         enable_thinking: false,
       },
     },
-    system: buildDiarySystemPrompt({
+    instructions: buildDiarySystemPrompt({
       subject: input.subject,
       diaryDate: input.diaryDate,
     }),

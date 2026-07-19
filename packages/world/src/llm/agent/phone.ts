@@ -11,7 +11,7 @@ import { z } from "zod";
 export async function generateHermesUserPromptFromPhoneReason(actionReason: string) {
   const { output } = await generateStructuredOutput({
     model: flashModel,
-    system: buildPhoneUseHermesSystemPrompt(),
+    instructions: buildPhoneUseHermesSystemPrompt(),
     prompt: `
 ## Action reason
 ${actionReason}
@@ -33,7 +33,7 @@ ${actionReason}
 export async function runHermesPhoneAgent(userPrompt: string) {
   const { text } = await generateText({
     model: hermesAgentModel,
-    system: buildHermesPhoneSystemPrompt(),
+    instructions: buildHermesPhoneSystemPrompt(),
     prompt: userPrompt,
     timeout: 2 * 60 * 60 * 1000,
   });

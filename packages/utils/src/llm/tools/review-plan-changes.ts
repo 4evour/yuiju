@@ -41,7 +41,7 @@ export async function reviewPlanChanges(
     tools: {
       queryStateTool,
     },
-    system: planChangeReviewSystemPrompt,
+    instructions: planChangeReviewSystemPrompt,
     stopWhen: stepCountIs(20),
     ...createToolCallLoggingHooks({
       scene: "utils.llm.review-plan-changes",

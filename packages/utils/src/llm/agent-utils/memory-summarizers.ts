@@ -41,7 +41,7 @@ export async function summarizeConversationMessages(
 ): Promise<string | null> {
   const result = await generateText({
     model: flashModel,
-    system: summarizeConversationMessagesSystemPrompt,
+    instructions: summarizeConversationMessagesSystemPrompt,
     providerOptions: {
       flash: {
         enable_thinking: false,

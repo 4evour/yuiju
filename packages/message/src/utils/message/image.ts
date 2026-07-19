@@ -63,7 +63,7 @@ async function generateSatoriImageDescription(
           enable_thinking: false,
         },
       },
-      system: buildMessageImageDescriptionSystemPrompt(),
+      instructions: buildMessageImageDescriptionSystemPrompt(),
       messages: [
         {
           role: "user",

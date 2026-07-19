@@ -151,7 +151,7 @@ export async function POST(request: Request) {
   const result = await streamText({
     model: flashModel,
     messages: modelMessages,
-    system: systemPrompt,
+    instructions: systemPrompt,
     stopWhen: stepCountIs(5),
   });
 

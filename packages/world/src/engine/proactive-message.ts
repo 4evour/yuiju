@@ -96,7 +96,7 @@ async function shareActionCompletionToGroup(
           enable_thinking: true,
         },
       },
-      system: [
+      instructions: [
         getCharacterCardPrompt(),
         messageHistorySchemaPrompt,
         chatReplyRulesPrompt,
