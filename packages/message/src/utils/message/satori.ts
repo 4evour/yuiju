@@ -264,6 +264,7 @@ function getSatoriQuoteSpeaker(quote: SatoriMessage): string | undefined {
 async function getSatoriSender(session: Session): Promise<StoredSatoriMessageSender> {
   const userId = session.userId || session.event.user?.id || "unknown";
   const userName =
+    session.event.member?.name?.trim() ||
     session.event.user?.name?.trim() ||
     session.event.user?.nick?.trim() ||
     session.event.user?.username?.trim();

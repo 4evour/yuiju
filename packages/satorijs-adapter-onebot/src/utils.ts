@@ -245,6 +245,13 @@ export async function adaptSession(bot: BaseBot, data: OneBot.Payload) {
         session.subtype = hyphenate(data.sub_type) as any;
         if (session.subtype === "poke") {
           session.channelId ||= `private:${session.userId}`;
+          if (session.guildId && session.userId) {
+            const member = await bot.getGuildMember(session.guildId, session.userId);
+            session.event.user = member.user;
+            session.event.member = member;
+          } else if (session.userId) {
+            session.event.user = await bot.getUser(session.userId);
+          }
         } else if (session.subtype === "honor") {
           session.event.subtype = hyphenate(data.honor_type) as any;
         }

@@ -14,6 +14,13 @@ import {
 
 const WORLD_TICK_INTERVAL_MS = 60_000;
 
+/**
+ * WorldStateRunner 负责推进世界状态本身，不负责选择或执行角色 Action。
+ *
+ * 它启动时先把 WorldState 从上次推进时间恢复到当前时间，之后按固定间隔运行 world tick。
+ * 每次 tick 会先消费外部 WorldCommand，再按顺序执行天气、场景和资源等 evolution，
+ * 最后把新的 WorldState 写回 Redis。
+ */
 export class WorldStateRunner {
   private timer: ReturnType<typeof setInterval> | null = null;
   private activeTick: Promise<void> | null = null;

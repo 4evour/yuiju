@@ -3,6 +3,7 @@ import { Context, HTTP } from "@satorijs/core";
 import OneBotBot from "@yuiju/satorijs-adapter-onebot";
 import { connectDB, getYuijuConfig, initializePersonMemoryHeat } from "@yuiju/utils";
 import { groupMessageHandler } from "./handler/group-message";
+import { onebotPokeHandler } from "./handler/poke";
 import { privateMessageHandler } from "./handler/private-message";
 import { startMessageInternalApi } from "./internal-api";
 import { stickerState } from "./state/sticker";
@@ -35,6 +36,32 @@ satori.on("message", async (session) => {
     }
   } catch (error) {
     logger.error("[message.server] 处理消息事件失败", error);
+  }
+});
+
+satori.on("internal/session", async (session) => {
+  try {
+    const isOneBotPokeSession =
+      session.type === "notice" && session.platform === "onebot" && session.subtype === "poke";
+
+    if (!isOneBotPokeSession) {
+      return;
+    }
+
+    const normalizedSession = await normalizeSatoriSession(session);
+
+    onebotPokeHandler(normalizedSession);
+
+    if (normalizedSession.subtype === "private") {
+      await privateMessageHandler(normalizedSession);
+      return;
+    }
+
+    if (normalizedSession.guildId && normalizedSession.channelId) {
+      await groupMessageHandler(normalizedSession);
+    }
+  } catch (error) {
+    logger.error("[message.server] 处理戳一戳事件失败", error);
   }
 });
 
