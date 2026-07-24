@@ -8,7 +8,7 @@ import {
   MajorScene,
   SchoolSubScene,
 } from "@yuiju/utils";
-import { isAfternoon, isNight, isWeekday } from "../utils";
+import { isAfternoon, isNight } from "../utils";
 
 function isAtSchoolCampus(context: ActionContext) {
   return (
@@ -19,22 +19,14 @@ function isAtSchoolCampus(context: ActionContext) {
 
 export const schoolAction: ActionMetadata[] = [
   {
-    // TODO：逻辑优化，上课时间应该是固定的时间段，而不是随时可以上课
     action: ActionId.Study_At_School,
     description: "在星见丘高校上课。[体力-12][饱腹-12][心情-5][耗时动态]",
     proactiveShare: {
       enabled: true,
     },
-    precondition(context) {
-      return allTrue([
-        () => isAtSchoolCampus(context),
-        () => {
-          // 上课时间：9点-12点、14点-16点
-          const hour = context.worldState.time.hour();
-          return (hour >= 9 && hour < 12) || (hour >= 14 && hour < 16);
-        },
-        isWeekday(context),
-      ]);
+    precondition() {
+      // 当前是暑假，不需要上课。
+      return false;
     },
     async executor(context) {
       await context.characterState.setAction(ActionId.Study_At_School);
