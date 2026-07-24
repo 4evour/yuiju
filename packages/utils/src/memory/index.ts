@@ -1,3 +1,4 @@
+export * from "./core-memory";
 export * from "./diary";
 export * from "./episode";
 export * from "./person-memory";

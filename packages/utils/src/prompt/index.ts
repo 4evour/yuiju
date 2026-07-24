@@ -1,4 +1,5 @@
 export * from "./character-card";
+export * from "./core-memory";
 export * from "./diary";
 export * from "./everything";
 export * from "./group-memory";

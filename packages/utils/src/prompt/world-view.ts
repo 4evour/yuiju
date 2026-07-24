@@ -194,6 +194,7 @@ export interface ChooseActionPromptPayload {
   characterState: CharacterStateData;
   worldState: WorldStateData;
   recentBehaviorList: BehaviorRecord[];
+  coreMemory?: string;
   eventDescription?: string;
   longTermPlanTitle?: string;
   shortTermPlanTitles?: string[];
@@ -204,6 +205,7 @@ export function chooseActionPrompt({
   characterState,
   worldState,
   recentBehaviorList,
+  coreMemory,
   eventDescription,
   longTermPlanTitle,
   shortTermPlanTitles,
@@ -237,6 +239,9 @@ ${characterDecisionPrompt}
 ${moneyMeaningPrompt}
 
 ${worldViewPrompt}
+
+## 对我重要的记忆
+${coreMemory || "无"}
 
 ## 状态
 ${eventDescription ? `当前事件：${eventDescription}` : ""}

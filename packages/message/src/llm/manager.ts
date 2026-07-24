@@ -13,15 +13,15 @@ import {
   initCharacterStateData,
   listPersonMemoriesTool,
   messageHistorySchemaPrompt,
-  NICKNAME,
   queryAvailableInventoryItems,
   queryStateTool,
   queryStaticGuideTool,
+  readCoreMemory,
   todayEventSearchTool,
 } from "@yuiju/utils";
 import { Output, stepCountIs } from "ai";
 import { z } from "zod";
-import { getGroupMemoryPromptSection } from "@/memory/group-memory";
+// import { getGroupMemoryPromptSection } from "@/memory/group-memory";
 import { stickerState } from "@/state/sticker";
 import { logger } from "@/utils/logger";
 import {
@@ -169,10 +169,11 @@ export class LLMManager {
 
     const { historyJson, summary } = await this.groupSession.getHistoryJson(sessionKey);
     const characterState = await initCharacterStateData();
-    const groupMemoryPrompt = await getGroupMemoryPromptSection({
-      sessionId: sessionKey,
-      sessionLabel: getGroupDisplayName(message),
-    });
+    const coreMemory = await readCoreMemory();
+    // const groupMemoryPrompt = await getGroupMemoryPromptSection({
+    //   sessionId: sessionKey,
+    //   sessionLabel: getGroupDisplayName(message),
+    // });
 
     const systemPrompt = [
       getCharacterCardPrompt(),
@@ -198,7 +199,8 @@ export class LLMManager {
               summary,
               historyJson,
               characterState,
-              groupMemoryPrompt,
+              coreMemory: coreMemory ?? undefined,
+              // groupMemoryPrompt,
             }),
           },
         ],
@@ -297,6 +299,7 @@ export class LLMManager {
     const sessionId = this.buildPrivateSessionKey(message);
     const { historyJson, summary } = await this.privateSession.getHistoryJson(sessionId);
     const characterState = await initCharacterStateData();
+    const coreMemory = await readCoreMemory();
     const sessionLabel = getProtocolMessageSenderName(message);
     const systemPrompt = [
       getCharacterCardPrompt(),
@@ -322,6 +325,7 @@ export class LLMManager {
               summary,
               historyJson,
               characterState,
+              coreMemory: coreMemory ?? undefined,
             }),
           },
         ],

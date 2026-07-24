@@ -14,7 +14,7 @@ import {
 } from "@yuiju/utils";
 import { planHomeCookingAgent } from "@/llm/agent";
 import {
-  generateDiaryForDate,
+  generateDailyMemoriesForDate,
   refreshDiarySummariesForDate,
   resolveDiaryDateForSleep,
 } from "@/memory/diary";
@@ -413,16 +413,21 @@ export const homeAction: ActionMetadata[] = [
 
       const diaryDate = resolveDiaryDateForSleep(context.worldState.time.toDate());
       try {
-        await generateDiaryForDate({
+        await generateDailyMemoriesForDate({
           diaryDate,
           isDev: isDev(),
         });
+      } catch (error) {
+        logger.error("[homeAction.Sleep] daily memories generation failed", error);
+      }
+
+      try {
         await refreshDiarySummariesForDate({
           diaryDate,
           isDev: isDev(),
         });
       } catch (error) {
-        logger.error("[homeAction.Sleep] diary tasks failed", error);
+        logger.error("[homeAction.Sleep] diary summary refresh failed", error);
       }
     },
     durationMin: async (context) => {

@@ -15,6 +15,7 @@ import {
   listPersonMemoriesTool,
   queryAvailableInventoryItems,
   queryStaticGuideTool,
+  readCoreMemory,
   reviewPlanChangesTool,
   strongModel,
   todayEventSearchTool,
@@ -35,6 +36,7 @@ export async function chooseActionAgent(
   actionMemoryList: BehaviorRecord[],
   planState: PlanState,
 ): Promise<ActionAgentDecision | undefined> {
+  const coreMemory = await readCoreMemory();
   const systemPrompt = chooseActionPrompt({
     actionList,
     characterState: context.characterStateData,
@@ -45,6 +47,7 @@ export async function chooseActionAgent(
       description: item.description,
       time: dayjs(item.timestamp),
     })),
+    coreMemory: coreMemory ?? undefined,
     longTermPlanTitle: planState.longTermPlan?.title,
     shortTermPlanTitles: planState.shortTermPlans.map((plan) => plan.title),
   });

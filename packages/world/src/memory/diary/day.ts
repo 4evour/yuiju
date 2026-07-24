@@ -7,6 +7,7 @@ import {
   type IMemoryEpisode,
   SUBJECT_NAME,
   summarizeConversationDiaryMaterials,
+  updateCoreMemoryFromEpisodes,
   upsertMemoryDiary,
 } from "@yuiju/utils";
 import { generateText } from "ai";
@@ -16,7 +17,7 @@ import { logger } from "@/utils/logger";
 const SLEEP_DIARY_ROLLOVER_HOUR = 6;
 const CONVERSATION_SUMMARY_CHAR_BUDGET = 20_000;
 
-export interface GenerateDiaryForDateInput {
+export interface GenerateDailyMemoriesForDateInput {
   diaryDate: Date;
   subject?: string;
   isDev: boolean;
@@ -59,7 +60,7 @@ async function writeDiaryText(input: {
   return result.text.trim();
 }
 
-async function loadEpisodesForDiary(input: {
+async function loadEpisodesForDate(input: {
   diaryDate: Date;
   subject: string;
   isDev: boolean;
@@ -133,59 +134,87 @@ export function resolveDiaryDateForSleep(happenedAt: Date): Date {
 }
 
 /**
- * 为指定自然日生成或覆盖一篇 Diary。
+ * 读取指定自然日的 Episode，并将同一份输入交给日记与核心记忆生成流程。
  */
-export async function generateDiaryForDate(input: GenerateDiaryForDateInput): Promise<boolean> {
+export async function generateDailyMemoriesForDate(
+  input: GenerateDailyMemoriesForDateInput,
+): Promise<void> {
   const subject = input.subject ?? DEFAULT_DIARY_SUBJECT;
-  const episodes = await loadEpisodesForDiary({
+  const episodes = await loadEpisodesForDate({
     diaryDate: input.diaryDate,
     subject: SUBJECT_NAME,
     isDev: input.isDev,
   });
 
   if (episodes.length === 0) {
-    logger.debug("[generateDiaryForDate] no episodes found", {
+    logger.debug("[generateDailyMemoriesForDate] no episodes found", {
       subject,
       diaryDate: dayjs(input.diaryDate).format("YYYY-MM-DD"),
     });
-    return false;
+    return;
   }
 
-  const materials = await buildDiaryMaterials(episodes);
-  if (materials.length === 0) {
-    logger.debug("[generateDiaryForDate] no diary materials built", {
+  await Promise.all([
+    generateDiaryFromEpisodes({
       subject,
+      diaryDate: input.diaryDate,
+      isDev: input.isDev,
+      episodes,
+    }).catch((error) => {
+      logger.error("[generateDailyMemoriesForDate] diary generation failed", error);
+    }),
+    updateCoreMemoryFromEpisodes({
+      date: input.diaryDate,
+      episodes,
+    })
+      .then((result) => {
+        logger.info("[generateDailyMemoriesForDate] core memory update completed", result);
+      })
+      .catch((error) => {
+        logger.error("[generateDailyMemoriesForDate] core memory update failed", error);
+      }),
+  ]);
+}
+
+async function generateDiaryFromEpisodes(input: {
+  subject: string;
+  diaryDate: Date;
+  isDev: boolean;
+  episodes: IMemoryEpisode[];
+}): Promise<void> {
+  const materials = await buildDiaryMaterials(input.episodes);
+  if (materials.length === 0) {
+    logger.debug("[generateDailyMemoriesForDate] no diary materials built", {
+      subject: input.subject,
       diaryDate: dayjs(input.diaryDate).format("YYYY-MM-DD"),
     });
-    return false;
+    return;
   }
 
   const diaryText = await writeDiaryText({
-    subject,
+    subject: input.subject,
     diaryDate: input.diaryDate,
     materials,
   });
 
   if (!diaryText.trim()) {
-    logger.warn("[generateDiaryForDate] generated empty diary text", {
-      subject,
+    logger.warn("[generateDailyMemoriesForDate] generated empty diary text", {
+      subject: input.subject,
       diaryDate: dayjs(input.diaryDate).format("YYYY-MM-DD"),
     });
-    return false;
+    return;
   }
 
   await upsertMemoryDiary({
-    subject,
+    subject: input.subject,
     diaryDate: input.diaryDate,
     diaryEndDate: input.diaryDate,
     text: diaryText,
     isDev: input.isDev,
   });
 
-  logger.info("[generateDiaryForDate] diary generated", {
-    subject,
+  logger.info("[generateDailyMemoriesForDate] diary generated", {
+    subject: input.subject,
     diaryDate: dayjs(input.diaryDate).format("YYYY-MM-DD"),
   });
-
-  return true;
 }
