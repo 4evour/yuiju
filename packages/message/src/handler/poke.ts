@@ -1,6 +1,7 @@
 import { setTimeout } from "node:timers/promises";
 import type { Session } from "@satorijs/core";
 import type { OneBotBot } from "@yuiju/satorijs-adapter-onebot";
+import { ActionId, initCharacterStateData } from "@yuiju/utils";
 import { logger } from "@/utils/logger";
 
 const MIN_POKE_REPLY_DELAY_MS = 2000;
@@ -24,6 +25,11 @@ export async function onebotPokeHandler(session: Session): Promise<void> {
 
   const userId = session.userId;
   if (!userId) {
+    return;
+  }
+
+  const characterStateData = await initCharacterStateData();
+  if (characterStateData.action === ActionId.Sleep) {
     return;
   }
 
