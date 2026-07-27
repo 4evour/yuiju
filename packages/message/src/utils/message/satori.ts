@@ -1,7 +1,7 @@
 import type { h, Session } from "@satorijs/core";
 import type { Message as SatoriMessage } from "@satorijs/protocol";
 import { SUBJECT_NAME } from "@yuiju/utils";
-import { resolveSatoriImageDescription } from "./image";
+import { resolveSatoriImageDescriptions } from "./image";
 import type {
   HistoryMessageSegment,
   HistoryReplySegment,
@@ -152,7 +152,14 @@ async function projectSatoriElementsToHistoryContent(
     content.push(quoteContent);
   }
 
-  for (const element of elementsWithoutQuote(elements)) {
+  const messageElements = elementsWithoutQuote(elements);
+  const imageDescriptions = await resolveSatoriImageDescriptions(
+    messageElements.filter((element) => element.type === "image" || element.type === "img"),
+    session,
+  );
+  let imageIndex = 0;
+
+  for (const element of messageElements) {
     if (element.type === "text") {
       content.push({
         type: "text",
@@ -174,7 +181,8 @@ async function projectSatoriElementsToHistoryContent(
     }
 
     if (element.type === "image" || element.type === "img") {
-      const description = await resolveSatoriImageDescription(element, session);
+      const description = imageDescriptions[imageIndex];
+      imageIndex += 1;
 
       // onebot 表情包消息特判
       const isOneBotStickerImage = element?.attrs?.subType === 1;

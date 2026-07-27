@@ -1,3 +1,3 @@
-import { main } from "./satori";
+import { main } from "./vision-relay";
 
 main();

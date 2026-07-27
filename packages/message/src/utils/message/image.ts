@@ -1,62 +1,91 @@
 import type { h, Session } from "@satorijs/core";
-import { buildMessageImageDescriptionSystemPrompt, visionModel } from "@yuiju/utils";
-import { generateText } from "ai";
+import {
+  buildMessageImageDescriptionSystemPrompt,
+  generateStructuredOutput,
+  visionModel,
+} from "@yuiju/utils";
+import { Output } from "ai";
+import { z } from "zod";
 import { imageCacheState } from "@/state/image-cache";
 import { stickerState } from "@/state/sticker";
 import { logger } from "@/utils/logger";
-export async function resolveSatoriImageDescription(
-  element: h,
+
+export async function resolveSatoriImageDescriptions(
+  elements: h[],
   session?: Session,
-): Promise<string | undefined> {
-  const attrs = element.attrs as Record<string, any>;
-  const summary = typeof attrs.summary === "string" ? attrs.summary.trim() : "";
-  const stickerDescription = summary ? stickerState.getByKey(summary)?.description : undefined;
-  if (stickerDescription) {
-    return stickerDescription;
-  }
-
-  const file = String(attrs.file || attrs.url || attrs.src || "");
-  const cachedDescription = file ? imageCacheState.get(file) : undefined;
-  if (cachedDescription) {
-    return cachedDescription;
-  }
-
-  const generatedDescription = await generateSatoriImageDescription(element, session);
-  if (file && generatedDescription) {
-    imageCacheState.set(file, generatedDescription);
-    return generatedDescription;
-  }
-
-  return summary;
-}
-
-async function generateSatoriImageDescription(
-  element: h,
-  session?: Session,
-): Promise<string | null> {
-  const attrs = element.attrs as Record<string, unknown>;
-  const imageUrl = String(attrs.url || attrs.src || "").trim();
-  if (!imageUrl || imageUrl.startsWith("base64://")) {
-    return null;
-  }
-
-  const summary = typeof attrs.summary === "string" ? attrs.summary.trim() : "";
-  let image: string | ArrayBuffer | Buffer = imageUrl;
-  let mediaType: string | undefined;
-
-  if (imageUrl.startsWith("internal:lark/")) {
-    try {
-      const file = await session!.bot.ctx.http.file(imageUrl);
-      image = file.data;
-      mediaType = file.mime;
-    } catch (error: any) {
-      logger.warn("[message.image] 飞书图片下载失败", error?.message);
-      return null;
+): Promise<Array<string | undefined>> {
+  const descriptions = new Array<string | undefined>(elements.length);
+  const pendingImages = new Map<
+    string,
+    {
+      summary: string;
+      data: string | ArrayBuffer | Buffer;
+      mediaType: string;
+      indexes: number[];
     }
+  >();
+
+  for (const [index, element] of elements.entries()) {
+    const attrs = element.attrs as Record<string, any>;
+    const summary = typeof attrs.summary === "string" ? attrs.summary.trim() : "";
+    const stickerDescription = summary ? stickerState.getByKey(summary)?.description : undefined;
+    if (stickerDescription) {
+      descriptions[index] = stickerDescription;
+      continue;
+    }
+
+    const file = String(attrs.file || attrs.url || attrs.src || "");
+    const cachedDescription = file ? imageCacheState.get(file) : null;
+    if (cachedDescription) {
+      descriptions[index] = cachedDescription;
+      continue;
+    }
+
+    const imageUrl = String(attrs.url || attrs.src || "").trim();
+    if (!imageUrl || imageUrl.startsWith("base64://")) {
+      descriptions[index] = summary;
+      continue;
+    }
+
+    const pendingImage = pendingImages.get(file);
+    if (pendingImage) {
+      pendingImage.indexes.push(index);
+      continue;
+    }
+
+    let data: string | ArrayBuffer | Buffer = imageUrl;
+    let mediaType = "image";
+
+    if (imageUrl.startsWith("internal:lark/")) {
+      try {
+        const downloadedFile = await session!.bot.ctx.http.file(imageUrl);
+        data = downloadedFile.data;
+        if (downloadedFile.mime) {
+          mediaType = downloadedFile.mime;
+        }
+      } catch (error: any) {
+        logger.warn("[message.image] 飞书图片下载失败", error?.message);
+        descriptions[index] = summary;
+        continue;
+      }
+    }
+
+    pendingImages.set(file, {
+      summary,
+      data,
+      mediaType,
+      indexes: [index],
+    });
   }
+
+  if (!pendingImages.size) {
+    return descriptions;
+  }
+
+  const images = [...pendingImages.values()];
 
   try {
-    const result = await generateText({
+    const result = await generateStructuredOutput({
       model: visionModel,
       providerOptions: {
         vision: {
@@ -67,25 +96,44 @@ async function generateSatoriImageDescription(
       messages: [
         {
           role: "user",
-          content: [
+          content: images.flatMap((image, index) => [
             {
-              type: "text",
-              text: `summary: ${summary}`,
+              type: "text" as const,
+              text: `图片 ${index + 1} summary: ${image.summary}`,
             },
             {
-              type: "image",
-              image,
-              mediaType,
+              type: "file" as const,
+              data: image.data,
+              mediaType: image.mediaType,
             },
-          ],
+          ]),
         },
       ],
+      output: Output.object({
+        schema: z.object({
+          descriptions: z
+            .array(z.string().trim().min(1).max(100))
+            .length(images.length)
+            .describe("你为各图片生成的中文描述，顺序必须与图片编号一致"),
+        }),
+      }),
     });
 
-    const description = result.text.trim();
-    return description || null;
+    for (const [imageIndex, [file, image]] of [...pendingImages.entries()].entries()) {
+      const description = result.output.descriptions[imageIndex];
+      imageCacheState.set(file, description);
+      for (const elementIndex of image.indexes) {
+        descriptions[elementIndex] = description;
+      }
+    }
   } catch (error: any) {
     logger.warn("[message.image] Satori 图片描述生成失败，降级为 summary", error?.message);
-    return null;
+    for (const image of pendingImages.values()) {
+      for (const elementIndex of image.indexes) {
+        descriptions[elementIndex] = image.summary;
+      }
+    }
   }
+
+  return descriptions;
 }
