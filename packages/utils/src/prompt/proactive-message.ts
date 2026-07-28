@@ -1,10 +1,11 @@
 import { formatProjectTime } from "../time";
-import type { ActionId, CharacterStateData, WorldStateData } from "../types";
+import type { ActionId } from "../types/action";
+import type { CharacterStateData, WorldStateData } from "../types/state";
 
 export interface BuildProactiveGroupMessagePromptInput {
   action: ActionId;
   shareReason: string;
-  eventDescription?: string;
+  actionSummaryText: string;
   characterStateSnapshot: CharacterStateData;
   worldStateSnapshot: WorldStateData;
   groupContext: {
@@ -44,7 +45,7 @@ ${input.shareReason}
 ## Action 完成事实
 
 Action：${input.action}
-事件描述：${input.eventDescription ?? "无"}
+完成摘要：${input.actionSummaryText}
 
 ## 当前角色状态
 

@@ -61,3 +61,15 @@ Action 改动时始终考虑这些文件：
 - `startContext` 只保存完成结算确实需要的数据。
 - 新上下文需要进入行为历史时，检查 `packages/world/src/memory/episode-builder.ts`。
 - 修改 `proactiveShare` 或完成时分享素材时，检查 `packages/world/src/engine/proactive-message.ts`。
+
+## 完成摘要与 Tick 事件
+
+- `context.runtimeState.actionSummaryText` 是最终写入 Behavior Episode `summaryText` 的完整行为事实。
+- Action 有具体完成结果时，在 `completionEvent` 中直接覆盖 `actionSummaryText`，不要依赖生命周期生成的通用摘要。
+- 完成摘要应包含对长期记忆有意义的实际结果，例如获得或消耗的物品、金币变化、实际状态变化、随机事件及其实际心情变化。
+- 主动分享使用 `actionSummaryText` 作为 Action 完成事实，不要使用 `eventDescription` 代替完成摘要。
+- `eventDescription` 只表示必须传递给下一次 Agent Tick、会影响下一轮决策的新事件；普通 Action 的完成结果不要写入该字段。
+- 适合使用 `eventDescription` 的情况包括随机事件、唤醒角色的闹钟、手机应用返回的新内容等。
+- 没有需要影响下一次 Tick 的新事件时，省略 `eventDescription`。
+- 随机事件发生时，`actionSummaryText` 同时记录 Action 的正常完成结果、随机事件和实际状态变化；`eventDescription` 只保留需要下一次 Tick 感知的随机事件部分。
+- 结构化完成数据继续写入 `completionContext`；不要因为已有 `actionSummaryText` 或 `eventDescription` 而省略后续记忆需要查询的稳定字段。

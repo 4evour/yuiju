@@ -1,11 +1,5 @@
-import {
-  type ActionContext,
-  ActionId,
-  type ActionMetadata,
-  InventoryItemCategory,
-  MajorScene,
-  ParkAreaSubScene,
-} from "@yuiju/utils";
+import { type ActionContext, ActionId, type ActionMetadata } from "@yuiju/utils/types/action";
+import { InventoryItemCategory, MajorScene, ParkAreaSubScene } from "@yuiju/utils/types/state";
 
 const POND_CATCH_RESULTS = [
   {
@@ -123,11 +117,11 @@ export const pondAction: ActionMetadata[] = [
     async completionEvent(context) {
       const roll = Math.random() * 100;
       if (roll < 20) {
+        context.runtimeState.actionSummaryText = "悠酱在水音池钓了一会儿鱼，但这次没有鱼上钩";
         return {
           completionContext: {
             catchResult: null,
           },
-          eventDescription: "在水音池钓了一会儿鱼，但这次没有鱼上钩",
         };
       }
 
@@ -145,6 +139,7 @@ export const pondAction: ActionMetadata[] = [
             1,
           );
 
+          context.runtimeState.actionSummaryText = `悠酱在水音池钓到了${catchItem.name}`;
           return {
             completionContext: {
               catchResult: {
@@ -153,7 +148,6 @@ export const pondAction: ActionMetadata[] = [
                 salePrice: catchItem.metadata.salePrice,
               },
             },
-            eventDescription: `在水音池钓到了${catchItem.name}`,
           };
         }
       }

@@ -1,7 +1,6 @@
 import dayjs from "dayjs";
 import { isDev } from "../../env";
 import {
-  ActionId,
   BusinessDistrictSubScene,
   type CharacterStateData,
   CoastAreaSubScene,
@@ -13,6 +12,7 @@ import {
   type RunningActionState,
   SchoolSubScene,
 } from "../../types";
+import { ActionId } from "../../types/action";
 import { safeParseJson } from "../../utils";
 import {
   getRedis,
@@ -405,7 +405,9 @@ export class CharacterState {
 
   async changeMood(delta: number) {
     const data = await this.getData();
-    await this.setMood(data.mood + delta);
+    const mood = Math.min(MAX_MOOD, Math.max(0, data.mood + delta));
+    await this.setMood(mood);
+    return mood - data.mood;
   }
 
   async recoverMood(baseGain: number) {

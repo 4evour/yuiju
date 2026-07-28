@@ -1,17 +1,24 @@
+import { COAST_VALUABLE_ITEMS } from "@yuiju/utils/constants/world/resource";
+import { logger } from "@yuiju/utils/logger";
 import {
   type ActionAgentDecision,
   type ActionContext,
   ActionId,
   type ActionMetadata,
-  allTrue,
+} from "@yuiju/utils/types/action";
+import {
   BusinessDistrictSubScene,
-  COAST_VALUABLE_ITEMS,
   CoastAreaSubScene,
-  logger,
   MajorScene,
   WorldSubScene,
-} from "@yuiju/utils";
-import { worldRunner } from "@/engine/world";
+} from "@yuiju/utils/types/state";
+import { allTrue } from "@yuiju/utils/utils";
+import { worldStateRunner } from "@/engine/world/runner";
+import {
+  buildActionRandomEventDescription,
+  buildMoodChangeDescription,
+  generateActionRandomEvent,
+} from "@/llm/agent/random-event";
 
 type CoastWalkTier = {
   durationMin: number;
@@ -94,6 +101,12 @@ export const coastAction: ActionMetadata[] = [
         durationMin: number;
         moodGain: number;
       };
+      const randomEvent = await generateActionRandomEvent({
+        context,
+        setting: `在月汐海岸散步${walkContext.durationMin}分钟期间发生的日常小事件，可以涉及游客、海鸟、海浪、海滩设施或天气带来的小插曲`,
+        triggerProbability: 0.2,
+        positiveProbability: 0.4,
+      });
       const worldStateData = await context.worldState.getData();
       const coastResources = worldStateData.scenes[WorldSubScene.Coast].resources ?? [];
       const collectedResources = coastResources.filter((resource) => resource.amount > 0);
@@ -105,7 +118,7 @@ export const coastAction: ActionMetadata[] = [
       }));
 
       if (consumeCommands.length > 0) {
-        await worldRunner.consumeCommandsAndRunTick(consumeCommands, new Date());
+        await worldStateRunner.consumeCommandsAndRunTick(consumeCommands, new Date());
       }
 
       for (const resource of collectedResources) {
@@ -130,7 +143,12 @@ export const coastAction: ActionMetadata[] = [
       }
 
       const actualMoodGain = await context.characterState.recoverMood(walkContext.moodGain);
-
+      const randomEventResult = randomEvent
+        ? {
+            ...randomEvent,
+            actualMoodChange: await context.characterState.changeMood(randomEvent.moodChange),
+          }
+        : undefined;
       const collectedItemText =
         collectedResources.length > 0
           ? `，捡到了${collectedResources
@@ -138,17 +156,28 @@ export const coastAction: ActionMetadata[] = [
               .join("、")}`
           : "，但这次没有捡到任何东西";
 
+      const randomEventCompletion = buildActionRandomEventDescription({
+        actionSummaryText: `悠酱在月汐海岸散步了${walkContext.durationMin}分钟，散步本身让${buildMoodChangeDescription(actualMoodGain)}${collectedItemText}`,
+        actionMoodChange: actualMoodGain,
+        randomEvent: randomEventResult,
+      });
+      context.runtimeState.actionSummaryText = randomEventCompletion.actionSummaryText;
+
       return {
         completionContext: {
-          ...walkContext,
-          baseMoodGain: walkContext.moodGain,
-          moodGain: actualMoodGain,
+          durationMin: walkContext.durationMin,
+          actionMoodChange: {
+            base: walkContext.moodGain,
+            actual: actualMoodGain,
+          },
           collectedItems: collectedResources.map((resource) => ({
             name: resource.name,
             quantity: resource.amount,
           })),
+          randomEvent: randomEventResult,
+          totalMoodChange: randomEventCompletion.totalMoodChange,
         },
-        eventDescription: `在月汐海岸散步了${walkContext.durationMin}分钟，心情提升了${actualMoodGain}点${collectedItemText}`,
+        eventDescription: randomEventCompletion.eventDescription,
       };
     },
     async durationMin(_context, selectedAction?: ActionAgentDecision) {

@@ -1,19 +1,26 @@
 import {
+  SUPERMARKET_PRODUCTS,
+  type SupermarketProduct,
+} from "@yuiju/utils/constants/world/supermarket";
+import { planManager } from "@yuiju/utils/memory/plan/manager";
+import {
   type ActionContext,
   ActionId,
   type ActionMetadata,
-  allTrue,
-  BusinessDistrictSubScene,
   type ChoiceOption,
+} from "@yuiju/utils/types/action";
+import {
+  BusinessDistrictSubScene,
   HomeSubScene,
   InventoryItemCategory,
   MajorScene,
-  planManager,
   SchoolSubScene,
-  SUPERMARKET_PRODUCTS,
-  type SupermarketProduct,
-} from "@yuiju/utils";
-import { chooseSellableItemAgent, chooseSupermarketProductAgent } from "@/llm/agent";
+} from "@yuiju/utils/types/state";
+import { allTrue } from "@yuiju/utils/utils";
+import {
+  chooseSellableItemAgent,
+  chooseSupermarketProductAgent,
+} from "@/llm/agent/business-district";
 import { logger } from "@/utils/logger";
 
 const SUPERMARKET_MIN_PRICE = Math.min(...SUPERMARKET_PRODUCTS.map((p) => p.price));
@@ -166,6 +173,8 @@ export const supermarketAction: ActionMetadata[] = [
         .map((product) => `${product.productName}${product.quantity}份`)
         .join("、");
 
+      context.runtimeState.actionSummaryText = `悠酱在超市买到了${purchasedProductDescription}`;
+
       return {
         completionContext: {
           purchasedProducts: purchaseContext.purchasedProducts.map((product) => ({
@@ -174,7 +183,6 @@ export const supermarketAction: ActionMetadata[] = [
           })),
           totalCost: purchaseContext.totalCost,
         },
-        eventDescription: `买到了${purchasedProductDescription}`,
       };
     },
     durationMin: 5,
@@ -305,7 +313,7 @@ export const supermarketAction: ActionMetadata[] = [
         },
       };
     },
-    completionEvent(_context, runningAction) {
+    completionEvent(context, runningAction) {
       const saleContext = runningAction.startContext as {
         soldItems: {
           itemName: string;
@@ -319,12 +327,13 @@ export const supermarketAction: ActionMetadata[] = [
         .map((item) => `${item.itemName}${item.quantity}个`)
         .join("、");
 
+      context.runtimeState.actionSummaryText = `悠酱在超市卖出了${soldItemDescription}，收入${saleContext.totalIncome}金币`;
+
       return {
         completionContext: {
           soldItems: saleContext.soldItems,
           totalIncome: saleContext.totalIncome,
         },
-        eventDescription: `在超市卖出了${soldItemDescription}，收入${saleContext.totalIncome}金币`,
       };
     },
     durationMin: 5,

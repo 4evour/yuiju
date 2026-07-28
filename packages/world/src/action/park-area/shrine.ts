@@ -1,14 +1,8 @@
-import {
-  type ActionContext,
-  ActionId,
-  type ActionMetadata,
-  allTrue,
-  HomeSubScene,
-  MajorScene,
-  ParkAreaSubScene,
-  planManager,
-} from "@yuiju/utils";
-import { chooseShrinePrayerAgent } from "@/llm/agent";
+import { planManager } from "@yuiju/utils/memory/plan/manager";
+import { type ActionContext, ActionId, type ActionMetadata } from "@yuiju/utils/types/action";
+import { HomeSubScene, MajorScene, ParkAreaSubScene } from "@yuiju/utils/types/state";
+import { allTrue } from "@yuiju/utils/utils";
+import { chooseShrinePrayerAgent } from "@/llm/agent/park-area";
 import { isNight } from "../utils";
 
 const SHRINE_OFFERING_COST = 5;
@@ -80,17 +74,20 @@ export const shrineAction: ActionMetadata[] = [
       const actualMoodGain = await context.characterState.recoverMood(prayContext.moodGain);
 
       if (prayContext.shouldOffer) {
+        context.runtimeState.actionSummaryText = prayContext.wish
+          ? `悠酱在结灯神社祈愿“${prayContext.wish}”，心情提升了${actualMoodGain}点`
+          : `悠酱在结灯神社认真祈愿，心情提升了${actualMoodGain}点`;
+
         return {
           completionContext: {
             ...prayContext,
             baseMoodGain: prayContext.moodGain,
             moodGain: actualMoodGain,
           },
-          eventDescription: prayContext.wish
-            ? `在结灯神社祈愿“${prayContext.wish}”，心情提升了${actualMoodGain}点`
-            : `在结灯神社认真祈愿，心情提升了${actualMoodGain}点`,
         };
       }
+
+      context.runtimeState.actionSummaryText = `悠酱在结灯神社认真参拜，心情提升了${actualMoodGain}点`;
 
       return {
         completionContext: {
@@ -98,7 +95,6 @@ export const shrineAction: ActionMetadata[] = [
           baseMoodGain: prayContext.moodGain,
           moodGain: actualMoodGain,
         },
-        eventDescription: `在结灯神社认真参拜，心情提升了${actualMoodGain}点`,
       };
     },
     durationMin: 10,

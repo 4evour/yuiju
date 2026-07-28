@@ -1,19 +1,28 @@
 import {
-  type ActionContext,
-  ActionId,
-  type ActionMetadata,
-  allTrue,
-  BusinessDistrictSubScene,
   CAFE_COFFEES,
   type CafeCoffee,
   type CafeCoffeeName,
+} from "@yuiju/utils/constants/world/cafe";
+import { planManager } from "@yuiju/utils/memory/plan/manager";
+import {
+  type ActionContext,
+  ActionId,
+  type ActionMetadata,
   type ChoiceOption,
+} from "@yuiju/utils/types/action";
+import {
+  BusinessDistrictSubScene,
   HomeSubScene,
   MajorScene,
-  planManager,
   SchoolSubScene,
-} from "@yuiju/utils";
-import { chooseCafeCoffeeAgent } from "@/llm/agent";
+} from "@yuiju/utils/types/state";
+import { allTrue } from "@yuiju/utils/utils";
+import { chooseCafeCoffeeAgent } from "@/llm/agent/business-district";
+import {
+  buildActionRandomEventDescription,
+  buildMoodChangeDescription,
+  generateActionRandomEvent,
+} from "@/llm/agent/random-event";
 import { logger } from "@/utils/logger";
 
 const CAFE_MIN_PRICE = Math.min(...CAFE_COFFEES.map((p) => p.price));
@@ -132,12 +141,13 @@ export const cafeAction: ActionMetadata[] = [
         result.push(`[心情+${actualMoodGain}]`);
       }
 
+      context.runtimeState.actionSummaryText = `悠酱在薄暮咖啡喝完了${coffeeContext.coffeeName}${result.join(",")}`;
+
       return {
         completionContext: {
           ...coffeeContext,
           actualMoodGain,
         },
-        eventDescription: `在薄暮咖啡喝完了${coffeeContext.coffeeName}${result.join(",")}`,
       };
     },
     durationMin: 30,
@@ -158,18 +168,43 @@ export const cafeAction: ActionMetadata[] = [
       await context.characterState.setAction(ActionId.Work_At_Cafe);
     },
     async completionEvent(context) {
+      const randomEvent = await generateActionRandomEvent({
+        context,
+        setting:
+          "在薄暮咖啡打工一小时期间发生的日常小事件，可以涉及顾客、同事、点单、清洁或店内忙碌带来的小插曲",
+        triggerProbability: 0.2,
+        positiveProbability: 0.4,
+      });
       await context.characterState.changeMoney(200);
       await context.characterState.changeStamina(-10);
       await context.characterState.changeSatiety(-10);
-      await context.characterState.changeMood(-5);
+      const actualWorkMoodChange = await context.characterState.changeMood(-5);
+      const randomEventResult = randomEvent
+        ? {
+            ...randomEvent,
+            actualMoodChange: await context.characterState.changeMood(randomEvent.moodChange),
+          }
+        : undefined;
+      const randomEventCompletion = buildActionRandomEventDescription({
+        actionSummaryText: `悠酱在薄暮咖啡打工1小时，赚了200元，工作本身让${buildMoodChangeDescription(actualWorkMoodChange)}`,
+        actionMoodChange: actualWorkMoodChange,
+        randomEvent: randomEventResult,
+      });
+      context.runtimeState.actionSummaryText = randomEventCompletion.actionSummaryText;
+
       return {
         completionContext: {
           earnedMoney: 200,
           staminaDelta: -10,
           satietyDelta: -10,
-          moodDelta: -5,
+          actionMoodChange: {
+            base: -5,
+            actual: actualWorkMoodChange,
+          },
+          randomEvent: randomEventResult,
+          totalMoodChange: randomEventCompletion.totalMoodChange,
         },
-        eventDescription: "在薄暮咖啡打工1小时，赚了200元",
+        eventDescription: randomEventCompletion.eventDescription,
       };
     },
     durationMin: 60,

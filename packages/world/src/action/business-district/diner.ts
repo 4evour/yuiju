@@ -1,18 +1,19 @@
+import { DINER_MEALS, type DinerMeal } from "@yuiju/utils/constants/world/diner";
+import { planManager } from "@yuiju/utils/memory/plan/manager";
 import {
   type ActionContext,
   ActionId,
   type ActionMetadata,
-  allTrue,
-  BusinessDistrictSubScene,
   type ChoiceOption,
-  DINER_MEALS,
-  type DinerMeal,
+} from "@yuiju/utils/types/action";
+import {
+  BusinessDistrictSubScene,
   HomeSubScene,
   MajorScene,
-  planManager,
   SchoolSubScene,
-} from "@yuiju/utils";
-import { chooseDinerMealAgent } from "@/llm/agent";
+} from "@yuiju/utils/types/state";
+import { allTrue } from "@yuiju/utils/utils";
+import { chooseDinerMealAgent } from "@/llm/agent/business-district";
 import { logger } from "@/utils/logger";
 
 const DINER_MIN_PRICE = Math.min(...DINER_MEALS.map((meal) => meal.price));
@@ -124,12 +125,13 @@ export const dinerAction: ActionMetadata[] = [
         result.push(`[心情+${actualMoodGain}]`);
       }
 
+      context.runtimeState.actionSummaryText = `悠酱在日和食堂吃完了${mealContext.mealName}${result.join(",")}`;
+
       return {
         completionContext: {
           ...mealContext,
           actualMoodGain,
         },
-        eventDescription: `在日和食堂吃完了${mealContext.mealName}${result.join(",")}`,
       };
     },
     durationMin: 20,

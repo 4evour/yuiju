@@ -1,28 +1,26 @@
 import { setTimeout } from "node:timers/promises";
+import { SUBJECT_NAME } from "@yuiju/utils/constants/character";
 import {
-  type ActionAgentDecision,
-  type ActionContext,
-  ActionId,
-  buildPlanUpdateEpisodes,
   getMemoryEpisodeById,
   getRecentMemoryEpisodes,
-  isDev,
-  type PlanChange,
-  planManager,
-  SUBJECT_NAME,
   saveMemoryEpisode,
   updateMemoryEpisodeById,
-} from "@yuiju/utils";
+} from "@yuiju/utils/db/operations/memory-episode";
+import { isDev } from "@yuiju/utils/env";
+import { buildPlanUpdateEpisodes } from "@yuiju/utils/memory/plan/episode-builder";
+import { planManager } from "@yuiju/utils/memory/plan/manager";
+import { type ActionAgentDecision, type ActionContext, ActionId } from "@yuiju/utils/types/action";
+import type { PlanChange } from "@yuiju/utils/types/plan";
 import dayjs from "dayjs";
-import { getActionList } from "@/action";
+import { getActionList } from "@/action/index";
 import { getActionById } from "@/action/utils";
-import { chooseActionAgent } from "@/llm/agent";
+import { chooseActionAgent } from "@/llm/agent/action";
 import {
   type BehaviorEpisodePayload,
   buildCompletedBehaviorEpisodeUpdate,
   buildRunningBehaviorEpisode,
 } from "@/memory/episode-builder";
-import { characterState, worldState } from "@/state";
+import { characterState, worldState } from "@/state/index";
 import { logger } from "@/utils/logger";
 import { scheduleActionCompletionProactiveShare } from "./proactive-message";
 
@@ -259,7 +257,7 @@ export async function recoverRunningAction(context?: ActionContext): Promise<str
   scheduleActionCompletionProactiveShare({
     actionMetadata,
     runningAction,
-    eventDescription: completionResult?.eventDescription,
+    actionSummaryText: context.runtimeState.actionSummaryText!,
     characterStateSnapshot: context.characterStateData,
     worldStateSnapshot: context.worldState.log(),
   });

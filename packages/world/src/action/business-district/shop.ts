@@ -1,19 +1,20 @@
+import { SHOP_PRODUCTS, type ShopProduct } from "@yuiju/utils/constants/world/shop";
+import { planManager } from "@yuiju/utils/memory/plan/manager";
 import {
   type ActionContext,
   ActionId,
   type ActionMetadata,
-  allTrue,
-  BusinessDistrictSubScene,
   type ChoiceOption,
+} from "@yuiju/utils/types/action";
+import {
+  BusinessDistrictSubScene,
   HomeSubScene,
   InventoryItemCategory,
   MajorScene,
-  planManager,
   SchoolSubScene,
-  SHOP_PRODUCTS,
-  type ShopProduct,
-} from "@yuiju/utils";
-import { chooseShopProductAgent } from "@/llm/agent";
+} from "@yuiju/utils/types/state";
+import { allTrue } from "@yuiju/utils/utils";
+import { chooseShopProductAgent } from "@/llm/agent/business-district";
 import { logger } from "@/utils/logger";
 import { buildFoodMetadata } from "../../utils/food-utils";
 
@@ -149,6 +150,8 @@ export const shopAction: ActionMetadata[] = [
         purchaseContext.quantity,
       );
 
+      context.runtimeState.actionSummaryText = `悠酱拿到了${purchaseContext.productName}${purchaseContext.quantity}个`;
+
       return {
         completionContext: {
           purchasedItem: {
@@ -156,7 +159,6 @@ export const shopAction: ActionMetadata[] = [
             quantity: purchaseContext.quantity,
           },
         },
-        eventDescription: `拿到了${purchaseContext.productName}${purchaseContext.quantity}个`,
       };
     },
     durationMin: 10,

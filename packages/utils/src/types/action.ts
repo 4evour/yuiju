@@ -147,8 +147,10 @@ export interface ActionContext {
   runtimeState: {
     actionStartedAt: Date;
     actionEndedAt?: Date;
+    /** 写入 Behavior Episode 的行为事实摘要，由具体 Action 在需要记录完成细节时覆盖 */
     actionSummaryText?: string;
   };
+  /** 上一次 Action 产生、需要影响当前 Tick 决策的新事件 */
   eventDescription?: string;
 }
 
@@ -192,6 +194,7 @@ export type ActionStartResult = void | {
 
 export type ActionCompletionEventResult = void | {
   completionContext?: Record<string, any>;
+  /** 需要传递给下一次 Agent Tick 的新事件，普通 Action 完成结果不使用该字段 */
   eventDescription?: string;
 };
 
@@ -218,11 +221,7 @@ export abstract class ActionMetadata {
     | number
     | ((context: ActionContext, selectedAction?: ActionAgentDecision) => Promise<number>);
 
-  /**
-   * Action 结束时产生的事件描述。
-   * 该描述将作为事件 context 输入给下一次 tick 的 LLM，用于说明上一个动作结束时的状态或发生的事件。
-   * 示例："闹钟响了，该起床了" 或 (ctx) => `你结束了${ctx.action}，感觉焕然一新`
-   */
+  /** Action 结束时完成状态结算，并按需产生需要传递给下一次 Tick 的新事件 */
   abstract completionEvent?: (
     context: ActionContext,
     runningAction: RunningActionState,

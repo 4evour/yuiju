@@ -1,17 +1,24 @@
+import { PARK_FRUIT_ITEMS } from "@yuiju/utils/constants/world/resource";
+import { logger } from "@yuiju/utils/logger";
 import {
   type ActionAgentDecision,
   type ActionContext,
   ActionId,
   type ActionMetadata,
-  allTrue,
+} from "@yuiju/utils/types/action";
+import {
   HomeSubScene,
-  logger,
   MajorScene,
-  PARK_FRUIT_ITEMS,
   ParkAreaSubScene,
   WorldSubScene,
-} from "@yuiju/utils";
-import { worldRunner } from "@/engine/world";
+} from "@yuiju/utils/types/state";
+import { allTrue } from "@yuiju/utils/utils";
+import { worldStateRunner } from "@/engine/world/runner";
+import {
+  buildActionRandomEventDescription,
+  buildMoodChangeDescription,
+  generateActionRandomEvent,
+} from "@/llm/agent/random-event";
 import { isNight } from "../utils";
 
 type ParkWalkTier = {
@@ -89,6 +96,12 @@ export const parkAction: ActionMetadata[] = [
         durationMin: number;
         moodGain: number;
       };
+      const randomEvent = await generateActionRandomEvent({
+        context,
+        setting: `在南风公园散步${walkContext.durationMin}分钟期间发生的日常小事件，可以涉及路人、宠物、公园设施或天气带来的小插曲`,
+        triggerProbability: 0.2,
+        positiveProbability: 0.4,
+      });
       const worldStateData = await context.worldState.getData();
       const parkResources = worldStateData.scenes[WorldSubScene.Park].resources ?? [];
       const collectedResources = parkResources.filter((resource) => resource.amount > 0);
@@ -100,7 +113,7 @@ export const parkAction: ActionMetadata[] = [
       }));
 
       if (consumeCommands.length > 0) {
-        await worldRunner.consumeCommandsAndRunTick(consumeCommands, new Date());
+        await worldStateRunner.consumeCommandsAndRunTick(consumeCommands, new Date());
       }
 
       for (const resource of collectedResources) {
@@ -122,7 +135,12 @@ export const parkAction: ActionMetadata[] = [
       }
 
       const actualMoodGain = await context.characterState.recoverMood(walkContext.moodGain);
-
+      const randomEventResult = randomEvent
+        ? {
+            ...randomEvent,
+            actualMoodChange: await context.characterState.changeMood(randomEvent.moodChange),
+          }
+        : undefined;
       const collectedItemText =
         collectedResources.length > 0
           ? `，捡到了${collectedResources
@@ -130,17 +148,28 @@ export const parkAction: ActionMetadata[] = [
               .join("、")}`
           : "，但这次没有捡到任何东西";
 
+      const randomEventCompletion = buildActionRandomEventDescription({
+        actionSummaryText: `悠酱在南风公园散步了${walkContext.durationMin}分钟，散步本身让${buildMoodChangeDescription(actualMoodGain)}${collectedItemText}`,
+        actionMoodChange: actualMoodGain,
+        randomEvent: randomEventResult,
+      });
+      context.runtimeState.actionSummaryText = randomEventCompletion.actionSummaryText;
+
       return {
         completionContext: {
-          ...walkContext,
-          baseMoodGain: walkContext.moodGain,
-          moodGain: actualMoodGain,
+          durationMin: walkContext.durationMin,
+          actionMoodChange: {
+            base: walkContext.moodGain,
+            actual: actualMoodGain,
+          },
           collectedItems: collectedResources.map((resource) => ({
             name: resource.name,
             quantity: resource.amount,
           })),
+          randomEvent: randomEventResult,
+          totalMoodChange: randomEventCompletion.totalMoodChange,
         },
-        eventDescription: `在南风公园散步了${walkContext.durationMin}分钟，心情提升了${actualMoodGain}点${collectedItemText}`,
+        eventDescription: randomEventCompletion.eventDescription,
       };
     },
     async durationMin(_context, selectedAction?: ActionAgentDecision) {

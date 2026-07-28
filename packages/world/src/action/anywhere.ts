@@ -1,18 +1,14 @@
+import { planManager } from "@yuiju/utils/memory/plan/manager";
 import {
   type ActionContext,
   ActionId,
   type ActionMetadata,
-  allTrue,
   type ChoiceOption,
-  InventoryItemCategory,
-  type InventoryItemMetadata,
-  planManager,
-} from "@yuiju/utils";
-import {
-  chooseFoodAgent,
-  generateHermesUserPromptFromPhoneReason,
-  runHermesPhoneAgent,
-} from "@/llm/agent";
+} from "@yuiju/utils/types/action";
+import { InventoryItemCategory, type InventoryItemMetadata } from "@yuiju/utils/types/state";
+import { allTrue } from "@yuiju/utils/utils";
+import { chooseFoodAgent } from "@/llm/agent/anywhere";
+import { generateHermesUserPromptFromPhoneReason, runHermesPhoneAgent } from "@/llm/agent/phone";
 import { logger } from "@/utils/logger";
 import { resolveFoodRecoveryPerUnit } from "../utils/food-utils";
 
@@ -248,13 +244,16 @@ export const anywhereAction: ActionMetadata[] = [
         actualMoodGain = await context.characterState.recoverMood(totalMood);
       }
 
+      context.runtimeState.actionSummaryText = `悠酱吃完了${eatContext.eatenFood
+        .map((food) => `${food.name}${food.quantity}个`)
+        .join("，")}`;
+
       return {
         completionContext: {
           ...eatContext,
           baseMoodGain: totalMood,
           actualMoodGain,
         },
-        eventDescription: `吃完了${eatContext.eatenFood.map((food) => `${food.name}${food.quantity}个`).join("，")}`,
       };
     },
     durationMin: 10,

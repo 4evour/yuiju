@@ -1,13 +1,16 @@
+import { type ActionContext, ActionId, type ActionMetadata } from "@yuiju/utils/types/action";
 import {
-  type ActionContext,
-  ActionId,
-  type ActionMetadata,
-  allTrue,
   BusinessDistrictSubScene,
   HomeSubScene,
   MajorScene,
   SchoolSubScene,
-} from "@yuiju/utils";
+} from "@yuiju/utils/types/state";
+import { allTrue } from "@yuiju/utils/utils";
+import {
+  buildActionRandomEventDescription,
+  buildMoodChangeDescription,
+  generateActionRandomEvent,
+} from "@/llm/agent/random-event";
 import { isAfternoon, isNight } from "../utils";
 
 function isAtSchoolCampus(context: ActionContext) {
@@ -32,10 +35,41 @@ export const schoolAction: ActionMetadata[] = [
       await context.characterState.setAction(ActionId.Study_At_School);
     },
     async completionEvent(context) {
+      const randomEvent = await generateActionRandomEvent({
+        context,
+        setting: "在星见丘高校上课期间发生的日常小事件，可以涉及课堂内容、老师、同学或课间互动",
+        triggerProbability: 0.2,
+        positiveProbability: 0.4,
+      });
       await context.characterState.changeStamina(-12);
       await context.characterState.changeSatiety(-12);
-      await context.characterState.changeMood(-5);
-      return { eventDescription: "上课结束了" };
+      const actualStudyMoodChange = await context.characterState.changeMood(-5);
+      const randomEventResult = randomEvent
+        ? {
+            ...randomEvent,
+            actualMoodChange: await context.characterState.changeMood(randomEvent.moodChange),
+          }
+        : undefined;
+      const randomEventCompletion = buildActionRandomEventDescription({
+        actionSummaryText: `悠酱上完了课，上课本身让${buildMoodChangeDescription(actualStudyMoodChange)}`,
+        actionMoodChange: actualStudyMoodChange,
+        randomEvent: randomEventResult,
+      });
+      context.runtimeState.actionSummaryText = randomEventCompletion.actionSummaryText;
+
+      return {
+        completionContext: {
+          staminaDelta: -12,
+          satietyDelta: -12,
+          actionMoodChange: {
+            base: -5,
+            actual: actualStudyMoodChange,
+          },
+          randomEvent: randomEventResult,
+          totalMoodChange: randomEventCompletion.totalMoodChange,
+        },
+        eventDescription: randomEventCompletion.eventDescription,
+      };
     },
     durationMin: async (context) => {
       const now = context.worldState.time.clone();

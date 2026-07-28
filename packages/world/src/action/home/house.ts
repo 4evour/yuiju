@@ -1,23 +1,18 @@
+import { isDev } from "@yuiju/utils/env";
+import { planManager } from "@yuiju/utils/memory/plan/manager";
+import { type ActionContext, ActionId, type ActionMetadata } from "@yuiju/utils/types/action";
 import {
-  type ActionContext,
-  ActionId,
-  type ActionMetadata,
-  allTrue,
   BusinessDistrictSubScene,
   HomeSubScene,
   type InventoryItemMetadata,
-  isDev,
   MajorScene,
   ParkAreaSubScene,
-  planManager,
   SchoolSubScene,
-} from "@yuiju/utils";
-import { planHomeCookingAgent } from "@/llm/agent";
-import {
-  generateDailyMemoriesForDate,
-  refreshDiarySummariesForDate,
-  resolveDiaryDateForSleep,
-} from "@/memory/diary";
+} from "@yuiju/utils/types/state";
+import { allTrue } from "@yuiju/utils/utils";
+import { planHomeCookingAgent } from "@/llm/agent/home";
+import { generateDailyMemoriesForDate, resolveDiaryDateForSleep } from "@/memory/diary/day";
+import { refreshDiarySummariesForDate } from "@/memory/diary/summary";
 import { logger } from "@/utils/logger";
 import {
   type CookingIngredientSnapshot,
@@ -72,7 +67,8 @@ export const homeAction: ActionMetadata[] = [
       await context.characterState.setAction(ActionId.Sleep_For_A_Little);
     },
     async completionEvent(context) {
-      await context.characterState.recoverMood(1);
+      const actualMoodGain = await context.characterState.recoverMood(1);
+      context.runtimeState.actionSummaryText = `悠酱稍微多睡了10分钟，心情提升了${actualMoodGain}点`;
       return { eventDescription: "闹钟响了，稍微多睡了一会儿" };
     },
     durationMin: 10,
@@ -341,6 +337,8 @@ export const homeAction: ActionMetadata[] = [
       await context.characterState.changeSatiety(satiety);
       const actualMoodGain = await context.characterState.recoverMood(mood);
 
+      context.runtimeState.actionSummaryText = `悠酱用${ingredientNames.join("、")}做出${cookingContext.cookedMealName}吃掉了，${cookingContext.cookedMealDescription}，体力、饱腹和心情恢复了`;
+
       return {
         completionContext: {
           cookedMeal: {
@@ -353,7 +351,6 @@ export const homeAction: ActionMetadata[] = [
           },
           ingredients: cookingContext.ingredients,
         },
-        eventDescription: `用${ingredientNames.join("、")}做出${cookingContext.cookedMealName}吃掉了，${cookingContext.cookedMealDescription}，体力、饱腹和心情恢复了`,
       };
     },
   },
@@ -396,7 +393,7 @@ export const homeAction: ActionMetadata[] = [
     },
     async completionEvent(context) {
       await context.characterState.setPhoneBattery(100);
-      return { eventDescription: "手机充好电了，电量恢复到 100%" };
+      context.runtimeState.actionSummaryText = "悠酱给手机充好了电，电量恢复到100%";
     },
   },
   {
@@ -444,7 +441,8 @@ export const homeAction: ActionMetadata[] = [
     async completionEvent(context) {
       await context.characterState.setStamina(85);
       await context.characterState.setSatiety(20);
-      await context.characterState.recoverMood(2);
+      const actualMoodGain = await context.characterState.recoverMood(2);
+      context.runtimeState.actionSummaryText = `悠酱睡醒了，体力恢复到85点，饱腹恢复到20点，心情提升了${actualMoodGain}点`;
       return { eventDescription: "闹钟响了，睡醒了" };
     },
   },

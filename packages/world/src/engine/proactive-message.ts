@@ -5,21 +5,20 @@
  * 交给 LLM 判断当前是否适合主动发送生活分享，并在决策通过后发送到配置的目标群。
  */
 
-import {
-  type ActionMetadata,
-  buildProactiveGroupMessagePrompt,
-  type CharacterStateData,
-  chatModel,
-  createToolCallLoggingHooks,
-  diarySearchTool,
-  generateStructuredOutput,
-  getCharacterCardPrompt,
-  getYuijuConfig,
-  messageHistorySchemaPrompt,
-  type RunningActionState,
-  todayEventSearchTool,
-  type WorldStateData,
-} from "@yuiju/utils";
+import { getYuijuConfig } from "@yuiju/utils/config/config";
+import { generateStructuredOutput } from "@yuiju/utils/llm/generate-structured-output";
+import { chatModel } from "@yuiju/utils/llm/models";
+import { createToolCallLoggingHooks } from "@yuiju/utils/llm/tool-call-logger";
+import { diarySearchTool, todayEventSearchTool } from "@yuiju/utils/llm/tools/memory-search";
+import { getCharacterCardPrompt } from "@yuiju/utils/prompt/character-card";
+import { messageHistorySchemaPrompt } from "@yuiju/utils/prompt/message";
+import { buildProactiveGroupMessagePrompt } from "@yuiju/utils/prompt/proactive-message";
+import type { ActionMetadata } from "@yuiju/utils/types/action";
+import type {
+  CharacterStateData,
+  RunningActionState,
+  WorldStateData,
+} from "@yuiju/utils/types/state";
 import { Output, stepCountIs } from "ai";
 import { z } from "zod";
 import { type InternalMessagePlatform, internalMessageApi } from "@/api/internal-message-api";
@@ -28,7 +27,7 @@ import { logger } from "@/utils/logger";
 interface ScheduleActionCompletionProactiveShareInput {
   actionMetadata: ActionMetadata;
   runningAction: RunningActionState;
-  eventDescription?: string;
+  actionSummaryText: string;
   characterStateSnapshot: CharacterStateData;
   worldStateSnapshot: WorldStateData;
 }
@@ -107,7 +106,7 @@ async function shareActionCompletionToGroup(
           content: buildProactiveGroupMessagePrompt({
             action: input.runningAction.action,
             shareReason: input.shareReason,
-            eventDescription: input.eventDescription,
+            actionSummaryText: input.actionSummaryText,
             characterStateSnapshot: input.characterStateSnapshot,
             worldStateSnapshot: input.worldStateSnapshot,
             groupContext,
