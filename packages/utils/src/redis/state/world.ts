@@ -1,16 +1,15 @@
 import dayjs, { type Dayjs } from "dayjs";
 import { cloneDeep } from "lodash-es";
-import { COAST_VALUABLE_ITEMS, PARK_FRUIT_ITEMS } from "../../constants";
+import { COAST_VALUABLE_ITEMS, PARK_FRUIT_ITEMS } from "../../constants/world/resource";
 import { isDev } from "../../env";
+import type { SummerFestivalState } from "../../types/state";
 import {
-  TEMPERATURE_LEVELS,
-  WEATHER_TYPES,
-  type WeatherSnapshot,
   type WorldSceneResourceState,
   type WorldSceneState,
   type WorldStateData,
   WorldSubScene,
-} from "../../types";
+} from "../../types/state";
+import { TEMPERATURE_LEVELS, WEATHER_TYPES, type WeatherSnapshot } from "../../types/weather";
 import { safeParseJson } from "../../utils";
 import { getRedis, type RedisReadSource, syncRedisStateWrite } from "../client";
 
@@ -18,6 +17,13 @@ export const REDIS_KEY_WORLD_STATE = isDev() ? "dev:yuiju:world:state" : "yuiju:
 
 type InitWorldStateDataOptions = {
   readFrom?: RedisReadSource;
+};
+
+const INITIAL_SUMMER_FESTIVAL_STATE: SummerFestivalState = {
+  scheduledAt: "2026-08-15T18:00:00+08:00",
+  requiredPreparationCount: 10,
+  preparationCount: 0,
+  heldAt: null,
 };
 
 const createInitialSceneResources = (resourceNames: string[]): WorldSceneResourceState[] => {
@@ -147,8 +153,9 @@ export const initWorldStateData = async (
     const time = dayjs();
     const lastAdvancedAt = time.toISOString();
     const scenes = parseWorldScenes(null);
+    const summerFestival = cloneDeep(INITIAL_SUMMER_FESTIVAL_STATE);
     if (readFrom === "sync") {
-      return { time, lastAdvancedAt, weather: null, scenes };
+      return { time, lastAdvancedAt, weather: null, scenes, summerFestival };
     }
 
     const timeValue = time.toISOString();
@@ -157,6 +164,7 @@ export const initWorldStateData = async (
       lastAdvancedAt,
       weather: JSON.stringify(null),
       scenes: JSON.stringify(scenes),
+      summerFestival: JSON.stringify(summerFestival),
     };
     await redis.hset(REDIS_KEY_WORLD_STATE, worldStateFields);
     await syncRedisStateWrite({
@@ -164,7 +172,7 @@ export const initWorldStateData = async (
       key: REDIS_KEY_WORLD_STATE,
       fields: worldStateFields,
     });
-    return { time, lastAdvancedAt, weather: null, scenes };
+    return { time, lastAdvancedAt, weather: null, scenes, summerFestival };
   }
 
   const parsed = dayjs(timeStr);
@@ -172,8 +180,9 @@ export const initWorldStateData = async (
     const time = dayjs();
     const lastAdvancedAt = time.toISOString();
     const scenes = parseWorldScenes(null);
+    const summerFestival = cloneDeep(INITIAL_SUMMER_FESTIVAL_STATE);
     if (readFrom === "sync") {
-      return { time, lastAdvancedAt, weather: null, scenes };
+      return { time, lastAdvancedAt, weather: null, scenes, summerFestival };
     }
 
     const timeValue = time.toISOString();
@@ -182,6 +191,7 @@ export const initWorldStateData = async (
       lastAdvancedAt,
       weather: JSON.stringify(null),
       scenes: JSON.stringify(scenes),
+      summerFestival: JSON.stringify(summerFestival),
     };
     await redis.hset(REDIS_KEY_WORLD_STATE, worldStateFields);
     await syncRedisStateWrite({
@@ -189,7 +199,7 @@ export const initWorldStateData = async (
       key: REDIS_KEY_WORLD_STATE,
       fields: worldStateFields,
     });
-    return { time, lastAdvancedAt, weather: null, scenes };
+    return { time, lastAdvancedAt, weather: null, scenes, summerFestival };
   }
 
   const weather = raw.weather ? parseWeatherSnapshot(safeParseJson(raw.weather)) : null;
@@ -197,12 +207,16 @@ export const initWorldStateData = async (
     ? raw.lastAdvancedAt
     : parsed.toISOString();
   const scenes = parseWorldScenes(raw.scenes ? safeParseJson(raw.scenes) : null);
+  const summerFestival = raw.summerFestival
+    ? (JSON.parse(raw.summerFestival) as SummerFestivalState)
+    : cloneDeep(INITIAL_SUMMER_FESTIVAL_STATE);
 
   return {
     time: parsed,
     lastAdvancedAt,
     weather,
     scenes,
+    summerFestival,
   };
 };
 
@@ -213,6 +227,7 @@ export const saveWorldStateData = async (state: WorldStateData): Promise<void> =
     lastAdvancedAt: state.lastAdvancedAt,
     weather: JSON.stringify(state.weather),
     scenes: JSON.stringify(state.scenes),
+    summerFestival: JSON.stringify(state.summerFestival),
   };
 
   await redis.hset(REDIS_KEY_WORLD_STATE, worldStateFields);
@@ -227,6 +242,7 @@ export class WorldState {
   public time: Dayjs = dayjs();
   public lastAdvancedAt: string = dayjs().toISOString();
   public weather: WeatherSnapshot | null = null;
+  public summerFestival: SummerFestivalState = cloneDeep(INITIAL_SUMMER_FESTIVAL_STATE);
   public scenes: Record<WorldSubScene, WorldSceneState> = {
     [WorldSubScene.House]: {},
     [WorldSubScene.School]: { isOpen: false, changedAt: null },
@@ -259,6 +275,7 @@ export class WorldState {
     this.lastAdvancedAt = data.lastAdvancedAt;
     this.weather = data.weather;
     this.scenes = cloneDeep(data.scenes);
+    this.summerFestival = cloneDeep(data.summerFestival);
   }
 
   async save() {
@@ -267,6 +284,7 @@ export class WorldState {
       lastAdvancedAt: this.lastAdvancedAt,
       weather: this.weather,
       scenes: this.scenes,
+      summerFestival: this.summerFestival,
     });
   }
 
@@ -280,6 +298,7 @@ export class WorldState {
     this.lastAdvancedAt = data.lastAdvancedAt;
     this.weather = data.weather ? cloneDeep(data.weather) : null;
     this.scenes = cloneDeep(data.scenes);
+    this.summerFestival = cloneDeep(data.summerFestival);
     await this.save();
   }
 
@@ -313,6 +332,7 @@ export class WorldState {
     this.time = dayjs();
     this.lastAdvancedAt = this.time.toISOString();
     this.weather = null;
+    this.summerFestival = cloneDeep(INITIAL_SUMMER_FESTIVAL_STATE);
     this.scenes = {
       [WorldSubScene.House]: {},
       [WorldSubScene.School]: { isOpen: false, changedAt: null },
@@ -347,6 +367,7 @@ export class WorldState {
       lastAdvancedAt: this.lastAdvancedAt,
       weather: this.weather,
       scenes: this.scenes,
+      summerFestival: this.summerFestival,
     });
   }
 }

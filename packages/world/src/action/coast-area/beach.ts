@@ -19,6 +19,7 @@ import {
   buildMoodChangeDescription,
   generateActionRandomEvent,
 } from "@/llm/agent/random-event";
+import { notDoneToday } from "../utils";
 
 type CoastWalkTier = {
   durationMin: number;
@@ -42,6 +43,9 @@ const COAST_WALK_TIERS: CoastWalkTier[] = [
 
 const DEFAULT_COAST_WALK_TIER = COAST_WALK_TIERS[1];
 const TRAIN_FARE = 3;
+const SUMMER_FESTIVAL_PREPARATION_DURATION_MIN = 90;
+const SUMMER_FESTIVAL_DURATION_MIN = 180;
+const SUMMER_FESTIVAL_MOOD_GAIN = 20;
 
 /**
  * 判断角色是否位于月汐海岸。
@@ -73,6 +77,112 @@ function resolveCoastWalkTier(llmDurationMin?: number): CoastWalkTier {
 }
 
 export const coastAction: ActionMetadata[] = [
+  {
+    action: ActionId.Help_Prepare_Summer_Festival,
+    description:
+      "在月汐海岸帮忙准备8月15日晚上的夏日祭。每天只能帮忙一次，总共完成10次准备后夏日祭才能举行。[体力-12][饱腹-8][耗时90分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
+    precondition(context) {
+      const festival = context.worldState.summerFestival;
+      const preparationEndsAt = context.worldState.time.add(
+        SUMMER_FESTIVAL_PREPARATION_DURATION_MIN,
+        "minute",
+      );
+
+      return allTrue([
+        () => isAtCoast(context),
+        () => festival.preparationCount < festival.requiredPreparationCount,
+        () => preparationEndsAt.valueOf() <= Date.parse(festival.scheduledAt),
+        () => notDoneToday(context, ActionId.Help_Prepare_Summer_Festival),
+        () => context.characterStateData.stamina >= 12,
+        () => context.characterStateData.satiety >= 8,
+      ]);
+    },
+    async executor(context) {
+      await context.characterState.setAction(ActionId.Help_Prepare_Summer_Festival);
+    },
+    async completionEvent(context) {
+      await context.characterState.changeStamina(-12);
+      await context.characterState.changeSatiety(-8);
+      await context.characterState.markActionDoneToday(ActionId.Help_Prepare_Summer_Festival);
+      await worldStateRunner.consumeCommandsAndRunTick([
+        {
+          type: "advance_summer_festival_preparation",
+        },
+      ]);
+
+      const festival = (await context.worldState.getData()).summerFestival;
+      context.runtimeState.actionSummaryText = `悠酱在月汐海岸帮忙准备了90分钟夏日祭，消耗了12点体力和8点饱腹，准备进度推进到了${festival.preparationCount}/${festival.requiredPreparationCount}`;
+
+      return {
+        completionContext: {
+          preparationCount: festival.preparationCount,
+          requiredPreparationCount: festival.requiredPreparationCount,
+          staminaChange: -12,
+          satietyChange: -8,
+        },
+      };
+    },
+    durationMin: SUMMER_FESTIVAL_PREPARATION_DURATION_MIN,
+  },
+  {
+    action: ActionId.Attend_Summer_Festival,
+    description:
+      "参加在月汐海岸举行的夏日祭，感受灯火、摊位与海风交织的夏夜。[心情基础恢复+20][耗时180分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
+    precondition(context) {
+      const festival = context.worldState.summerFestival;
+      const scheduledAt = Date.parse(festival.scheduledAt);
+      const festivalEveningEndsAt = scheduledAt + 4 * 60 * 60 * 1000;
+
+      return allTrue([
+        () => isAtCoast(context),
+        () => festival.preparationCount === festival.requiredPreparationCount,
+        () => festival.heldAt === null,
+        () => context.worldState.time.valueOf() >= scheduledAt,
+        () => context.worldState.time.valueOf() < festivalEveningEndsAt,
+      ]);
+    },
+    async executor(context) {
+      await context.characterState.setAction(ActionId.Attend_Summer_Festival);
+      const heldAt = context.worldState.summerFestival.scheduledAt;
+      await worldStateRunner.consumeCommandsAndRunTick([
+        {
+          type: "hold_summer_festival",
+          heldAt,
+        },
+      ]);
+
+      return {
+        startContext: {
+          heldAt,
+        },
+      };
+    },
+    async completionEvent(context, runningAction) {
+      const festivalContext = runningAction.startContext as {
+        heldAt: string;
+      };
+      const actualMoodGain = await context.characterState.recoverMood(SUMMER_FESTIVAL_MOOD_GAIN);
+
+      context.runtimeState.actionSummaryText = `悠酱在月汐海岸参加了180分钟的夏日祭，在灯火、摊位和海风交织的夏夜里度过了祭典，${buildMoodChangeDescription(actualMoodGain)}`;
+
+      return {
+        completionContext: {
+          heldAt: festivalContext.heldAt,
+          actionMoodChange: {
+            base: SUMMER_FESTIVAL_MOOD_GAIN,
+            actual: actualMoodGain,
+          },
+        },
+      };
+    },
+    durationMin: SUMMER_FESTIVAL_DURATION_MIN,
+  },
   {
     action: ActionId.Walk_In_Coast,
     description:

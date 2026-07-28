@@ -158,9 +158,17 @@ export interface WorldSceneState {
   resources?: WorldSceneResourceState[];
 }
 
+export interface SummerFestivalState {
+  scheduledAt: string;
+  requiredPreparationCount: number;
+  preparationCount: number;
+  heldAt: string | null;
+}
+
 export interface WorldStateData {
   time: Dayjs;
   lastAdvancedAt: string;
   weather: WeatherSnapshot | null;
   scenes: Record<WorldSubScene, WorldSceneState>;
+  summerFestival: SummerFestivalState;
 }

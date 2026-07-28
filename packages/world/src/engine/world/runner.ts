@@ -1,16 +1,13 @@
-import type { WorldStateData } from "@yuiju/utils";
+import type { WorldStateData } from "@yuiju/utils/types/state";
 import dayjs from "dayjs";
 import { cloneDeep } from "lodash-es";
-import { worldState } from "@/state";
+import { worldState } from "@/state/index";
 import { logger } from "@/utils/logger";
 import type { WorldCommand } from "./command";
-import {
-  ResourceEvolution,
-  SceneEvolution,
-  WeatherEvolution,
-  type WorldAdvanceContext,
-  type WorldEvolution,
-} from "./evolution";
+import { ResourceEvolution } from "./evolution/resource-evolution";
+import { SceneEvolution } from "./evolution/scene-evolution";
+import { WeatherEvolution } from "./evolution/weather-evolution";
+import type { WorldAdvanceContext, WorldEvolution } from "./evolution/world-evolution";
 
 const WORLD_TICK_INTERVAL_MS = 60_000;
 
@@ -124,20 +121,32 @@ export class WorldStateRunner {
     const nextState = cloneDeep(state);
 
     for (const command of commands) {
-      const scene = nextState.scenes[command.scene];
-      const resource = scene.resources?.find((item) => item.name === command.resource);
-
-      if (!resource) {
-        throw new Error(`World resource not found: ${command.scene}.${command.resource}`);
+      if (command.type === "advance_summer_festival_preparation") {
+        nextState.summerFestival.preparationCount += 1;
+        continue;
       }
 
-      if (command.amount <= 0 || resource.amount < command.amount) {
-        throw new Error(
-          `Invalid world resource consumption: ${command.scene}.${command.resource} ${command.amount}`,
-        );
+      if (command.type === "hold_summer_festival") {
+        nextState.summerFestival.heldAt = command.heldAt;
+        continue;
       }
 
-      resource.amount -= command.amount;
+      if (command.type === "consume_scene_resource") {
+        const scene = nextState.scenes[command.scene];
+        const resource = scene.resources?.find((item) => item.name === command.resource);
+
+        if (!resource) {
+          throw new Error(`World resource not found: ${command.scene}.${command.resource}`);
+        }
+
+        if (command.amount <= 0 || resource.amount < command.amount) {
+          throw new Error(
+            `Invalid world resource consumption: ${command.scene}.${command.resource} ${command.amount}`,
+          );
+        }
+
+        resource.amount -= command.amount;
+      }
     }
 
     return nextState;
