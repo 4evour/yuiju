@@ -22,8 +22,7 @@ import {
   buildCompletedBehaviorEpisodeUpdate,
   buildRunningBehaviorEpisode,
 } from "@/memory/episode-builder";
-import { characterState } from "@/state/character-state";
-import { worldState } from "@/state/world-state";
+import { characterState, worldState } from "@/state";
 import { logger } from "@/utils/logger";
 import { scheduleActionCompletionProactiveShare } from "./proactive-message";
 
@@ -261,7 +260,6 @@ export async function recoverRunningAction(context?: ActionContext): Promise<str
     actionMetadata,
     runningAction,
     eventDescription: completionResult?.eventDescription,
-    completionContext: completionResult?.completionContext,
     characterStateSnapshot: context.characterStateData,
     worldStateSnapshot: context.worldState.log(),
   });

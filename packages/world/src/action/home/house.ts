@@ -60,7 +60,7 @@ export const homeAction: ActionMetadata[] = [
   },
   {
     action: ActionId.Sleep_For_A_Little,
-    description: "再睡一会。[心情+1][耗时10分钟]",
+    description: "再睡一会。[心情基础恢复+1][耗时10分钟]",
     proactiveShare: {
       enabled: true,
     },
@@ -72,7 +72,7 @@ export const homeAction: ActionMetadata[] = [
       await context.characterState.setAction(ActionId.Sleep_For_A_Little);
     },
     async completionEvent(context) {
-      await context.characterState.changeMood(1);
+      await context.characterState.recoverMood(1);
       return { eventDescription: "闹钟响了，稍微多睡了一会儿" };
     },
     durationMin: 10,
@@ -245,7 +245,7 @@ export const homeAction: ActionMetadata[] = [
   {
     action: ActionId.Cook_And_Eat_At_Home,
     description:
-      "在家做饭吃，从背包中选择至少一种不同食材。[体力+?][饱腹+?][心情+?][耗时30分钟]（可调用 queryAvailableInventoryItems 查询可用食材）",
+      "在家做饭吃，从背包中选择至少一种不同食材。[体力+?][饱腹+?][心情基础恢复+?][耗时30分钟]（可调用 queryAvailableInventoryItems 查询可用食材）",
     proactiveShare: {
       enabled: true,
     },
@@ -339,7 +339,7 @@ export const homeAction: ActionMetadata[] = [
 
       await context.characterState.changeStamina(stamina);
       await context.characterState.changeSatiety(satiety);
-      await context.characterState.changeMood(mood);
+      const actualMoodGain = await context.characterState.recoverMood(mood);
 
       return {
         completionContext: {
@@ -348,7 +348,8 @@ export const homeAction: ActionMetadata[] = [
             description: cookingContext.cookedMealDescription,
             stamina,
             satiety,
-            mood,
+            baseMoodGain: mood,
+            mood: actualMoodGain,
           },
           ingredients: cookingContext.ingredients,
         },
@@ -358,7 +359,7 @@ export const homeAction: ActionMetadata[] = [
   },
   {
     action: ActionId.Stay_At_Home,
-    description: "待在家中，放松、学习。[体力+20][饱腹-10][心情+5][耗时60分钟]",
+    description: "待在家中，放松、学习。[体力+20][饱腹-10][心情基础恢复+5][耗时60分钟]",
     proactiveShare: {
       enabled: true,
     },
@@ -377,7 +378,7 @@ export const homeAction: ActionMetadata[] = [
       await context.characterState.setAction(ActionId.Stay_At_Home);
       await context.characterState.changeStamina(20);
       await context.characterState.changeSatiety(-10);
-      await context.characterState.changeMood(5);
+      await context.characterState.recoverMood(5);
     },
     durationMin: 60,
   },
@@ -443,7 +444,7 @@ export const homeAction: ActionMetadata[] = [
     async completionEvent(context) {
       await context.characterState.setStamina(85);
       await context.characterState.setSatiety(20);
-      await context.characterState.changeMood(2);
+      await context.characterState.recoverMood(2);
       return { eventDescription: "闹钟响了，睡醒了" };
     },
   },

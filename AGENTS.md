@@ -33,6 +33,7 @@
 - `@yuiju/message` 负责外部消息通信。
 - `@yuiju/web` 提供状态与世界运行的可视化界面。
 - `@yuiju/utils` 存放通用类型、配置、数据库、LLM、记忆与提示词能力。
+- 模块导入必须使用能够直接定位声明文件的具体路径，不要通过包根入口或 barrel index 间接导入。
 - LLM 提示词应集中维护在 `@yuiju/utils/src/prompt/`；无参数静态提示词优先导出常量，业务包只组合上下文。
 - 业务配置统一来自根目录 `yuiju.config.ts`，不要新增分散的隐式配置来源。
 - `NODE_ENV` 仍然是运行时环境变量，不放进 `yuiju.config.ts`。

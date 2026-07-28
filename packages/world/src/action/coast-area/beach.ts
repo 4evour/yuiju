@@ -69,7 +69,7 @@ export const coastAction: ActionMetadata[] = [
   {
     action: ActionId.Walk_In_Coast,
     description:
-      "在月汐海岸散步放松，可以按 10/30/60/120 分钟四档安排时长，时间越久心情提升越多。散步时可能会捡到海岸的高价值物品。[耗时需要给出]",
+      "在月汐海岸散步放松，可以按 10/30/60/120 分钟四档安排时长，时间越久基础心情恢复越多。散步时可能会捡到海岸的高价值物品。[耗时需要给出]",
     proactiveShare: {
       enabled: true,
     },
@@ -129,7 +129,7 @@ export const coastAction: ActionMetadata[] = [
         );
       }
 
-      await context.characterState.changeMood(walkContext.moodGain);
+      const actualMoodGain = await context.characterState.recoverMood(walkContext.moodGain);
 
       const collectedItemText =
         collectedResources.length > 0
@@ -141,12 +141,14 @@ export const coastAction: ActionMetadata[] = [
       return {
         completionContext: {
           ...walkContext,
+          baseMoodGain: walkContext.moodGain,
+          moodGain: actualMoodGain,
           collectedItems: collectedResources.map((resource) => ({
             name: resource.name,
             quantity: resource.amount,
           })),
         },
-        eventDescription: `在月汐海岸散步了${walkContext.durationMin}分钟，心情提升了${walkContext.moodGain}点${collectedItemText}`,
+        eventDescription: `在月汐海岸散步了${walkContext.durationMin}分钟，心情提升了${actualMoodGain}点${collectedItemText}`,
       };
     },
     async durationMin(_context, selectedAction?: ActionAgentDecision) {

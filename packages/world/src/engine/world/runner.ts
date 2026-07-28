@@ -1,7 +1,7 @@
 import type { WorldStateData } from "@yuiju/utils";
 import dayjs from "dayjs";
 import { cloneDeep } from "lodash-es";
-import { worldState } from "@/state/world-state";
+import { worldState } from "@/state";
 import { logger } from "@/utils/logger";
 import type { WorldCommand } from "./command";
 import {

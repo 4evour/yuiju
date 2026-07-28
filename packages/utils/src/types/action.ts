@@ -1,5 +1,7 @@
+import type { CharacterState } from "../redis/state/character";
+import type { WorldState } from "../redis/state/world";
 import type { AgentPlanChange } from "./plan";
-import type { CharacterStateData, ICharacterState, IWorldState, RunningActionState } from "./state";
+import type { CharacterStateData, RunningActionState } from "./state";
 
 export enum ActionId {
   /** 起床 */
@@ -139,9 +141,9 @@ export enum ActionId {
 }
 
 export interface ActionContext {
-  characterState: ICharacterState;
+  characterState: CharacterState;
   characterStateData: CharacterStateData;
-  worldState: IWorldState;
+  worldState: WorldState;
   runtimeState: {
     actionStartedAt: Date;
     actionEndedAt?: Date;

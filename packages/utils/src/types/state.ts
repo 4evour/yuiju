@@ -72,7 +72,7 @@ export type InventoryItemMetadata = {
   stamina?: number;
   /** 饱腹度恢复值，直接食用和作为食材时共用同一数值 */
   satiety?: number;
-  /** 心情恢复值，直接食用和作为食材时共用同一数值 */
+  /** 基础心情恢复值，直接食用和作为食材时共用同一数值 */
   mood?: number;
 };
 
@@ -143,50 +143,6 @@ export interface CharacterStateData {
   runningAction: RunningActionState | null;
 }
 
-export interface ICharacterState {
-  /** 读取当前 Redis 中的角色实时状态。 */
-  getData(): Promise<CharacterStateData>;
-  setAction(action: ActionId): Promise<void>;
-  /** 设置体力值 */
-  setStamina(stamina: number): Promise<void>;
-  setSatiety(satiety: number): Promise<void>;
-  setMood(mood: number): Promise<void>;
-  setLocation(location: Location): Promise<void>;
-  /** 改变体力值 */
-  changeStamina(delta: number): Promise<void>;
-  changeSatiety(delta: number): Promise<void>;
-  changeMood(delta: number): Promise<void>;
-  /** 改变金钱 */
-  changeMoney(delta: number): Promise<void>;
-  /** 设置手机电量百分比 */
-  setPhoneBattery(phoneBattery: number): Promise<void>;
-  /** 改变手机电量百分比 */
-  changePhoneBattery(delta: number): Promise<void>;
-  /** 标记该动作已在今天执行 */
-  markActionDoneToday(action: ActionId): Promise<void>;
-  /** 清空今日动作 */
-  clearDailyActions(): Promise<void>;
-  /**
-   * 写入运行中的 action 等待上下文。
-   *
-   * 该上下文会在 action 执行完成、进入等待前落盘，
-   * 供程序重启后恢复剩余等待时间。
-   */
-  setRunningAction(runningAction: RunningActionState): Promise<void>;
-  /** 清除运行中的 action 等待上下文。 */
-  clearRunningAction(): Promise<void>;
-  /** 获取当前运行中的 action 等待上下文。 */
-  getRunningAction(): Promise<RunningActionState | null>;
-
-  /** 背包管理方法 */
-  /** 添加物品到背包 */
-  addItem(item: Omit<InventoryItem, "quantity">, quantity?: number): Promise<void>;
-  /** 消费背包中的物品 */
-  consumeItem(itemName: string, quantity?: number): Promise<boolean>;
-  /** 获取背包中指定物品的数量 */
-  getItemQuantity(itemName: string): Promise<number>;
-}
-
 export interface WorldSceneResourceState {
   name: string;
   amount: number;
@@ -207,14 +163,4 @@ export interface WorldStateData {
   lastAdvancedAt: string;
   weather: WeatherSnapshot | null;
   scenes: Record<WorldSubScene, WorldSceneState>;
-}
-
-export interface IWorldState extends WorldStateData {
-  getData(): Promise<WorldStateData>;
-  setData(data: WorldStateData): Promise<void>;
-  log(): WorldStateData;
-  updateTime(newTime?: Dayjs): Promise<void>;
-  setWeather(snapshot: WeatherSnapshot): Promise<void>;
-  getWeather(): WeatherSnapshot | null;
-  reset(): Promise<void>;
 }

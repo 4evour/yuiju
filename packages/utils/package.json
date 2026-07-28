@@ -6,7 +6,7 @@
   "main": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./env": "./src/env.ts"
+    "./*": "./src/*.ts"
   },
   "scripts": {
     "test": "NODE_ENV=development vitest run",

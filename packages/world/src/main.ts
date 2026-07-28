@@ -1,4 +1,3 @@
-import "@yuiju/utils/env";
 import process from "node:process";
 import { connectDB } from "@yuiju/utils";
 import { startRealtimeLoop } from "@/engine/runner";

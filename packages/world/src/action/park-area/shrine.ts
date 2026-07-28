@@ -26,7 +26,7 @@ export const shrineAction: ActionMetadata[] = [
   {
     action: ActionId.Pray_At_Shrine,
     description:
-      "在结灯神社参拜，并由内心决定是否投币祈愿；若投币，会向神明说出一句愿望。[心情+?][耗时10分钟]",
+      "在结灯神社参拜，并由内心决定是否投币祈愿；若投币，会向神明说出一句愿望。[心情基础恢复+?][耗时10分钟]",
     proactiveShare: {
       enabled: true,
     },
@@ -77,20 +77,28 @@ export const shrineAction: ActionMetadata[] = [
         moodGain: number;
       };
 
-      await context.characterState.changeMood(prayContext.moodGain);
+      const actualMoodGain = await context.characterState.recoverMood(prayContext.moodGain);
 
       if (prayContext.shouldOffer) {
         return {
-          completionContext: prayContext,
+          completionContext: {
+            ...prayContext,
+            baseMoodGain: prayContext.moodGain,
+            moodGain: actualMoodGain,
+          },
           eventDescription: prayContext.wish
-            ? `在结灯神社祈愿“${prayContext.wish}”，心情提升了${prayContext.moodGain}点`
-            : `在结灯神社认真祈愿，心情提升了${prayContext.moodGain}点`,
+            ? `在结灯神社祈愿“${prayContext.wish}”，心情提升了${actualMoodGain}点`
+            : `在结灯神社认真祈愿，心情提升了${actualMoodGain}点`,
         };
       }
 
       return {
-        completionContext: prayContext,
-        eventDescription: `在结灯神社认真参拜，心情提升了${prayContext.moodGain}点`,
+        completionContext: {
+          ...prayContext,
+          baseMoodGain: prayContext.moodGain,
+          moodGain: actualMoodGain,
+        },
+        eventDescription: `在结灯神社认真参拜，心情提升了${actualMoodGain}点`,
       };
     },
     durationMin: 10,

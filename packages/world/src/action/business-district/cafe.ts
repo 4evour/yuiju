@@ -34,7 +34,7 @@ function formatCoffeeDescription(coffee: CafeCoffee) {
     description.push(`[饱腹+${coffee.satiety}]`);
   }
   if (coffee.mood) {
-    description.push(`[心情+${coffee.mood}]`);
+    description.push(`[心情基础恢复+${coffee.mood}]`);
   }
 
   return `${coffee.description}${description.join("")}`;
@@ -48,7 +48,7 @@ function isCafeWorkTimeWithAtLeastOneHourLeft(time: { hour: () => number; minute
 export const cafeAction: ActionMetadata[] = [
   {
     action: ActionId.Drink_Coffee,
-    description: "在薄暮咖啡点咖啡并店内饮用。[金币-?][体力+?][饱腹+?][心情+?][耗时30分钟]",
+    description: "在薄暮咖啡点咖啡并店内饮用。[金币-?][体力+?][饱腹+?][心情基础恢复+?][耗时30分钟]",
     proactiveShare: {
       enabled: false,
     },
@@ -126,13 +126,17 @@ export const cafeAction: ActionMetadata[] = [
         await context.characterState.changeSatiety(coffeeContext.satiety);
         result.push(`[饱腹+${coffeeContext.satiety}]`);
       }
+      let actualMoodGain = 0;
       if (coffeeContext.mood !== 0) {
-        await context.characterState.changeMood(coffeeContext.mood);
-        result.push(`[心情+${coffeeContext.mood}]`);
+        actualMoodGain = await context.characterState.recoverMood(coffeeContext.mood);
+        result.push(`[心情+${actualMoodGain}]`);
       }
 
       return {
-        completionContext: coffeeContext,
+        completionContext: {
+          ...coffeeContext,
+          actualMoodGain,
+        },
         eventDescription: `在薄暮咖啡喝完了${coffeeContext.coffeeName}${result.join(",")}`,
       };
     },

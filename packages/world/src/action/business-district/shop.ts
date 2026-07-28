@@ -37,7 +37,7 @@ function formatProductDescription(product: ShopProduct) {
   }
 
   if (product.mood) {
-    description.push(`[心情+${product.mood}]`);
+    description.push(`[心情基础恢复+${product.mood}]`);
   }
 
   return `${product.description}${description.join("")}`;

@@ -108,22 +108,24 @@ export const anywhereAction: ActionMetadata[] = [
         phoneText = "手机里没有能完成这件事的应用程序。";
       }
 
-      context.runtimeState.actionSummaryText = phoneContext.isValidIntent
-        ? [`悠酱使用完手机里的「${phoneContext.phoneApplication}」`, phoneText].join("；")
-        : ["悠酱看了看手机", phoneText].join("；");
+      const eventDescription = phoneContext.isValidIntent
+        ? `使用完手机里的「${phoneContext.phoneApplication}」；${phoneText}`
+        : `看了看手机；${phoneText}`;
+      context.runtimeState.actionSummaryText = `悠酱${eventDescription}`;
 
       return {
         completionContext: {
           ...phoneContext,
           phoneText,
         },
+        eventDescription,
       };
     },
   },
   {
     action: ActionId.Eat_Item,
     description:
-      "吃食物。[体力+?][饱腹+?][心情+?][耗时10分钟]（可调用 queryAvailableInventoryItems 查看可用食物）",
+      "吃食物。[体力+?][饱腹+?][心情基础恢复+?][耗时10分钟]（可调用 queryAvailableInventoryItems 查看可用食物）",
     proactiveShare: {
       enabled: true,
     },
@@ -241,12 +243,17 @@ export const anywhereAction: ActionMetadata[] = [
       if (totalSatiety !== 0) {
         await context.characterState.changeSatiety(totalSatiety);
       }
+      let actualMoodGain = 0;
       if (totalMood !== 0) {
-        await context.characterState.changeMood(totalMood);
+        actualMoodGain = await context.characterState.recoverMood(totalMood);
       }
 
       return {
-        completionContext: eatContext,
+        completionContext: {
+          ...eatContext,
+          baseMoodGain: totalMood,
+          actualMoodGain,
+        },
         eventDescription: `吃完了${eatContext.eatenFood.map((food) => `${food.name}${food.quantity}个`).join("，")}`,
       };
     },

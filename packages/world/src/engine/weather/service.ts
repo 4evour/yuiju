@@ -1,7 +1,7 @@
-import { type IWorldState, isDev, saveMemoryEpisode, type WeatherSnapshot } from "@yuiju/utils";
+import { isDev, saveMemoryEpisode, type WeatherSnapshot, type WorldState } from "@yuiju/utils";
 import dayjs from "dayjs";
 import { buildWeatherChangedEpisode } from "@/memory/episode-builder";
-import { worldState } from "@/state/world-state";
+import { worldState } from "@/state";
 import { logger } from "@/utils/logger";
 import { WEATHER_PERIOD_HOURS } from "./constants";
 import { generateWeatherSnapshot } from "./generator";
@@ -16,7 +16,7 @@ export interface WeatherSyncResult {
 
 interface SyncWeatherOptions {
   now?: Date;
-  state?: Pick<IWorldState, "getWeather" | "setWeather">;
+  state?: Pick<WorldState, "getWeather" | "setWeather">;
   emitEpisode?: typeof saveMemoryEpisode;
   isDev?: boolean;
 }

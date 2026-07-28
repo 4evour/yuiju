@@ -33,7 +33,7 @@ function formatDinerMealDescription(meal: DinerMeal) {
     description.push(`[饱腹+${meal.satiety}]`);
   }
   if (meal.mood) {
-    description.push(`[心情+${meal.mood}]`);
+    description.push(`[心情基础恢复+${meal.mood}]`);
   }
 
   return `${meal.description}${description.join("")}`;
@@ -42,7 +42,7 @@ function formatDinerMealDescription(meal: DinerMeal) {
 export const dinerAction: ActionMetadata[] = [
   {
     action: ActionId.Eat_At_Diner,
-    description: "在日和食堂店内就餐。[金币-?][体力+?][饱腹+?][心情+?][耗时20分钟]",
+    description: "在日和食堂店内就餐。[金币-?][体力+?][饱腹+?][心情基础恢复+?][耗时20分钟]",
     proactiveShare: {
       enabled: true,
     },
@@ -118,13 +118,17 @@ export const dinerAction: ActionMetadata[] = [
         await context.characterState.changeSatiety(mealContext.satiety);
         result.push(`[饱腹+${mealContext.satiety}]`);
       }
+      let actualMoodGain = 0;
       if (mealContext.mood !== 0) {
-        await context.characterState.changeMood(mealContext.mood);
-        result.push(`[心情+${mealContext.mood}]`);
+        actualMoodGain = await context.characterState.recoverMood(mealContext.mood);
+        result.push(`[心情+${actualMoodGain}]`);
       }
 
       return {
-        completionContext: mealContext,
+        completionContext: {
+          ...mealContext,
+          actualMoodGain,
+        },
         eventDescription: `在日和食堂吃完了${mealContext.mealName}${result.join(",")}`,
       };
     },

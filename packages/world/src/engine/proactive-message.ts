@@ -10,16 +10,17 @@ import {
   buildProactiveGroupMessagePrompt,
   type CharacterStateData,
   chatModel,
-  chatReplyRulesPrompt,
   createToolCallLoggingHooks,
+  diarySearchTool,
   generateStructuredOutput,
   getCharacterCardPrompt,
   getYuijuConfig,
   messageHistorySchemaPrompt,
   type RunningActionState,
+  todayEventSearchTool,
   type WorldStateData,
 } from "@yuiju/utils";
-import { Output } from "ai";
+import { Output, stepCountIs } from "ai";
 import { z } from "zod";
 import { type InternalMessagePlatform, internalMessageApi } from "@/api/internal-message-api";
 import { logger } from "@/utils/logger";
@@ -28,7 +29,6 @@ interface ScheduleActionCompletionProactiveShareInput {
   actionMetadata: ActionMetadata;
   runningAction: RunningActionState;
   eventDescription?: string;
-  completionContext?: Record<string, unknown>;
   characterStateSnapshot: CharacterStateData;
   worldStateSnapshot: WorldStateData;
 }
@@ -87,7 +87,7 @@ async function shareActionCompletionToGroup(
     const groupContext = await internalMessageApi.getGroupContext(
       target.platform,
       target.groupId,
-      5,
+      10,
     );
     const result = await generateStructuredOutput({
       model: chatModel,
@@ -99,7 +99,6 @@ async function shareActionCompletionToGroup(
       instructions: [
         getCharacterCardPrompt(),
         messageHistorySchemaPrompt,
-        chatReplyRulesPrompt,
         stickers.promptSection,
       ].join("\n\n"),
       messages: [
@@ -109,13 +108,17 @@ async function shareActionCompletionToGroup(
             action: input.runningAction.action,
             shareReason: input.shareReason,
             eventDescription: input.eventDescription,
-            completionContext: input.completionContext,
             characterStateSnapshot: input.characterStateSnapshot,
             worldStateSnapshot: input.worldStateSnapshot,
             groupContext,
           }),
         },
       ],
+      tools: {
+        todayEventSearch: todayEventSearchTool,
+        diarySearch: diarySearchTool,
+      },
+      stopWhen: stepCountIs(20),
       ...createToolCallLoggingHooks({
         scene: "world.llm.proactive-message",
       }),
