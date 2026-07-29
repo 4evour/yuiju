@@ -12,6 +12,7 @@ import {
   DEFAULT_ACTIVITY_QUERY_FILTERS,
 } from "./activity-data";
 import { ActivityDetailPreviewCard } from "./activity-detail-preview-card";
+import { ActivityObservationCard } from "./activity-observation-card";
 import { ActivityTimelineCard } from "./activity-timeline-card";
 
 const DEFAULT_PAGE = 1;
@@ -72,6 +73,7 @@ const parseEpisodeTypeFilter = (
 type ActivityClientShellProps = {
   showCareCard: boolean;
   showConversationFilter: boolean;
+  summaryEditable: boolean;
 };
 
 /**
@@ -84,6 +86,7 @@ type ActivityClientShellProps = {
 export function ActivityClientShell({
   showCareCard,
   showConversationFilter,
+  summaryEditable,
 }: ActivityClientShellProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -164,7 +167,7 @@ export function ActivityClientShell({
   };
 
   return (
-    <div className="grid grid-cols-[1fr_360px] max-[1020px]:grid-cols-1 gap-[14px] items-start mt-4.5">
+    <div className="grid grid-cols-[1fr_390px] max-[1020px]:grid-cols-1 gap-[14px] items-start mt-4.5">
       <ActivityTimelineCard
         events={events}
         isLoading={isBusy}
@@ -180,6 +183,13 @@ export function ActivityClientShell({
       <div className="grid gap-[14px]">
         {showCareCard ? <ActivityCareCard /> : null}
         <ActivityDetailPreviewCard event={selectedEvent} />
+        {selectedEvent?.observationCard ? (
+          <ActivityObservationCard
+            key={selectedEvent.id}
+            data={selectedEvent.observationCard}
+            summaryEditable={summaryEditable}
+          />
+        ) : null}
       </div>
     </div>
   );

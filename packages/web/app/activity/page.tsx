@@ -21,6 +21,7 @@ export default function ActivityPage() {
         <ActivityClientShell
           showCareCard={showCareCard}
           showConversationFilter={!publicDeployment}
+          summaryEditable={!publicDeployment}
         />
       </Suspense>
     </main>

@@ -3,6 +3,7 @@ import type { ActivityItem } from "@/lib/activity/activity-view";
 export type {
   ActivityDetailField,
   ActivityItem,
+  ActivityObservationCard,
   ActivityTrigger,
 } from "@/lib/activity/activity-view";
 

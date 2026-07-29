@@ -1,4 +1,5 @@
-import { formatProjectTime, type IMemoryEpisode } from "@yuiju/utils";
+import type { IMemoryEpisode } from "@yuiju/utils/db/schema/memory-episode.schema";
+import { formatProjectTime } from "@yuiju/utils/time";
 
 export type ActivityTrigger = "agent" | "user" | "system";
 
@@ -20,6 +21,18 @@ export interface ActivityItem {
   source: IMemoryEpisode["source"];
   detailFields: ActivityDetailField[];
   payloadPreview: string;
+  observationCard?: ActivityObservationCard;
+}
+
+export interface ActivityObservationCard {
+  action: string;
+  summary: string;
+  reason: string;
+  durationMinutes: number;
+  location: string;
+  happenedAt: string;
+  period: "day" | "night";
+  downloadFileName: string;
 }
 
 /**
@@ -59,6 +72,32 @@ export function mapEpisodeToActivityItem(episode: IMemoryEpisode): ActivityItem 
       null,
       2,
     ),
+    observationCard: buildActivityObservationCard(episode),
+  };
+}
+
+function buildActivityObservationCard(
+  episode: IMemoryEpisode,
+): ActivityObservationCard | undefined {
+  const payload = getPayloadObject(episode);
+  if (episode.type !== "behavior" || payload.status !== "completed") {
+    return undefined;
+  }
+
+  const location = getNestedObject(payload.location);
+  const happenedAt = formatProjectTime(episode.happenedAt, "YYYY.MM.DD HH:mm");
+  const hour = Number(formatProjectTime(episode.happenedAt, "HH"));
+  const action = String(payload.action);
+
+  return {
+    action,
+    summary: episode.summaryText,
+    reason: String(payload.reason),
+    durationMinutes: Number(payload.durationMinutes),
+    location: `${String(location.major)} · ${String(location.minor)}`,
+    happenedAt,
+    period: hour >= 6 && hour < 18 ? "day" : "night",
+    downloadFileName: `${formatProjectTime(episode.happenedAt, "YYYY-MM-DD")}-${action}.png`,
   };
 }
 
