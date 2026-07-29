@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
-import type { TemperatureLevel, WeatherSnapshot, WeatherType } from "@yuiju/utils";
+import { formatProjectTime } from "@yuiju/utils/time";
+import type { TemperatureLevel, WeatherSnapshot, WeatherType } from "@yuiju/utils/types/weather";
 import {
   MONTHLY_TEMPERATURE_WEIGHTS,
   MONTHLY_WEATHER_WEIGHTS,
@@ -10,6 +11,8 @@ import type { WeatherPeriod } from "./time";
 type Season = "spring" | "summer" | "autumn" | "winter";
 type Rng = () => number;
 type WeightedMap<TValue extends string> = Record<TValue, number>;
+
+const SUMMER_FESTIVAL_DATE = "2026-08-15";
 
 export interface GenerateWeatherSnapshotInput {
   period: WeatherPeriod;
@@ -29,7 +32,10 @@ export function generateWeatherSnapshot(input: GenerateWeatherSnapshotInput): We
     buildWeatherSeed(input.period.startAt.toISOString(), input.previousWeather),
   );
   const season = resolveSeason(input.period.month);
-  const weatherType = generateWeatherType(season, input.previousWeather?.type, range);
+  const weatherType =
+    formatProjectTime(input.period.startAt, "YYYY-MM-DD") === SUMMER_FESTIVAL_DATE
+      ? "晴"
+      : generateWeatherType(season, input.previousWeather?.type, range);
   const temperatureLevel = generateTemperatureLevel(input.period.month, weatherType, range);
 
   return {
