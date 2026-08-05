@@ -20,7 +20,7 @@ function isAtTrainStation(context: ActionContext) {
 export const trainStationAction: ActionMetadata[] = [
   {
     action: ActionId.Go_To_Shop_From_Train_Station,
-    description: "从羽浦町站前往小町商店。[体力-1][饱腹-1][耗时5分钟]",
+    description: "从羽浦站前往小町商店。[体力-1][饱腹-1][耗时5分钟]",
     proactiveShare: {
       enabled: true,
     },
@@ -40,7 +40,7 @@ export const trainStationAction: ActionMetadata[] = [
   },
   {
     action: ActionId.Go_To_Supermarket_From_Train_Station,
-    description: "从羽浦町站前往超市。[体力-1][饱腹-1][耗时5分钟]",
+    description: "从羽浦站前往超市。[体力-1][饱腹-1][耗时5分钟]",
     proactiveShare: {
       enabled: true,
     },
@@ -60,7 +60,7 @@ export const trainStationAction: ActionMetadata[] = [
   },
   {
     action: ActionId.Go_To_Diner_From_Train_Station,
-    description: "从羽浦町站前往日和食堂。[体力-1][饱腹-1][耗时5分钟]",
+    description: "从羽浦站前往日和食堂。[体力-1][饱腹-1][耗时5分钟]",
     proactiveShare: {
       enabled: true,
     },
@@ -80,7 +80,7 @@ export const trainStationAction: ActionMetadata[] = [
   },
   {
     action: ActionId.Go_To_Cafe_From_Train_Station,
-    description: "从羽浦町站前往薄暮咖啡。[体力-1][饱腹-1][耗时5分钟]",
+    description: "从羽浦站前往薄暮咖啡。[体力-1][饱腹-1][耗时5分钟]",
     proactiveShare: {
       enabled: true,
     },
@@ -100,7 +100,7 @@ export const trainStationAction: ActionMetadata[] = [
   },
   {
     action: ActionId.Take_Train_To_Coast_From_Train_Station,
-    description: "从羽浦町站乘电车前往月汐海岸。[金币-3][体力-7][饱腹-5][耗时15分钟]",
+    description: "从羽浦站乘电车前往月汐海岸。[金币-3][体力-7][饱腹-5][耗时15分钟]",
     proactiveShare: {
       enabled: true,
     },

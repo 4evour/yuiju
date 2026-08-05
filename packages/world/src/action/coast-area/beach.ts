@@ -170,7 +170,7 @@ export const coastAction: ActionMetadata[] = [
       const actualMoodGain = await context.characterState.recoverMood(SUMMER_FESTIVAL_MOOD_GAIN);
 
       context.runtimeState.actionSummaryText =
-        "经过多日筹备，羽浦町的夏日祭终于如期在月汐海岸举行。" +
+        "经过多日筹备，羽浦的夏日祭终于如期在月汐海岸举行。" +
         "入夜后的海岸挂满了暖色灯笼，沿岸摊位亮起灯火，食物香气、祭典音乐和人群的笑声随着海风飘散。" +
         "悠酱穿过热闹的摊位，在海边看完了照亮夜空的烟火，也真切感受到这些天的付出变成了眼前难忘的夏夜。" +
         `她在夏日祭中度过了充实的180分钟，${buildMoodChangeDescription(actualMoodGain)}`;
@@ -300,7 +300,7 @@ export const coastAction: ActionMetadata[] = [
   },
   {
     action: ActionId.Take_Train_To_Train_Station_From_Coast,
-    description: "从月汐海岸乘电车回羽浦町站。[金币-3][体力-7][饱腹-5][耗时15分钟]",
+    description: "从月汐海岸乘电车回羽浦站。[金币-3][体力-7][饱腹-5][耗时15分钟]",
     proactiveShare: {
       enabled: true,
     },
