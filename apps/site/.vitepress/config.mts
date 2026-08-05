@@ -1,64 +1,47 @@
 import { defineConfig } from "vitepress";
 
-const version = "0.10.0";
-const releases = "https://github.com/yixiaojiu/yuiju/releases";
-const repo = "https://github.com/yixiaojiu/yuiju";
-const webLive = "/";
-
 export default defineConfig({
-  title: "ゆいじゅ",
+  title: "yuiju",
   description: "LLM 驱动的角色自主生活模拟项目",
   lang: "zh-Hans",
   cleanUrls: true,
   themeConfig: {
     nav: [
       { text: "首页", link: "/" },
-      { text: "开发文档", link: `${repo}/blob/main/docs/README.md` },
-      { text: "新人上手", link: `${repo}/blob/main/docs/onboarding.md` },
-      {
-        text: "访问连接",
-        link: "https://yuiju-web.yixiaojiu.top",
-      },
+      { text: "项目介绍", link: "/project/introduction" },
+      { text: "项目部署", link: "/deployment/" },
     ],
+    sidebar: {
+      "/project/": [
+        {
+          text: "项目",
+          items: [{ text: "项目介绍", link: "/project/introduction" }],
+        },
+      ],
+      "/deployment/": [
+        {
+          text: "项目部署",
+          items: [
+            { text: "部署概览", link: "/deployment/" },
+            { text: "准备运行环境", link: "/deployment/preparation" },
+            { text: "项目配置", link: "/deployment/configuration" },
+            { text: "使用 PM2 部署", link: "/deployment/pm2" },
+            { text: "日常运维", link: "/deployment/operations" },
+          ],
+        },
+      ],
+    },
     outline: {
-      level: [2, 6],
+      level: [2, 4],
       label: "本页内容",
     },
     docFooter: {
       prev: "上一页",
       next: "下一页",
     },
-    editLink: {
-      pattern: `${repo}/edit/main/apps/site/:path`,
-      text: "在 GitHub 编辑此页",
-    },
-    lastUpdated: {
-      text: "最后更新",
-    },
     darkModeSwitchLabel: "外观模式",
     sidebarMenuLabel: "菜单",
     returnToTopLabel: "返回顶部",
-    langMenuLabel: "切换语言",
-    logo: "https://raw.githubusercontent.com/yixiaojiu/yuiju/main/packages/source/picture/repo_avatar.webp",
-    sidebar: [],
-    socialLinks: [{ icon: "github", link: repo }],
-    homepage: {
-      buttons: [
-        {
-          text: "网页版",
-          link: webLive,
-          primary: true,
-          target: "_self",
-        },
-        {
-          text: "下载",
-          link: "/docs/overview/versions",
-        },
-        {
-          text: "使用教程",
-          link: "/docs/overview/",
-        },
-      ],
-    },
+    socialLinks: [{ icon: "github", link: "https://github.com/yixiaojiu/yuiju" }],
   },
 });
