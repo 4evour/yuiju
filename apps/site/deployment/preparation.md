@@ -64,11 +64,34 @@ pnpm i
 
 MongoDB 保存行为历史、消息、MemoryEpisode、Diary 等可追溯记录。准备数据库后，记录完整连接 URI，稍后填写到 `database.mongoUri`。
 
+如果使用 Docker，可以运行：
+
+```bash
+docker run -d \
+  --name mongodb \
+  --restart unless-stopped \
+  -p 127.0.0.1:27017:27017 \
+  mongo:latest
+```
+
+该示例只允许本机访问。对应的连接 URI 为 `mongodb://127.0.0.1:27017/yuiju`。
+
 ### Redis
 
 Redis 是角色和世界实时状态的真相源。准备 Redis 后，记录完整连接 URI，稍后填写到 `database.redisUrl`。
 
-不要让 MongoDB 与 Redis 共同保存同一份实时状态，也不要把二者当作可以互相替代的存储。
+如果使用 Docker，可以运行：
+
+```bash
+docker run -d \
+  --name redis \
+  --restart unless-stopped \
+  -p 127.0.0.1:6379:6379 \
+  redis:latest \
+  redis-server --appendonly yes
+```
+
+该示例通过 AOF 保存 Redis 状态，并且只允许本机访问。对应的连接 URI 为 `redis://127.0.0.1:6379`。
 
 ## 创建项目配置
 

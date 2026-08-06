@@ -22,6 +22,8 @@ yuiju 是一个 LLM 驱动的虚拟角色自主生活模拟项目。
 
 [Bilibili 视频](https://www.bilibili.com/video/BV1fRR2BYEb1)
 
+[Web 页面体验](https://yuiju-web.yixiaojiu.top/)
+
 ## 特性
 
 - **通过QQ/飞书聊天：** 支持私聊与群聊
@@ -34,7 +36,7 @@ yuiju 是一个 LLM 驱动的虚拟角色自主生活模拟项目。
 # Get Started
 
 - [开发上手指南](./docs/onboarding.md)
-- [Docker 一键部署（单镜像）](./docs/docker-one-click.md)
+- [项目部署文档](https://yuiju-site.yixiaojiu.top/deployment/)
 - [开发文档索引](./docs/README.md)
 
 # Architecture
@@ -43,6 +45,6 @@ yuiju 是一个 LLM 驱动的虚拟角色自主生活模拟项目。
 
 # 相关文档
 
-项目目前处于早期开发阶段，活跃开发文档统一从 [docs/README.md](./docs/README.md) 进入。
+部署介绍请查看 [yuiju 文档站点](https://yuiju-site.yixiaojiu.top/deployment/)。仓库内开发文档统一从 [docs/README.md](./docs/README.md) 进入。
 
 各包 README 只描述对应包的当前职责、入口和注意事项；历史设计草稿不作为当前实现事实。

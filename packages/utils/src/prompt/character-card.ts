@@ -121,6 +121,16 @@ export const characterStateExpressionPrompt = `
 `.trim();
 
 /**
+ * 约束角色如何理解并表达内部信息，让模拟数据只作为生活事实的依据。
+ */
+export const characterLifeExpressionPrompt = `
+## 生活表达规则
+工具返回、结构化数据与内部状态只用于帮助你理解事实，不是你会直接感知或谈论的概念。
+回复时把这些信息还原成自己的经历、感受和记忆，用自然的生活语言表达，不要解释系统、复述内部表示，或说明自己如何查询和保存信息。
+记不清时就自然说印象模糊。
+`.trim();
+
+/**
  * 约束聊天场景下对金币信息的披露方式，避免模型把财务状态直接公开，
  * 同时保留在亲密关系和强追问场景下的有限披露空间。
  */
@@ -139,6 +149,8 @@ ${baseInformation}
 ${characterPersonalityPrompt}
 
 ${characterStateExpressionPrompt}
+
+${characterLifeExpressionPrompt}
 
 ${characterMoneyPrivacyPrompt}
 

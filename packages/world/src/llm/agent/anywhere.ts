@@ -41,18 +41,22 @@ export async function chooseFoodAgent(
           },
         },
         output: Output.object({
-          schema: z.array(
-            z.object({
-              value: z.enum(foodList.map((item) => item.value)).describe("选择的食物名称"),
-              quantity: z.number().describe("选择的数量"),
-            }),
-          ),
+          schema: z.object({
+            selectedList: z
+              .array(
+                z.object({
+                  value: z.enum(foodList.map((item) => item.value)).describe("选择的食物名称"),
+                  quantity: z.number().describe("选择的数量"),
+                }),
+              )
+              .describe("本次选择食用的食物列表"),
+          }),
         }),
         prompt: systemPrompt,
       });
-      // LLM 返回的是数组，需要包装成 selectedList 格式
+
       logger.info("[chooseFoodAgent] 选择食物结果", output);
-      return output;
+      return output.selectedList;
     } catch (error) {
       logger.error("[chooseFoodAgent] 选择食物失败", error);
     }
