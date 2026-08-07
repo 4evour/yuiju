@@ -86,6 +86,8 @@ export enum ActionId {
   Go_Home_From_Park = "从公园回家",
   /** 在公园散步 */
   Walk_In_Park = "在公园散步",
+  /** 在公园摆可丽饼摊 */
+  Run_Crepe_Stand_In_Park = "在公园摆可丽饼摊",
 
   /** 从公园去神社 */
   Go_To_Shrine_From_Park = "从公园去神社",

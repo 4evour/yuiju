@@ -138,6 +138,7 @@ export const worldGuidePlaceIntroductions = [
     name: `${MajorScene.ParkArea}-${ParkAreaSubScene.Park}`,
     availableActions: [
       ActionId.Walk_In_Park,
+      ActionId.Run_Crepe_Stand_In_Park,
       ActionId.Go_Home_From_Park,
       ActionId.Go_To_Shrine_From_Park,
       ActionId.Go_To_Pond_From_Park,

@@ -154,7 +154,7 @@ export const cafeAction: ActionMetadata[] = [
   },
   {
     action: ActionId.Work_At_Cafe,
-    description: "在薄暮咖啡打工。[金币+200][体力-10][心情-5][饱腹-10][耗时60分钟]",
+    description: "在薄暮咖啡打工。[金币+100][体力-10][心情-5][饱腹-10][耗时60分钟]",
     proactiveShare: {
       enabled: true,
     },
@@ -172,10 +172,10 @@ export const cafeAction: ActionMetadata[] = [
         context,
         setting:
           "在薄暮咖啡打工一小时期间发生的日常小事件，可以涉及顾客、同事、点单、清洁或店内忙碌带来的小插曲",
-        triggerProbability: 0.2,
-        positiveProbability: 0.4,
+        triggerProbability: 0.3,
+        positiveProbability: 0.3,
       });
-      await context.characterState.changeMoney(200);
+      await context.characterState.changeMoney(100);
       await context.characterState.changeStamina(-10);
       await context.characterState.changeSatiety(-10);
       const actualWorkMoodChange = await context.characterState.changeMood(-5);

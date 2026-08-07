@@ -42,6 +42,15 @@ const PARK_WALK_TIERS: ParkWalkTier[] = [
 
 const DEFAULT_PARK_WALK_TIER = PARK_WALK_TIERS[1];
 
+const CREPE_STAND_STOCKING_COST = 80;
+const CREPE_STAND_MAX_SERVINGS = 10;
+const CREPE_MENU = [
+  { name: "黄油砂糖可丽饼", price: 12 },
+  { name: "香蕉巧克力可丽饼", price: 18 },
+  { name: "草莓奶油可丽饼", price: 22 },
+  { name: "综合水果可丽饼", price: 26 },
+];
+
 function isAtPark(context: ActionContext) {
   return (
     context.characterStateData.location.major === MajorScene.ParkArea &&
@@ -175,6 +184,109 @@ export const parkAction: ActionMetadata[] = [
     async durationMin(_context, selectedAction?: ActionAgentDecision) {
       return resolveParkWalkTier(selectedAction?.durationMinute).durationMin;
     },
+  },
+  {
+    action: ActionId.Run_Crepe_Stand_In_Park,
+    description:
+      "在南风公园摆可丽饼摊，花80金币采购本次摆摊使用的原料，客流和营业额会在收摊时随机结算，没用完的原料不会保留。[金币-80][金币+?][体力-10][饱腹-10][耗时60分钟]",
+    proactiveShare: {
+      enabled: true,
+    },
+    precondition(context) {
+      return allTrue([
+        () => isAtPark(context),
+        () => !isNight(context),
+        () => context.characterStateData.money >= CREPE_STAND_STOCKING_COST,
+      ]);
+    },
+    async executor(context) {
+      await context.characterState.setAction(ActionId.Run_Crepe_Stand_In_Park);
+      await context.characterState.changeMoney(-CREPE_STAND_STOCKING_COST);
+
+      return {
+        executionResult: `花了${CREPE_STAND_STOCKING_COST}金币采购原料，在南风公园支起可丽饼摊`,
+        startContext: {
+          stockingCost: CREPE_STAND_STOCKING_COST,
+        },
+      };
+    },
+    async completionEvent(context, runningAction) {
+      const standContext = runningAction.startContext as {
+        stockingCost: number;
+      };
+      const randomEvent = await generateActionRandomEvent({
+        context,
+        setting:
+          "在南风公园摆可丽饼摊一小时期间发生的日常小事件，可以涉及顾客、点单、制作过程、摊位设备或天气带来的小插曲",
+        triggerProbability: 0.3,
+        positiveProbability: 0.3,
+      });
+      const visitorCount = Math.floor(Math.random() * (CREPE_STAND_MAX_SERVINGS + 1));
+      const customerPurchases = Array.from({ length: visitorCount }, () => {
+        const crepe = CREPE_MENU[Math.floor(Math.random() * CREPE_MENU.length)];
+        return {
+          itemName: crepe.name,
+          amount: crepe.price,
+        };
+      });
+      const totalIncome = customerPurchases.reduce((sum, purchase) => sum + purchase.amount, 0);
+      const profit = totalIncome - standContext.stockingCost;
+      const soldItems = CREPE_MENU.flatMap((crepe) => {
+        const quantity = customerPurchases.filter(
+          (purchase) => purchase.itemName === crepe.name,
+        ).length;
+
+        return quantity > 0
+          ? [
+              {
+                name: crepe.name,
+                quantity,
+                unitPrice: crepe.price,
+              },
+            ]
+          : [];
+      });
+
+      await context.characterState.changeMoney(totalIncome);
+      await context.characterState.changeStamina(-10);
+      await context.characterState.changeSatiety(-10);
+      const randomEventResult = randomEvent
+        ? {
+            ...randomEvent,
+            actualMoodChange: await context.characterState.changeMood(randomEvent.moodChange),
+          }
+        : undefined;
+
+      const salesDescription =
+        soldItems.length > 0
+          ? soldItems.map((item) => `${item.name}${item.quantity}份`).join("、")
+          : "没有卖出可丽饼";
+      const profitDescription = profit >= 0 ? `盈利${profit}金币` : `亏损${-profit}金币`;
+      const staminaCost = Math.min(context.characterStateData.stamina, 10);
+      const satietyCost = Math.min(context.characterStateData.satiety, 10);
+      const randomEventCompletion = buildActionRandomEventDescription({
+        actionSummaryText: `悠酱在南风公园摆了60分钟可丽饼摊，来了${visitorCount}位客人，${salesDescription}，营业额${totalIncome}金币，扣除进货费后${profitDescription}，体力下降${staminaCost}点，饱腹度下降${satietyCost}点`,
+        actionMoodChange: 0,
+        randomEvent: randomEventResult,
+      });
+      context.runtimeState.actionSummaryText = randomEventCompletion.actionSummaryText;
+
+      return {
+        completionContext: {
+          stockingCost: standContext.stockingCost,
+          visitorCount,
+          customerPurchases,
+          soldItems,
+          totalIncome,
+          profit,
+          staminaChange: -staminaCost,
+          satietyChange: -satietyCost,
+          randomEvent: randomEventResult,
+          totalMoodChange: randomEventCompletion.totalMoodChange,
+        },
+      };
+    },
+    durationMin: 60,
   },
   {
     action: ActionId.Go_Home_From_Park,
