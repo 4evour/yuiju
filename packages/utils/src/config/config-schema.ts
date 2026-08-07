@@ -125,6 +125,16 @@ export interface YuijuLlmConfig {
   hermesAgent: YuijuHermesAgentConfig;
 }
 
+export interface YuijuLangfuseConfig {
+  publicKey: string;
+  secretKey: string;
+  baseUrl: string;
+}
+
+export interface YuijuObservabilityConfig {
+  langfuse: YuijuLangfuseConfig;
+}
+
 /**
  * 项目级运行配置。
  */
@@ -153,6 +163,8 @@ export interface YuijuConfig {
   database: YuijuDatabaseConfig;
   llm: YuijuLlmConfig;
   message: YuijuMessageConfig;
+  /** 未配置时不启用 LLM trace。 */
+  observability?: YuijuObservabilityConfig;
 }
 
 /**

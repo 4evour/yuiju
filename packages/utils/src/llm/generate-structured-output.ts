@@ -8,6 +8,7 @@ import {
 import { logger } from "../logger";
 import { structuredOutputJsonPrompt } from "../prompt";
 import { extractLastJson } from "../utils/extract-last-json";
+import { getLangfuseTelemetry } from "./langfuse-telemetry";
 
 type GenerateTextOptions = Parameters<typeof generateText>[0];
 type GenerateTextResult = Awaited<ReturnType<typeof generateText>>;
@@ -77,6 +78,7 @@ export async function generateStructuredOutput<OUTPUT extends StructuredOutput>(
         }),
         instructions,
         output: Output.json(),
+        telemetry: getLangfuseTelemetry(),
       } as Parameters<typeof generateText>[0]);
 
       const output = (await options.output.parseCompleteOutput(

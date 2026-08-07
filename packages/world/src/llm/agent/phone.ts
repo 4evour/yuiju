@@ -5,6 +5,7 @@ import {
   generateStructuredOutput,
   hermesAgentModel,
 } from "@yuiju/utils";
+import { getLangfuseTelemetry } from "@yuiju/utils/llm/langfuse-telemetry";
 import { generateText, Output } from "ai";
 import { z } from "zod";
 
@@ -33,6 +34,7 @@ ${actionReason}
 export async function runHermesPhoneAgent(userPrompt: string) {
   const { text } = await generateText({
     model: hermesAgentModel,
+    telemetry: getLangfuseTelemetry(),
     instructions: buildHermesPhoneSystemPrompt(),
     prompt: userPrompt,
     timeout: 2 * 60 * 60 * 1000,

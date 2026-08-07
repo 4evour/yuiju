@@ -6,6 +6,7 @@ import {
   saveMemoryEpisode,
   summarizeConversationMessages,
 } from "@yuiju/utils";
+import { getLangfuseTelemetry } from "@yuiju/utils/llm/langfuse-telemetry";
 import { generateText } from "ai";
 import dayjs from "dayjs";
 import {
@@ -384,6 +385,7 @@ export class ChatSessionManager<TMessage extends StoredSatoriChatMessage> {
 
     const result = await generateText({
       model: flashModel,
+      telemetry: getLangfuseTelemetry(),
       providerOptions: {
         flash: {
           enable_thinking: false,

@@ -1,11 +1,13 @@
 import process from "node:process";
 import { connectDB } from "@yuiju/utils";
+import { initializeLangfuseTelemetry } from "@yuiju/utils/llm/langfuse-telemetry";
 import { startRealtimeLoop } from "@/engine/runner";
 import { worldRunner } from "@/engine/world";
 import { logger } from "@/utils/logger";
 import { initState } from "./state";
 
 async function main() {
+  initializeLangfuseTelemetry();
   await connectDB();
   await initState();
   await worldRunner.start();

@@ -7,6 +7,7 @@ import {
   type MemoryDiarySummaryPeriod,
   upsertMemoryDiary,
 } from "@yuiju/utils";
+import { getLangfuseTelemetry } from "@yuiju/utils/llm/langfuse-telemetry";
 import { generateText } from "ai";
 import dayjs from "dayjs";
 import { logger } from "@/utils/logger";
@@ -21,6 +22,7 @@ async function writeDiarySummaryText(input: {
 }): Promise<string> {
   const result = await generateText({
     model: flashModel,
+    telemetry: getLangfuseTelemetry(),
     providerOptions: {
       flash: {
         enable_thinking: true,

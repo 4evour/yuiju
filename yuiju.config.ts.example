@@ -47,6 +47,13 @@ const config = defineYuijuConfig({
       model: "",
     },
   },
+  // observability: {
+  //   langfuse: {
+  //     secretKey: "sk-lf-xxx",
+  //     publicKey: "pk-lf-xxx",
+  //     baseUrl: "https://cloud.langfuse.com",
+  //   },
+  // },
   message: {
     internalApi: {
       host: "127.0.0.1",

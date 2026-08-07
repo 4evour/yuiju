@@ -2,6 +2,7 @@ import LarkBot from "@satorijs/adapter-lark";
 import { Context, HTTP } from "@satorijs/core";
 import OneBotBot from "@yuiju/satorijs-adapter-onebot";
 import { connectDB, getYuijuConfig, initializePersonMemoryHeat } from "@yuiju/utils";
+import { initializeLangfuseTelemetry } from "@yuiju/utils/llm/langfuse-telemetry";
 import { groupMessageHandler } from "./handler/group-message";
 import { onebotPokeHandler } from "./handler/poke";
 import { privateMessageHandler } from "./handler/private-message";
@@ -66,6 +67,7 @@ satori.on("internal/session", async (session) => {
 });
 
 async function main() {
+  initializeLangfuseTelemetry();
   await connectDB();
   // 初始化人物记忆
   await initializePersonMemoryHeat();
