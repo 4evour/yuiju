@@ -39,6 +39,23 @@ export interface StoredSatoriPrivateMessage {
 
 export type StoredSatoriChatMessage = StoredSatoriGroupMessage | StoredSatoriPrivateMessage;
 
+export interface HistoryRecallSegment {
+  type: "recall";
+  data: {
+    text: "撤回了一条消息";
+  };
+}
+
+/**
+ * 用原消息的会话与发送者信息记录撤回事实，同时移除已经失效的原消息内容。
+ */
+export type StoredSatoriRecallMessage<TMessage extends StoredSatoriChatMessage> = TMessage & {
+  recordType: "recall";
+  recalledMessageId: string;
+  elements: [];
+  content: [HistoryRecallSegment];
+};
+
 export interface HistoryTextSegment {
   type: "text";
   data: {
@@ -81,6 +98,7 @@ export type HistoryMessageSegment =
   | HistoryAtSegment
   | HistoryReplySegment
   | HistoryFaceSegment
+  | HistoryRecallSegment
   | h;
 
 export interface HistoryMessageItem {

@@ -5,6 +5,7 @@ import { logger } from "@/utils/logger";
 import {
   createStoredSatoriPrivateMessage,
   getProtocolMessageSenderName,
+  type StoredSatoriPrivateMessage,
   sendAndRecordSatoriPrivateReply,
 } from "@/utils/message";
 import { closeGroupMessage, openGroupMessage } from "./group-message";
@@ -74,8 +75,41 @@ export async function privateMessageHandler(session: Session) {
     });
 
     llmManager.recordPrivateMessage(storedMessage, sessionLabel);
+
+    await replyToStoredPrivateMessage({ session, storedMessage, userId });
+  } catch (error) {
+    logger.error("[message.reply.private] 处理私聊消息失败", error);
+  }
+}
+
+export async function replyToStoredPrivateMessage(input: {
+  session: Session;
+  storedMessage: StoredSatoriPrivateMessage;
+  userId: string;
+}) {
+  const { session, storedMessage, userId } = input;
+  const sessionLabel = getProtocolMessageSenderName(storedMessage);
+
+  try {
     const chatResult = await llmManager.chatWithLLM(storedMessage);
+    if (chatResult.status === "cancelled") {
+      logger.info("[message.reply.private] 私聊回复生成已取消，不发送消息", {
+        sessionId: storedMessage.sessionId,
+        sessionLabel,
+        requestId: storedMessage.messageId,
+      });
+      return;
+    }
     if (chatResult.status === "failed") {
+      return;
+    }
+
+    if (!llmManager.isLatestPrivateChatRequest(storedMessage.sessionId, chatResult.requestId)) {
+      logger.info("[message.reply.private] 私聊回复结果已过期，不发送消息", {
+        sessionId: storedMessage.sessionId,
+        sessionLabel,
+        requestId: chatResult.requestId,
+      });
       return;
     }
 

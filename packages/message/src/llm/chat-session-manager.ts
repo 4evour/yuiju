@@ -10,6 +10,7 @@ import { getLangfuseTelemetry } from "@yuiju/utils/llm/langfuse-telemetry";
 import { generateText } from "ai";
 import dayjs from "dayjs";
 import {
+  getProtocolMessageId,
   getProtocolMessageSenderName,
   getProtocolMessageTimestampMs,
   type HistoryJsonItem,
@@ -18,6 +19,7 @@ import {
   type StoredSatoriGroupMessage,
   type StoredSatoriPrivateMessage,
 } from "@/utils/message";
+import type { StoredSatoriRecallMessage } from "@/utils/message/types";
 import { buildConversationEpisode, type ChatMoodChange } from "../memory/episode-builder";
 import { updateGroupMemoryForChatWindow } from "../memory/group-memory";
 import {
@@ -41,6 +43,12 @@ export interface ChatMessageInput<TMessage> {
   sessionId: string;
   sessionLabel: string;
   message: TMessage;
+}
+
+export interface ChatMessageRecallInput {
+  sessionId: string;
+  messageId: string;
+  timestamp: number;
 }
 
 export interface ChatSessionManagerOptions {
@@ -158,6 +166,73 @@ export class ChatSessionManager<TMessage extends StoredSatoriChatMessage> {
     this.appendConversationEntry(input);
     this.appendSummaryChunkMessage(input);
     this.appendEpisodeMessage(input);
+  }
+
+  recordLastMessageRecall(
+    input: ChatMessageRecallInput,
+  ): StoredSatoriRecallMessage<TMessage> | null {
+    const conversation = this.conversationBySessionId.get(input.sessionId);
+    if (!conversation) {
+      return null;
+    }
+
+    const lastMessage = conversation.at(-1);
+    if (!lastMessage || getProtocolMessageId(lastMessage) !== input.messageId) {
+      return null;
+    }
+
+    const recallMessage = {
+      ...lastMessage,
+      recordType: "recall",
+      recalledMessageId: input.messageId,
+      messageId: `recall:${input.messageId}:${input.timestamp}`,
+      timestamp: input.timestamp,
+      elements: [],
+      content: [
+        {
+          type: "recall",
+          data: {
+            text: "撤回了一条消息",
+          },
+        },
+      ],
+      rawSession: undefined,
+    } as unknown as StoredSatoriRecallMessage<TMessage>;
+
+    conversation.pop();
+    conversation.push(recallMessage);
+
+    const summaryChunk = this.summaryChunkBySessionId.get(input.sessionId);
+    const lastSummaryMessage = summaryChunk?.messages.at(-1);
+    if (
+      summaryChunk &&
+      lastSummaryMessage &&
+      getProtocolMessageId(lastSummaryMessage) === input.messageId
+    ) {
+      summaryChunk.messages.pop();
+      summaryChunk.messages.push(recallMessage);
+      summaryChunk.lastTsMs = input.timestamp;
+      if (summaryChunk.messages.length === 1) {
+        summaryChunk.chunkStartMs = input.timestamp;
+      }
+    }
+
+    const episodeState = this.episodeStateBySessionId.get(input.sessionId);
+    const lastEpisodeMessage = episodeState?.messages.at(-1);
+    if (
+      episodeState &&
+      lastEpisodeMessage &&
+      getProtocolMessageId(lastEpisodeMessage) === input.messageId
+    ) {
+      episodeState.messages.pop();
+      episodeState.messages.push(recallMessage);
+      episodeState.lastTsMs = input.timestamp;
+      if (episodeState.messages.length === 1) {
+        episodeState.windowStartMs = input.timestamp;
+      }
+    }
+
+    return recallMessage;
   }
 
   recordMoodChange(input: { sessionId: string; delta: number }) {

@@ -4,6 +4,7 @@ import OneBotBot from "@yuiju/satorijs-adapter-onebot";
 import { connectDB, getYuijuConfig, initializePersonMemoryHeat } from "@yuiju/utils";
 import { initializeLangfuseTelemetry } from "@yuiju/utils/llm/langfuse-telemetry";
 import { groupMessageHandler } from "./handler/group-message";
+import { messageRecallHandler } from "./handler/message-recall";
 import { onebotPokeHandler } from "./handler/poke";
 import { privateMessageHandler } from "./handler/private-message";
 import { startMessageInternalApi } from "./internal-api";
@@ -39,6 +40,8 @@ satori.on("message", async (session) => {
     logger.error("[message.server] 处理消息事件失败", error);
   }
 });
+
+satori.on("message-deleted", messageRecallHandler);
 
 satori.on("internal/session", async (session) => {
   try {

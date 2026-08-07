@@ -2,7 +2,11 @@ import type { Session } from "@satorijs/core";
 import { ActionId, getYuijuConfig, initCharacterStateData } from "@yuiju/utils";
 import { llmManager } from "@/llm/manager";
 import { logger } from "@/utils/logger";
-import { createStoredSatoriGroupMessage, sendAndRecordSatoriGroupReply } from "@/utils/message";
+import {
+  createStoredSatoriGroupMessage,
+  type StoredSatoriGroupMessage,
+  sendAndRecordSatoriGroupReply,
+} from "@/utils/message";
 
 let isCloseGroup = false;
 const config = getYuijuConfig();
@@ -55,6 +59,15 @@ export async function groupMessageHandler(session: Session) {
   });
 
   llmManager.recordGroupMessage(storedMessage);
+
+  await replyToStoredGroupMessage({ session, storedMessage });
+}
+
+export async function replyToStoredGroupMessage(input: {
+  session: Session;
+  storedMessage: StoredSatoriGroupMessage;
+}) {
+  const { session, storedMessage } = input;
 
   const characterStateData = await initCharacterStateData();
   if (characterStateData.action === ActionId.Sleep) {

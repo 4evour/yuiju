@@ -31,16 +31,17 @@ import {
   type StoredSatoriGroupMessage,
   type StoredSatoriPrivateMessage,
 } from "@/utils/message";
+import { buildSatoriGroupSessionKey, buildSatoriPrivateSessionKey } from "@/utils/message/satori";
 import { ChatSessionManager } from "./chat-session-manager";
 
-interface ActiveGroupChatTask {
+interface ActiveChatTask {
   controller: AbortController;
   /**
-   * 直接复用触发本次回复生成的群消息 `message_id`，用于识别“当前群里最新的一次回复生成请求”。
+   * 直接复用触发本次回复生成的消息 `message_id`，用于识别当前会话最新的一次回复生成请求。
    *
    * 说明：
    * - 仅依赖 abort() 不足以完全避免竞态，旧请求可能在被取消前后恰好返回；
-   * - 因此在生成完成和真正发送回复前，都要再次校验 requestId 是否仍然是该群最新值；
+   * - 因此在生成完成和真正发送回复前，都要再次校验 requestId 是否仍然是该会话最新值；
    * - 只要 requestId 已经过期，就把这次结果视为失效，禁止继续发送消息。
    */
   requestId: string;
@@ -64,12 +65,16 @@ export type GroupChatResult =
 export type PrivateChatResult =
   | {
       status: "completed";
+      requestId: string;
       shouldReply: boolean;
       reply: string;
       noReplyReason: string;
     }
   | {
       status: "failed";
+    }
+  | {
+      status: "cancelled";
     };
 
 export class LLMManager {
@@ -78,7 +83,7 @@ export class LLMManager {
   /**
    * 记录每个群当前正在执行的回复生成任务，用于在同群新消息到来时取消旧请求。
    */
-  private activeGroupChatTaskBySessionId = new Map<string, ActiveGroupChatTask>();
+  private activeGroupChatTaskBySessionId = new Map<string, ActiveChatTask>();
   /**
    * 记录每个群当前“最新那条触发回复的消息 id”。
    *
@@ -87,6 +92,8 @@ export class LLMManager {
    * - 生成完成后和发送回复前都会再次比对它，避免旧请求在竞态下误发消息。
    */
   private latestGroupChatRequestIdBySessionId = new Map<string, string>();
+  private activePrivateChatTaskBySessionId = new Map<string, ActiveChatTask>();
+  private latestPrivateChatRequestIdBySessionId = new Map<string, string>();
 
   constructor() {
     this.privateSession = new ChatSessionManager<StoredSatoriPrivateMessage>({
@@ -133,6 +140,72 @@ export class LLMManager {
       sessionLabel: sessionLabel ?? getProtocolMessageSenderName(message),
       message,
     });
+  }
+
+  public recordGroupMessageRecall(input: {
+    platform: string;
+    channelId: string;
+    messageId: string;
+    timestamp: number;
+  }) {
+    const sessionId = buildSatoriGroupSessionKey(input.platform, input.channelId);
+    const recallMessage = this.groupSession.recordLastMessageRecall({
+      sessionId,
+      messageId: input.messageId,
+      timestamp: input.timestamp,
+    });
+    if (!recallMessage) {
+      return null;
+    }
+
+    if (this.latestGroupChatRequestIdBySessionId.get(sessionId) === input.messageId) {
+      this.latestGroupChatRequestIdBySessionId.delete(sessionId);
+    }
+
+    const activeTask = this.activeGroupChatTaskBySessionId.get(sessionId);
+    if (activeTask?.requestId === input.messageId) {
+      logger.info("[message.llm.group] 消息已撤回，取消对应的回复生成", {
+        sessionId,
+        requestId: input.messageId,
+      });
+      activeTask.controller.abort("source group message recalled");
+      this.activeGroupChatTaskBySessionId.delete(sessionId);
+    }
+
+    return recallMessage;
+  }
+
+  public recordPrivateMessageRecall(input: {
+    platform: string;
+    channelId: string;
+    messageId: string;
+    timestamp: number;
+  }) {
+    const sessionId = buildSatoriPrivateSessionKey(input.platform, input.channelId);
+    const recallMessage = this.privateSession.recordLastMessageRecall({
+      sessionId,
+      messageId: input.messageId,
+      timestamp: input.timestamp,
+    });
+    if (!recallMessage) {
+      return null;
+    }
+
+    if (this.latestPrivateChatRequestIdBySessionId.get(sessionId) === input.messageId) {
+      this.latestPrivateChatRequestIdBySessionId.delete(sessionId);
+    }
+
+    const activeTask = this.activePrivateChatTaskBySessionId.get(sessionId);
+    if (activeTask?.requestId === input.messageId) {
+      logger.info("[message.llm.private] 消息已撤回，取消对应的回复生成", {
+        sessionId,
+        requestId: input.messageId,
+      });
+      activeTask.controller.abort("source private message recalled");
+      this.activePrivateChatTaskBySessionId.delete(sessionId);
+    }
+
+    return recallMessage;
   }
 
   private buildPrivateSessionKey(message: StoredSatoriPrivateMessage): string {
@@ -238,6 +311,10 @@ export class LLMManager {
         }),
       });
 
+      if (!this.isLatestGroupChatRequest(sessionKey, requestId)) {
+        return { status: "cancelled" };
+      }
+
       if (result.output.moodDelta !== undefined) {
         const moodChange = await changeCharacterMoodByChat(result.output.moodDelta);
         this.groupSession.recordMoodChange({
@@ -295,8 +372,26 @@ export class LLMManager {
     return this.latestGroupChatRequestIdBySessionId.get(sessionId) === requestId;
   }
 
-  public async chatWithLLM(message: StoredSatoriPrivateMessage) {
+  public async chatWithLLM(message: StoredSatoriPrivateMessage): Promise<PrivateChatResult> {
     const sessionId = this.buildPrivateSessionKey(message);
+    const requestId = getProtocolMessageId(message);
+    const previousTask = this.activePrivateChatTaskBySessionId.get(sessionId);
+    if (previousTask) {
+      logger.info("[message.llm.private] 新消息到来，取消同会话上一条回复生成", {
+        sessionId,
+        previousRequestId: previousTask.requestId,
+        nextRequestId: requestId,
+      });
+      previousTask.controller.abort("replaced by newer private chat request");
+    }
+
+    const controller = new AbortController();
+    this.latestPrivateChatRequestIdBySessionId.set(sessionId, requestId);
+    this.activePrivateChatTaskBySessionId.set(sessionId, {
+      controller,
+      requestId,
+    });
+
     const { historyJson, summary } = await this.privateSession.getHistoryJson(sessionId);
     const characterState = await initCharacterStateData();
     const coreMemory = await readCoreMemory();
@@ -344,6 +439,7 @@ export class LLMManager {
           }),
         },
         stopWhen: stepCountIs(20),
+        abortSignal: controller.signal,
         ...createToolCallLoggingHooks({
           scene: "message.llm.private",
         }),
@@ -366,6 +462,10 @@ export class LLMManager {
         }),
       });
 
+      if (!this.isLatestPrivateChatRequest(sessionId, requestId)) {
+        return { status: "cancelled" };
+      }
+
       if (result.output.moodDelta !== undefined) {
         const moodChange = await changeCharacterMoodByChat(result.output.moodDelta);
         this.privateSession.recordMoodChange({
@@ -381,6 +481,10 @@ export class LLMManager {
         }
       }
 
+      if (!this.isLatestPrivateChatRequest(sessionId, requestId)) {
+        return { status: "cancelled" };
+      }
+
       logger.info("[message.llm.private] LLM 返回私聊决策", {
         sessionLabel,
         shouldReply: result.output.shouldReply,
@@ -390,18 +494,31 @@ export class LLMManager {
 
       return {
         status: "completed",
+        requestId,
         shouldReply: result.output.shouldReply,
         reply: result.output.reply,
         noReplyReason: result.output.noReplyReason,
       };
     } catch (error: any) {
+      if (controller.signal.aborted) {
+        return { status: "cancelled" };
+      }
       logger.error("[message.llm.private] 私聊 LLM 调用失败", {
         sessionId,
         sessionLabel,
         error: error?.message,
       });
       return { status: "failed" };
+    } finally {
+      const activeTask = this.activePrivateChatTaskBySessionId.get(sessionId);
+      if (activeTask?.requestId === requestId) {
+        this.activePrivateChatTaskBySessionId.delete(sessionId);
+      }
     }
+  }
+
+  public isLatestPrivateChatRequest(sessionId: string, requestId: string): boolean {
+    return this.latestPrivateChatRequestIdBySessionId.get(sessionId) === requestId;
   }
 }
 
