@@ -6,9 +6,10 @@ import {
   wrapLanguageModel,
 } from "ai";
 import { logger } from "../logger";
-import { structuredOutputJsonPrompt } from "../prompt";
+import { structuredOutputJsonPrompt, structuredOutputRepairPrompt } from "../prompt";
 import { extractLastJson } from "../utils/extract-last-json";
 import { getLangfuseTelemetry } from "./langfuse-telemetry";
+import { flashModel } from "./models";
 
 type GenerateTextOptions = Parameters<typeof generateText>[0];
 type GenerateTextResult = Awaited<ReturnType<typeof generateText>>;
@@ -64,41 +65,74 @@ export async function generateStructuredOutput<OUTPUT extends StructuredOutput>(
     JSON.stringify(responseFormat.schema),
   ].join("\n");
 
-  let lastError: unknown;
-
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    try {
-      const result = await generateText({
-        ...options,
-        model: wrapLanguageModel({
-          model: options.model as Exclude<GenerateTextOptions["model"], string>,
-          middleware: extractJsonMiddleware({
-            transform: (text) => extractLastJson(text) ?? text.trim(),
-          }),
+  try {
+    const result = await generateText({
+      ...options,
+      model: wrapLanguageModel({
+        model: options.model as Exclude<GenerateTextOptions["model"], string>,
+        middleware: extractJsonMiddleware({
+          transform: (text) => extractLastJson(text) ?? text.trim(),
         }),
-        instructions,
-        output: Output.json(),
-        telemetry: getLangfuseTelemetry(),
-      } as Parameters<typeof generateText>[0]);
+      }),
+      instructions,
+      output: Output.json(),
+      telemetry: getLangfuseTelemetry(),
+    } as Parameters<typeof generateText>[0]);
 
-      const output = (await options.output.parseCompleteOutput(
-        { text: result.text },
-        {
-          response: result.finalStep.response,
-          usage: result.usage,
-          finishReason: result.finishReason,
-        },
-      )) as StructuredOutputValue<OUTPUT>;
+    const output = (await options.output.parseCompleteOutput(
+      { text: result.text },
+      {
+        response: result.finalStep.response,
+        usage: result.usage,
+        finishReason: result.finishReason,
+      },
+    )) as StructuredOutputValue<OUTPUT>;
 
-      return { ...result, output, experimental_output: output };
-    } catch (error) {
-      if (NoObjectGeneratedError.isInstance(error)) {
-        logger.warn("[llm.structured-output] 未生成可解析 JSON", error.text);
-      }
-
-      lastError = error;
+    return { ...result, output, experimental_output: output };
+  } catch (error) {
+    if (!NoObjectGeneratedError.isInstance(error)) {
+      throw error;
     }
-  }
 
-  throw lastError;
+    logger.warn("[llm.structured-output] 未生成可解析 JSON，尝试修正", error.text);
+
+    if (error.text == null) {
+      throw error;
+    }
+
+    const repairResult = await generateText({
+      model: wrapLanguageModel({
+        model: flashModel,
+        middleware: extractJsonMiddleware({
+          transform: (text) => extractLastJson(text) ?? text.trim(),
+        }),
+      }),
+      providerOptions: {
+        flash: {
+          enable_thinking: false,
+        },
+      },
+      abortSignal: options.abortSignal,
+      instructions: [structuredOutputRepairPrompt, JSON.stringify(responseFormat.schema)].join(
+        "\n",
+      ),
+      prompt: JSON.stringify({
+        generatedText: error.text,
+        validationError: String(error.cause),
+      }),
+      output: Output.json(),
+      telemetry: getLangfuseTelemetry(),
+    });
+
+    const output = (await options.output.parseCompleteOutput(
+      { text: repairResult.text },
+      {
+        response: repairResult.finalStep.response,
+        usage: repairResult.usage,
+        finishReason: repairResult.finishReason,
+      },
+    )) as StructuredOutputValue<OUTPUT>;
+
+    return { ...repairResult, output, experimental_output: output };
+  }
 }
