@@ -9,6 +9,10 @@ const config = defineYuijuConfig({
   database: {
     mongoUri: "mongodb://localhost:27017/yuiju?authSource=admin",
     redisUrl: "redis://localhost:6379",
+    // qdrant: {
+    //   baseUrl: "http://localhost:6333",
+    //   apiKey: "xxx",
+    // },
   },
   llm: {
     models: {
@@ -40,6 +44,12 @@ const config = defineYuijuConfig({
           model: "Qwen/Qwen3.5-397B-A17B",
         },
       ],
+      // embedding: {
+      //   baseUrl: "https://openrouter.ai/api/v1",
+      //   apiKey: "xxx",
+      //   model: "qwen/qwen3-embedding-4b",
+      //   dimensions: 1024,
+      // },
     },
     hermesAgent: {
       baseUrl: "",

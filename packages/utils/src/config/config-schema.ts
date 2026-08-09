@@ -83,6 +83,10 @@ export interface YuijuMessageConfig {
 export interface YuijuDatabaseConfig {
   mongoUri: string;
   redisUrl: string;
+  qdrant?: {
+    baseUrl: string;
+    apiKey?: string;
+  };
   /**
    * 数据同步的 Mongo URI
    */
@@ -102,6 +106,10 @@ export interface YuijuLlmModelConfig {
   model: string;
 }
 
+export interface YuijuEmbeddingModelConfig extends YuijuLlmModelConfig {
+  dimensions: number;
+}
+
 export type YuijuLlmModelSourcesConfig = [YuijuLlmModelConfig, ...YuijuLlmModelConfig[]];
 
 export interface YuijuLlmModelsConfig {
@@ -109,6 +117,7 @@ export interface YuijuLlmModelsConfig {
   strong: YuijuLlmModelSourcesConfig;
   flash: YuijuLlmModelSourcesConfig;
   vision: YuijuLlmModelSourcesConfig;
+  embedding?: YuijuEmbeddingModelConfig;
 }
 
 /**

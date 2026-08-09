@@ -78,6 +78,7 @@
     "@langfuse/otel": "^5.10.0",
     "@langfuse/vercel-ai-sdk": "^5.10.0",
     "@opentelemetry/sdk-node": "^0.221.0",
+    "@qdrant/js-client-rest": "~1.16.0",
     "@types/mongoose": "^5.11.97",
     "ai": "^7.0.22",
     "dayjs": "^1.11.19",

@@ -11,6 +11,7 @@ import {
   upsertMemoryDiary,
 } from "@yuiju/utils";
 import { getLangfuseTelemetry } from "@yuiju/utils/llm/langfuse-telemetry";
+import { indexDailyDiary } from "@yuiju/utils/memory/diary-vector-index";
 import { generateText } from "ai";
 import dayjs from "dayjs";
 import { logger } from "@/utils/logger";
@@ -207,13 +208,14 @@ async function generateDiaryFromEpisodes(input: {
     return;
   }
 
-  await upsertMemoryDiary({
+  const diary = await upsertMemoryDiary({
     subject: input.subject,
     diaryDate: input.diaryDate,
     diaryEndDate: input.diaryDate,
     text: diaryText,
     isDev: input.isDev,
   });
+  await indexDailyDiary(diary);
 
   logger.info("[generateDailyMemoriesForDate] diary generated", {
     subject: input.subject,
