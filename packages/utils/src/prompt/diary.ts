@@ -14,6 +14,9 @@ export interface DiarySummaryPromptInput {
   diaryEndDate: Date;
 }
 
+export const diaryMemorySearchInstruction =
+  "Given a chat conversation, retrieve relevant passages from Yuiju's past diary that can support an accurate reply.";
+
 /**
  * 构建少女风格日记的系统提示词。
  *

@@ -2,6 +2,7 @@ import type { Tool } from "ai";
 import dayjs from "dayjs";
 import { z } from "zod";
 import { searchDiaries, searchEpisodes } from "../../memory";
+import { searchDailyDiaryChunks } from "../../memory/diary-vector-index";
 
 const todayEventSearchInputSchema = z.strictObject({
   limit: z.number().int().min(1).max(20).optional().describe("返回结果上限，默认 10"),
@@ -24,6 +25,14 @@ const diarySearchInputSchema = z.strictObject({
     .enum(["day", "week", "month", "year"])
     .optional()
     .describe("查询粒度。day 查询每日 Diary；week/month/year 查询对应周期总结。默认 day。"),
+});
+
+const semanticDiarySearchInputSchema = z.strictObject({
+  query: z
+    .string()
+    .min(1)
+    .describe("要检索的完整自然语言问题，应包含相关人物、地点、事件和时间线索。"),
+  limit: z.number().int().min(1).max(10).optional().describe("返回结果上限，默认 5。"),
 });
 
 export const todayEventSearchTool: Tool = {
@@ -59,5 +68,13 @@ export const diarySearchTool: Tool = {
       endTime: input.endDate ? `${input.endDate} 23:59:59` : undefined,
     });
     return result;
+  },
+};
+
+export const semanticDiarySearchTool: Tool = {
+  description: "按语义检索昨天及更早的每日记忆片段，用于回忆过去的经历、地点或人物事件。",
+  inputSchema: semanticDiarySearchInputSchema,
+  execute: async (input) => {
+    return searchDailyDiaryChunks(input.query, input.limit ?? 5);
   },
 };

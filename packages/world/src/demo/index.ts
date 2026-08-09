@@ -1,3 +1,3 @@
-import { main } from "./structured-output";
+import { main } from "./embed";
 
 main();

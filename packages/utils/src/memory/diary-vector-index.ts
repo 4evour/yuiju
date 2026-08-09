@@ -1,10 +1,19 @@
 import { createHash } from "node:crypto";
 import { getQdrantClient, hasQdrantClient } from "../db/qdrant";
 import type { IMemoryDiary } from "../db/schema/memory-diary.schema";
+import { isDev } from "../env";
 import { embedTexts, hasEmbeddingModel } from "../llm/embedding";
+import { diaryMemorySearchInstruction } from "../prompt/diary";
 import { formatProjectTime } from "../time";
+import { DEFAULT_DIARY_SUBJECT } from "./diary";
 
-const DAILY_DIARY_COLLECTION_NAME = "memory_diary_chunk";
+const DAILY_DIARY_COLLECTION_NAME = isDev() ? "dev_memory_diary_chunk" : "memory_diary_chunk";
+// const DAILY_DIARY_COLLECTION_NAME = "memory_diary_chunk";
+
+export interface DailyDiarySemanticSearchResult {
+  date: string;
+  content: string;
+}
 
 function buildPointId(diaryId: string, chunkIndex: number): string {
   const hex = createHash("sha256").update(`${diaryId}:${chunkIndex}`).digest("hex").slice(0, 32);
@@ -41,6 +50,11 @@ async function ensureDailyDiaryCollection(vectorSize: number): Promise<void> {
       field_schema: "integer",
       wait: true,
     }),
+    client.createPayloadIndex(DAILY_DIARY_COLLECTION_NAME, {
+      field_name: "subject",
+      field_schema: "keyword",
+      wait: true,
+    }),
   ]);
 }
 
@@ -72,7 +86,6 @@ export async function indexDailyDiary(diary: IMemoryDiary): Promise<void> {
         period: diary.period,
         diaryDate: diary.diaryDate.toISOString(),
         diaryEndDate: diary.diaryEndDate.toISOString(),
-        isDev: diary.isDev,
       },
     })),
   });
@@ -90,5 +103,40 @@ export async function indexDailyDiary(diary: IMemoryDiary): Promise<void> {
         },
       ],
     },
+  });
+}
+
+export async function searchDailyDiaryChunks(
+  query: string,
+  limit: number,
+): Promise<DailyDiarySemanticSearchResult[]> {
+  const [queryEmbedding] = await embedTexts([
+    `Instruct: ${diaryMemorySearchInstruction}\nQuery: ${query}`,
+  ]);
+  const points = await getQdrantClient().search(DAILY_DIARY_COLLECTION_NAME, {
+    vector: queryEmbedding,
+    limit,
+    filter: {
+      must: [
+        {
+          key: "subject",
+          match: { value: DEFAULT_DIARY_SUBJECT },
+        },
+      ],
+    },
+    with_payload: true,
+    with_vector: false,
+  });
+
+  return points.map((point) => {
+    const payload = point.payload as {
+      content: string;
+      diaryDate: string;
+    };
+
+    return {
+      date: formatProjectTime(new Date(payload.diaryDate), "YYYY-MM-DD"),
+      content: payload.content,
+    };
   });
 }

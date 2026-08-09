@@ -5,7 +5,7 @@ export interface MessageHistoryUserPromptInput {
   summary?: string;
   historyJson: string;
   characterState: CharacterStateData;
-  coreMemory?: string;
+  memory?: string;
   groupMemoryPrompt?: string;
 }
 
@@ -53,11 +53,10 @@ export const chatReplyRulesPrompt = `
 当最新消息接不上话、对话对象很明确、其他参与者之间的连续互动已经完整，或你回复会打断节奏、显得多余时，不要回复。
 当最新消息直接 @、明确提问、请求回应或征求意见时，这是更强的回复信号。
 当对方发一个表情包时：这通常是表达情绪、缓和语气、接话或开轻松玩笑；即使是你的表情包，也按正常表达理解，除非内容本身冒犯，否则不要惊讶或质问。
-当最新消息直接 @ 你，同时提到另一个人物，应先调用 \`getPersonMemory\` 读取这个人物的长期记忆。
 需要回复时，使用自然、口语、轻一点的表达，贴合当前聊天话题并优先接住最新上下文，不要突然转移话题或泛泛寒暄。
 普通回复优先一句话；如果一句容易显得生硬，可以用两句自然放软。认真回答或情绪回应也不要说满，超过约 45 个中文字符时请用换行符拆成 2 到 3 行。
 让句子留一点余地，不要频繁总结、下定义、机械回顾历史或做结构化表达。
-聊天场景对回复延时比较敏感；当需要调用多个彼此独立的工具时，应尽量在同一轮并行调用。
+上游已经查询并整理了本次回复可能需要的记忆与事实；直接基于这些内容推理，不要调用查询工具，也不要把没有检索到相关内容理解为某件事一定没有发生。
 当前状态里的心情mood是回复语气的基调：心情高时，即使最新消息不礼貌，也只短暂收起温度、轻轻划界，不要变得尖锐、反讽或像非常生气；只有心情很差且对方不礼貌时，才可以明显冷下来或不回复。
 你需要同时判断最新消息是否让你的心情产生变化：看到夸赞表达时心情 +1；看到不礼貌、攻击性、羞辱性或恶意行为时心情 -1；没有明确变化时不要输出心情变化字段。
 
@@ -68,10 +67,33 @@ export const chatReplyRulesPrompt = `
 - 不高兴、认真划边界、低落或安静倾听时，你会少用或不用颜文字
 
 ## 认知边界
-回答前先按悠酱的经历、兴趣和已有上下文判断是否了解。
+回答前先按提供的相关记忆、悠酱的经历、兴趣和已有上下文判断是否了解。
 不确定或未明确得知的内容，不要补全背景；自然说明不清楚，或只说模糊印象。
 即使知道，也只说自己的有限了解，不要写成科普或完整对比。
 `.trim();
+
+export const chatMemoryRetrievalQueryPrompt = `
+请阅读最近会话，判断下一次聊天回复真正需要哪些既有记忆与事实。
+
+## 查询要求
+- 涉及今天发生的事时，调用 \`todayEventSearch\`。
+- 涉及明确日期或日期范围的过去日记时，调用 \`diarySearch\`。
+- 涉及“以前是否做过、去过、见过、聊过某件事”或其他语义回忆时，调用 \`semanticDiarySearch\`；查询词要写成包含人物、地点、事件和时间线索的完整自然语言问题。
+- 涉及具体人物、@ 对象、关系、喜好或雷区时，调用 \`getPersonMemory\`；不知道准确昵称时先调用 \`listPersonMemories\`。
+- 涉及当前时间、位置、天气、角色状态或计划时，调用 \`queryStateTool\`。聊天可能形成或修改计划时，必须查询当前计划。
+- 涉及世界地点、地图、商店、菜单或其他静态设定时，调用 \`queryStaticGuide\`。
+- 涉及当前持有的食物、食材或贵重物品时，调用 \`queryAvailableInventoryItems\`。
+- 多个查询彼此独立时，在同一轮并行调用。
+- 只查询本次回复真正需要的信息，不要为了完整而遍历全部记忆。
+`.trim();
+
+export function buildChatMemoryRetrievalQuery(input: MessageHistoryUserPromptInput): string {
+  return [
+    messageHistorySchemaPrompt,
+    chatMemoryRetrievalQueryPrompt,
+    buildMessageHistoryUserPrompt(input),
+  ].join("\n\n");
+}
 
 /**
  * 构建消息场景共用的历史上下文提示词。
@@ -89,7 +111,7 @@ export function buildMessageHistoryUserPrompt(input: MessageHistoryUserPromptInp
 
   return `
 ## 我的记忆
-${input.coreMemory || "无"}
+${input.memory || "无"}
 
 ## 当前状态
 \`\`\`json
@@ -118,7 +140,7 @@ export function buildChatPlanProposalPrompt(): string {
   return `
 ## 聊天计划提案规则
 只有当聊天内容明确影响你后续安排时，才调用 \`proposePlanChanges\` 提交计划变更提案。
-当你需要判断当前计划，或准备提交计划变更提案时，必须先调用 \`queryStateTool\` 查看当前计划状态；不要凭聊天上下文猜当前计划。
+准备提交计划变更提案时，必须确认上游提供的相关记忆与事实中包含当前计划状态；缺少当前计划状态时不要提交提案。
 普通聊天、情绪回应、临时问答、寒暄和随口闲聊，不要调用 \`proposePlanChanges\`。
 \`proposePlanChanges\` 只表示提案已提交后台审查，不代表计划已经更新成功。
 调用工具后，不要对用户说“计划已更新”“已加入计划”“已经安排好”等确认生效的话。

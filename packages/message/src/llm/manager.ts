@@ -6,19 +6,14 @@ import {
   chatReplyRulesPrompt,
   createChatPlanChangesProposalTool,
   createToolCallLoggingHooks,
-  diarySearchTool,
   generateStructuredOutput,
   getCharacterCardPrompt,
-  getPersonMemoryTool,
   initCharacterStateData,
-  listPersonMemoriesTool,
   messageHistorySchemaPrompt,
-  queryAvailableInventoryItems,
-  queryStateTool,
-  queryStaticGuideTool,
   readCoreMemory,
-  todayEventSearchTool,
 } from "@yuiju/utils";
+import { retrieveMemory } from "@yuiju/utils/memory/memory-retrieval";
+import { buildChatMemoryRetrievalQuery } from "@yuiju/utils/prompt/message";
 import { Output, stepCountIs } from "ai";
 import { z } from "zod";
 // import { getGroupMemoryPromptSection } from "@/memory/group-memory";
@@ -257,6 +252,20 @@ export class LLMManager {
     ].join("\n\n");
 
     try {
+      const memory = await retrieveMemory({
+        query: buildChatMemoryRetrievalQuery({
+          summary,
+          historyJson,
+          characterState,
+          memory: coreMemory ?? undefined,
+        }),
+        abortSignal: controller.signal,
+      });
+
+      if (!this.isLatestGroupChatRequest(sessionKey, requestId)) {
+        return { status: "cancelled" };
+      }
+
       const result = await generateStructuredOutput({
         model: chatModel,
         providerOptions: {
@@ -272,19 +281,11 @@ export class LLMManager {
               summary,
               historyJson,
               characterState,
-              coreMemory: coreMemory ?? undefined,
-              // groupMemoryPrompt,
+              memory,
             }),
           },
         ],
         tools: {
-          todayEventSearch: todayEventSearchTool,
-          diarySearch: diarySearchTool,
-          listPersonMemories: listPersonMemoriesTool,
-          getPersonMemory: getPersonMemoryTool,
-          queryStateTool: queryStateTool,
-          queryStaticGuide: queryStaticGuideTool,
-          queryAvailableInventoryItems,
           proposePlanChanges: createChatPlanChangesProposalTool({
             scene: "group",
             summary,
@@ -405,6 +406,20 @@ export class LLMManager {
     ].join("\n\n");
 
     try {
+      const memory = await retrieveMemory({
+        query: buildChatMemoryRetrievalQuery({
+          summary,
+          historyJson,
+          characterState,
+          memory: coreMemory ?? undefined,
+        }),
+        abortSignal: controller.signal,
+      });
+
+      if (!this.isLatestPrivateChatRequest(sessionId, requestId)) {
+        return { status: "cancelled" };
+      }
+
       const result = await generateStructuredOutput({
         model: chatModel,
         providerOptions: {
@@ -420,18 +435,11 @@ export class LLMManager {
               summary,
               historyJson,
               characterState,
-              coreMemory: coreMemory ?? undefined,
+              memory,
             }),
           },
         ],
         tools: {
-          todayEventSearch: todayEventSearchTool,
-          diarySearch: diarySearchTool,
-          listPersonMemories: listPersonMemoriesTool,
-          getPersonMemory: getPersonMemoryTool,
-          queryStateTool: queryStateTool,
-          queryStaticGuide: queryStaticGuideTool,
-          queryAvailableInventoryItems,
           proposePlanChanges: createChatPlanChangesProposalTool({
             scene: "private",
             summary,
