@@ -1,4 +1,4 @@
-import type { Tool } from "ai";
+import { type Tool, tool } from "ai";
 import dayjs from "dayjs";
 import { z } from "zod";
 import { searchDiaries, searchEpisodes } from "../../memory";
@@ -71,10 +71,10 @@ export const diarySearchTool: Tool = {
   },
 };
 
-export const semanticDiarySearchTool: Tool = {
+export const semanticDiarySearchTool = tool({
   description: "按语义检索昨天及更早的每日记忆片段，用于回忆过去的经历、地点或人物事件。",
   inputSchema: semanticDiarySearchInputSchema,
   execute: async (input) => {
     return searchDailyDiaryChunks(input.query, input.limit ?? 5);
   },
-};
+});

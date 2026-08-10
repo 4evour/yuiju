@@ -260,6 +260,7 @@ export class LLMManager {
           memory: coreMemory ?? undefined,
         }),
         abortSignal: controller.signal,
+        semanticDiarySearchCallLimit: 2,
       });
 
       if (!this.isLatestGroupChatRequest(sessionKey, requestId)) {
@@ -414,6 +415,7 @@ export class LLMManager {
           memory: coreMemory ?? undefined,
         }),
         abortSignal: controller.signal,
+        semanticDiarySearchCallLimit: 2,
       });
 
       if (!this.isLatestPrivateChatRequest(sessionId, requestId)) {

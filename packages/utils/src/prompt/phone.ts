@@ -40,3 +40,17 @@ ${baseInformation}
 - 如果手机应用执行失败，要维持“手机”设定，用手机应用异常的方式描述。
 `.trim();
 }
+
+export function buildHermesCloudTravelSystemPrompt() {
+  return `
+## 当前手机应用
+你正在执行「云旅游」应用任务。
+
+## Skill 执行规则
+- 必须使用 mapillary skill，并严格按照该 skill 的 SKILL.md 执行。
+- 只能执行 SKILL.md 为当前任务指定的那一次 Python 查询命令，命令和参数必须符合 skill 规范。
+- Python 脚本报错、异常退出、返回 error、图片为空或结果不可用时，本次云旅游任务立即失败并结束。
+- 失败后不要修改参数、替换地点或关键词、执行第二次命令、排查或修复脚本、改用其他工具，也不要根据自己的知识补全地点、街景或感受。
+- 成功时只能根据 skill 返回的地点和图片生成结果；失败时只返回符合手机设定的应用执行失败描述。
+`.trim();
+}

@@ -8,7 +8,11 @@ import {
 import { InventoryItemCategory, type InventoryItemMetadata } from "@yuiju/utils/types/state";
 import { allTrue } from "@yuiju/utils/utils";
 import { chooseFoodAgent } from "@/llm/agent/anywhere";
-import { generateHermesUserPromptFromPhoneReason, runHermesPhoneAgent } from "@/llm/agent/phone";
+import {
+  generateHermesUserPromptFromPhoneReason,
+  type PhoneApplication,
+  runHermesPhoneAgent,
+} from "@/llm/agent/phone";
 import { logger } from "@/utils/logger";
 import { resolveFoodRecoveryPerUnit } from "../utils/food-utils";
 
@@ -88,7 +92,7 @@ export const anywhereAction: ActionMetadata[] = [
     async completionEvent(context, runningAction) {
       const phoneContext = runningAction.startContext as {
         isValidIntent: boolean;
-        phoneApplication: string;
+        phoneApplication: PhoneApplication;
         hermesUserPrompt: string;
       };
 
@@ -96,7 +100,10 @@ export const anywhereAction: ActionMetadata[] = [
 
       if (phoneContext.isValidIntent) {
         try {
-          phoneText = await runHermesPhoneAgent(phoneContext.hermesUserPrompt);
+          phoneText = await runHermesPhoneAgent(
+            phoneContext.phoneApplication,
+            phoneContext.hermesUserPrompt,
+          );
         } catch (error) {
           logger.error("[Use_Phone] 手机应用执行失败", error);
         }
