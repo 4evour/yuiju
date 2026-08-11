@@ -63,10 +63,6 @@ export interface YuijuStickerConfig {
  */
 export type YuijuStickerMap = Record<string, YuijuStickerConfig>;
 
-export interface YuijuMessageMemoryRetrievalCacheConfig {
-  similarityThreshold: number;
-}
-
 /**
  * 消息服务相关配置。
  */
@@ -78,7 +74,6 @@ export interface YuijuMessageConfig {
     onebotGroupTargetId?: number;
     larkGroupTargetId?: string;
   };
-  memoryRetrievalCache: YuijuMessageMemoryRetrievalCacheConfig;
   stickers: YuijuStickerMap;
 }
 

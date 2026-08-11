@@ -1,10 +1,11 @@
-import { getYuijuConfig } from "@yuiju/utils/config/config";
 import { embedTexts } from "@yuiju/utils/llm/embedding";
 import { memoryRetrievalCacheEmbeddingInstruction } from "@yuiju/utils/prompt/memory-retrieval";
 import { getRedis } from "@yuiju/utils/redis/client";
 import { formatProjectTime, parseProjectTime } from "@yuiju/utils/time";
 import dayjs from "dayjs";
 import type { HistoryMessageSegment } from "@/utils/message/types";
+
+const MEMORY_RETRIEVAL_CACHE_SIMILARITY_THRESHOLD = 0.95;
 
 interface MemoryRetrievalCacheEntry {
   embedding: number[];
@@ -61,8 +62,7 @@ export async function findMemoryRetrievalCache(input: {
   return {
     embedding,
     memory:
-      highestSimilarity !== null &&
-      highestSimilarity >= getYuijuConfig().message.memoryRetrievalCache.similarityThreshold
+      highestSimilarity !== null && highestSimilarity >= MEMORY_RETRIEVAL_CACHE_SIMILARITY_THRESHOLD
         ? matchedMemory
         : null,
     similarity: highestSimilarity,
