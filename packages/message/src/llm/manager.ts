@@ -12,11 +12,18 @@ import {
   messageHistorySchemaPrompt,
   readCoreMemory,
 } from "@yuiju/utils";
+import { todayEventSearchTool } from "@yuiju/utils/llm/tools/memory-search";
+import { queryAvailableInventoryItems } from "@yuiju/utils/llm/tools/query-available-inventory-items";
+import { queryStateTool } from "@yuiju/utils/llm/tools/query-state";
 import { retrieveMemory } from "@yuiju/utils/memory/memory-retrieval";
 import { buildChatMemoryRetrievalQuery } from "@yuiju/utils/prompt/message";
 import { Output, stepCountIs } from "ai";
 import { z } from "zod";
 // import { getGroupMemoryPromptSection } from "@/memory/group-memory";
+import {
+  findMemoryRetrievalCache,
+  saveMemoryRetrievalCache,
+} from "@/memory/memory-retrieval-cache";
 import { stickerState } from "@/state/sticker";
 import { logger } from "@/utils/logger";
 import {
@@ -252,16 +259,39 @@ export class LLMManager {
     ].join("\n\n");
 
     try {
-      const memory = await retrieveMemory({
-        query: buildChatMemoryRetrievalQuery({
-          summary,
-          historyJson,
-          characterState,
-          memory: coreMemory ?? undefined,
-        }),
-        abortSignal: controller.signal,
-        semanticDiarySearchCallLimit: 2,
+      const memoryCache = await findMemoryRetrievalCache({
+        userId: message.sender.id,
+        messageContent: message.content,
       });
+      let memory = memoryCache.memory;
+
+      if (memory === null) {
+        logger.info("[message.memory-cache] 稳定记忆缓存未命中", {
+          scene: "group",
+          userId: message.sender.id,
+          similarity: memoryCache.similarity,
+        });
+        memory = await retrieveMemory({
+          query: buildChatMemoryRetrievalQuery({
+            summary,
+            historyJson,
+            memory: coreMemory ?? undefined,
+          }),
+          abortSignal: controller.signal,
+          semanticDiarySearchCallLimit: 2,
+        });
+        await saveMemoryRetrievalCache({
+          userId: message.sender.id,
+          embedding: memoryCache.embedding,
+          memory,
+        });
+      } else {
+        logger.info("[message.memory-cache] 稳定记忆缓存命中", {
+          scene: "group",
+          userId: message.sender.id,
+          similarity: memoryCache.similarity,
+        });
+      }
 
       if (!this.isLatestGroupChatRequest(sessionKey, requestId)) {
         return { status: "cancelled" };
@@ -287,6 +317,9 @@ export class LLMManager {
           },
         ],
         tools: {
+          todayEventSearch: todayEventSearchTool,
+          queryStateTool,
+          queryAvailableInventoryItems,
           proposePlanChanges: createChatPlanChangesProposalTool({
             scene: "group",
             summary,
@@ -407,16 +440,34 @@ export class LLMManager {
     ].join("\n\n");
 
     try {
-      const memory = await retrieveMemory({
-        query: buildChatMemoryRetrievalQuery({
-          summary,
-          historyJson,
-          characterState,
-          memory: coreMemory ?? undefined,
-        }),
-        abortSignal: controller.signal,
-        semanticDiarySearchCallLimit: 2,
+      const memoryCache = await findMemoryRetrievalCache({
+        userId: message.sender.id,
+        messageContent: message.content,
       });
+      let memory = memoryCache.memory;
+
+      if (memory === null) {
+        memory = await retrieveMemory({
+          query: buildChatMemoryRetrievalQuery({
+            summary,
+            historyJson,
+            memory: coreMemory ?? undefined,
+          }),
+          abortSignal: controller.signal,
+          semanticDiarySearchCallLimit: 2,
+        });
+        await saveMemoryRetrievalCache({
+          userId: message.sender.id,
+          embedding: memoryCache.embedding,
+          memory,
+        });
+      } else {
+        logger.info("[message.memory-cache] 稳定记忆缓存命中", {
+          scene: "private",
+          userId: message.sender.id,
+          similarity: memoryCache.similarity,
+        });
+      }
 
       if (!this.isLatestPrivateChatRequest(sessionId, requestId)) {
         return { status: "cancelled" };
@@ -426,7 +477,7 @@ export class LLMManager {
         model: chatModel,
         providerOptions: {
           chat: {
-            enable_thinking: true,
+            enable_thinking: false,
           },
         },
         instructions: systemPrompt,
@@ -442,6 +493,9 @@ export class LLMManager {
           },
         ],
         tools: {
+          todayEventSearch: todayEventSearchTool,
+          queryStateTool,
+          queryAvailableInventoryItems,
           proposePlanChanges: createChatPlanChangesProposalTool({
             scene: "private",
             summary,

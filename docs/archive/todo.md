@@ -1,7 +1,7 @@
 ## TODO
 
+- 主动分享时，调用一次记忆工具
 - 世界变动通知
-- 使用 tool call 进行结构化输出
 - eventDescription 滥用治理
 - 更改心情变化幅度
 - 上学 Action 不执行会有惩罚，课程安排

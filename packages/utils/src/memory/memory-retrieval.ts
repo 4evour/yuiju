@@ -2,14 +2,8 @@ import { generateText, stepCountIs, tool } from "ai";
 import { getLangfuseTelemetry } from "../llm/langfuse-telemetry";
 import { flashModel } from "../llm/models";
 import { createToolCallLoggingHooks } from "../llm/tool-call-logger";
-import {
-  diarySearchTool,
-  semanticDiarySearchTool,
-  todayEventSearchTool,
-} from "../llm/tools/memory-search";
+import { diarySearchTool, semanticDiarySearchTool } from "../llm/tools/memory-search";
 import { getPersonMemoryTool, listPersonMemoriesTool } from "../llm/tools/person-memory";
-import { queryAvailableInventoryItems } from "../llm/tools/query-available-inventory-items";
-import { queryStateTool } from "../llm/tools/query-state";
 import { queryStaticGuideTool } from "../llm/tools/query-static-guide";
 import { memoryRetrievalSystemPrompt } from "../prompt/memory-retrieval";
 
@@ -22,7 +16,6 @@ export interface MemoryRetrievalInput {
 export async function retrieveMemory(input: MemoryRetrievalInput): Promise<string> {
   let semanticDiarySearchCallCount = 0;
   const tools = {
-    todayEventSearch: todayEventSearchTool,
     diarySearch: diarySearchTool,
     semanticDiarySearch: tool({
       description: semanticDiarySearchTool.description,
@@ -41,9 +34,7 @@ export async function retrieveMemory(input: MemoryRetrievalInput): Promise<strin
     }),
     listPersonMemories: listPersonMemoriesTool,
     getPersonMemory: getPersonMemoryTool,
-    queryStateTool,
     queryStaticGuide: queryStaticGuideTool,
-    queryAvailableInventoryItems,
   };
   const toolNames = Object.keys(tools) as Array<keyof typeof tools>;
 
