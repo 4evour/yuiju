@@ -120,18 +120,14 @@ export interface YuijuLlmModelsConfig {
   embedding?: YuijuEmbeddingModelConfig;
 }
 
-/**
- * Hermes Agent 服务配置。
- */
-export interface YuijuHermesAgentConfig {
-  baseUrl: string;
-  apiKey: string;
-  model: string;
-}
-
 export interface YuijuLlmConfig {
   models: YuijuLlmModelsConfig;
-  hermesAgent: YuijuHermesAgentConfig;
+}
+
+export interface YuijuWorldConfig {
+  phone?: {
+    mapillaryAccessToken?: string;
+  };
 }
 
 export interface YuijuLangfuseConfig {
@@ -171,6 +167,7 @@ export interface YuijuConfig {
   app: YuijuAppConfig;
   database: YuijuDatabaseConfig;
   llm: YuijuLlmConfig;
+  world: YuijuWorldConfig;
   message: YuijuMessageConfig;
   /** 未配置时不启用 LLM trace。 */
   observability?: YuijuObservabilityConfig;

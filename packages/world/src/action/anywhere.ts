@@ -1,3 +1,4 @@
+import { getYuijuConfig } from "@yuiju/utils/config/config";
 import { planManager } from "@yuiju/utils/memory/plan/manager";
 import {
   type ActionContext,
@@ -9,9 +10,9 @@ import { InventoryItemCategory, type InventoryItemMetadata } from "@yuiju/utils/
 import { allTrue } from "@yuiju/utils/utils";
 import { chooseFoodAgent } from "@/llm/agent/anywhere";
 import {
-  generateHermesUserPromptFromPhoneReason,
+  generatePhoneUsePlanFromReason,
   type PhoneApplication,
-  runHermesPhoneAgent,
+  runPhoneApplication,
 } from "@/llm/agent/phone";
 import { logger } from "@/utils/logger";
 import { resolveFoodRecoveryPerUnit } from "../utils/food-utils";
@@ -56,12 +57,15 @@ export const anywhereAction: ActionMetadata[] = [
       enabled: true,
     },
     precondition(context) {
-      return context.characterStateData.phoneBattery >= 30;
+      return Boolean(
+        context.characterStateData.phoneBattery >= 30 &&
+          getYuijuConfig().world.phone?.mapillaryAccessToken?.trim(),
+      );
     },
     async executor(context, selectedAction) {
       await context.characterState.setAction(ActionId.Use_Phone);
 
-      const phoneUsePlan = await generateHermesUserPromptFromPhoneReason(selectedAction.reason);
+      const phoneUsePlan = await generatePhoneUsePlanFromReason(selectedAction.reason);
       if (phoneUsePlan.isValidIntent) {
         context.runtimeState.actionSummaryText = [
           `悠酱在「${context.characterStateData.location.major}${context.characterStateData.location.minor ? `-${context.characterStateData.location.minor}` : ""}」开始使用手机里的「${phoneUsePlan.phoneApplication}」`,
@@ -84,7 +88,7 @@ export const anywhereAction: ActionMetadata[] = [
         startContext: {
           isValidIntent: phoneUsePlan.isValidIntent,
           phoneApplication: phoneUsePlan.phoneApplication,
-          hermesUserPrompt: phoneUsePlan.hermesUserPrompt,
+          cloudTravelLocation: phoneUsePlan.cloudTravelLocation,
         },
       };
     },
@@ -93,16 +97,16 @@ export const anywhereAction: ActionMetadata[] = [
       const phoneContext = runningAction.startContext as {
         isValidIntent: boolean;
         phoneApplication: PhoneApplication;
-        hermesUserPrompt: string;
+        cloudTravelLocation: string | null;
       };
 
       let phoneText = "手机里的地图应用好像突然崩溃了，这次没能看到街景。";
 
       if (phoneContext.isValidIntent) {
         try {
-          phoneText = await runHermesPhoneAgent(
+          phoneText = await runPhoneApplication(
             phoneContext.phoneApplication,
-            phoneContext.hermesUserPrompt,
+            phoneContext.cloudTravelLocation,
           );
         } catch (error) {
           logger.error("[Use_Phone] 手机应用执行失败", error);

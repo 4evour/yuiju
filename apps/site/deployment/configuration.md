@@ -21,6 +21,7 @@ const config = defineYuijuConfig({
   app: {},
   database: {},
   llm: {},
+  world: {},
   message: {},
 });
 
@@ -119,25 +120,27 @@ llm: {
       },
     ],
   },
-  hermesAgent: {
-    baseUrl: "https://api.example.com/v1",
-    apiKey: "your-api-key",
-    model: "hermes-compatible-model",
+},
+```
+
+## `world.phone`：手机应用配置
+
+手机应用直接使用 world 模块内的能力实现。云旅游需要配置 Mapillary access token 才能查询街景图片。
+
+| 字段                               | 类型     | 必填 | 含义                         |
+| ---------------------------------- | -------- | ---- | ---------------------------- |
+| `world.phone`                      | `object` | 否   | 手机应用配置。               |
+| `world.phone.mapillaryAccessToken` | `string` | 否   | 云旅游查询街景使用的 token。 |
+
+```ts
+world: {
+  phone: {
+    mapillaryAccessToken: "your-mapillary-access-token",
   },
 },
 ```
 
-## `llm.hermesAgent`：Hermes Agent 模型
-
-Hermes Agent 是独立于四类通用模型的 OpenAI-compatible 模型配置，目前用于 phone Agent 流程。
-
-| 字段                      | 类型     | 必填 | 含义                             |
-| ------------------------- | -------- | ---- | -------------------------------- |
-| `llm.hermesAgent.baseUrl` | `string` | 是   | Hermes Agent 使用的 API 根地址。 |
-| `llm.hermesAgent.apiKey`  | `string` | 是   | Hermes Agent API Key。           |
-| `llm.hermesAgent.model`   | `string` | 是   | Hermes Agent 模型标识。          |
-
-这三个字段在配置类型中都是必填字段，不会自动继承 `llm.models` 中的任一来源。
+未配置 `world.phone`、未配置 `mapillaryAccessToken` 或 token 为空字符串时，不启用云旅游功能。
 
 ## `message.internalApi`：内部消息 API
 

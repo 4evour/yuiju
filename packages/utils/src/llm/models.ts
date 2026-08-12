@@ -155,11 +155,3 @@ export const flashModel = createFallbackModel("flash", config.llm.models.flash);
  * 主要用于图片描述（识图场景）
  */
 export const visionModel = createFallbackModel("vision", config.llm.models.vision);
-
-const hermesAgentProvider = createOpenAICompatible({
-  baseURL: config.llm.hermesAgent.baseUrl,
-  apiKey: config.llm.hermesAgent.apiKey,
-  name: "hermes-agent",
-});
-
-export const hermesAgentModel = hermesAgentProvider(config.llm.hermesAgent.model);

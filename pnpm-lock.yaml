@@ -240,9 +240,6 @@ importers:
 
   packages/world:
     dependencies:
-      '@yuiju/source':
-        specifier: workspace:*
-        version: link:../source
       '@yuiju/utils':
         specifier: workspace:*
         version: link:../utils

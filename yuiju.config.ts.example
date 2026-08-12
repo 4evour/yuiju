@@ -51,12 +51,8 @@ const config = defineYuijuConfig({
       //   dimensions: 1024,
       // },
     },
-    hermesAgent: {
-      baseUrl: "",
-      apiKey: "",
-      model: "",
-    },
   },
+  world: {},
   // observability: {
   //   langfuse: {
   //     secretKey: "sk-lf-xxx",

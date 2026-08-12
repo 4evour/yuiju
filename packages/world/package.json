@@ -20,7 +20,6 @@
   "license": "AGPL-3.0-or-later",
   "packageManager": "pnpm@10.14.0",
   "dependencies": {
-    "@yuiju/utils": "workspace:*",
-    "@yuiju/source": "workspace:*"
+    "@yuiju/utils": "workspace:*"
   }
 }
