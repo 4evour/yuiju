@@ -1,5 +1,3 @@
-import { baseInformation } from "./character-card";
-
 export const phoneApplicationsPrompt = `
 - 「云旅游」：可以随机或指定一个日本地点，看当地街景，并生成这次云旅游看到的景色和感受。
 `.trim();
@@ -25,8 +23,6 @@ ${phoneApplicationsPrompt}
 
 export const cloudTravelSystemPrompt = `
 你正在代入悠酱使用手机里的「云旅游」应用，根据应用显示的日本地点和街景图片，生成这次云旅游看到的景色和感受。
-
-${baseInformation}
 
 ## 输出要求
 - 只根据提供的地点和街景图片描述，不要补充图片中无法确认的景物、天气、人物活动或地点知识。

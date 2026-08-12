@@ -1,6 +1,7 @@
 import { getYuijuConfig } from "@yuiju/utils/config/config";
 import { getLangfuseTelemetry } from "@yuiju/utils/llm/langfuse-telemetry";
 import { visionModel } from "@yuiju/utils/llm/models";
+import { baseInformation } from "@yuiju/utils/prompt/character-card";
 import { cloudTravelSystemPrompt } from "@yuiju/utils/prompt/phone";
 import { generateText } from "ai";
 
@@ -228,7 +229,7 @@ export async function runCloudTravel(location: string | null) {
   const { text } = await generateText({
     model: visionModel,
     telemetry: getLangfuseTelemetry(),
-    instructions: cloudTravelSystemPrompt,
+    instructions: [baseInformation, cloudTravelSystemPrompt].join("\n\n"),
     providerOptions: {
       vision: {
         enable_thinking: false,
