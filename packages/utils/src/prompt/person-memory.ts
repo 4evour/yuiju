@@ -1,4 +1,4 @@
-import { messageHistorySchemaPrompt } from "./message";
+import { chatWorldRelationshipBoundaryPrompt, messageHistorySchemaPrompt } from "./message";
 
 export interface PersonMemoryProposalPromptInput {
   scene: "private" | "group";
@@ -35,6 +35,8 @@ ${messageHistorySchemaPrompt}
 
 ## 本次互动材料
 ${input.interactionMaterial}
+
+${chatWorldRelationshipBoundaryPrompt}
 
 ## 固定 sections key
 ${input.sectionKeys.map((section) => `- ${section}`).join("\n")}
@@ -91,6 +93,8 @@ ${messageHistorySchemaPrompt}
 
 ## 本次互动材料
 ${input.interactionMaterial}
+
+${chatWorldRelationshipBoundaryPrompt}
 
 ## 候选提案
 ${input.proposalJson}
