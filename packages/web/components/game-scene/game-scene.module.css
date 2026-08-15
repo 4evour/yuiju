@@ -1,0 +1,57 @@
+.frame {
+  position: relative;
+  width: min(960px, 100%);
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 4px solid #493247;
+  border-radius: 12px;
+  background: #d9b879;
+  box-shadow:
+    0 24px 70px rgb(72 48 59 / 18%),
+    0 0 0 6px rgb(255 255 255 / 52%);
+}
+
+.controlMode {
+  position: absolute;
+  z-index: 1;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  gap: 2px;
+  min-width: 0;
+  margin: 0;
+  padding: 3px;
+  border: 2px solid #493247;
+  border-radius: 8px;
+  background: rgb(242 234 215 / 88%);
+  box-shadow: 0 4px 12px rgb(73 50 71 / 20%);
+}
+
+.controlMode button {
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 4px;
+  color: #493247;
+  background: transparent;
+  font-family: "Fusion Pixel 12px Proportional", sans-serif;
+  font-synthesis: none;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.controlMode .activeControlModeButton {
+  color: #fff9ea;
+  background: #493247;
+}
+
+.gameContainer,
+.gameContainer canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.gameContainer canvas {
+  display: block;
+  image-rendering: pixelated;
+  touch-action: none;
+}
