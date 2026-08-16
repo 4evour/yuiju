@@ -1,31 +1,44 @@
 import Phaser from "phaser";
-import { GAME_CONTROL_MODE_REGISTRY_KEY, type GameControlMode } from "./control-mode";
-import { MoonTideCoastScene } from "./scenes/moon-tide-coast-scene";
+import {
+  CAMERA_FOLLOW_CHARACTER_REGISTRY_KEY,
+  GAME_CONTROL_MODE_REGISTRY_KEY,
+  INITIAL_CAMERA_FOLLOW_CHARACTER,
+  INITIAL_GAME_CONTROL_MODE,
+} from "./scenes/moon-tide-coast/control-mode";
+import { MoonTideCoastScene } from "./scenes/moon-tide-coast/moon-tide-coast-scene";
+import { PreloadScene } from "./scenes/preload/preload-scene";
+import { WorldMapScene } from "./scenes/world-map/world-map-scene";
 
-const GAME_WIDTH = 960;
-const GAME_HEIGHT = 540;
-
-export function createGame(parent: HTMLDivElement, initialControlMode: GameControlMode) {
+export function createGame(parent: HTMLDivElement, width: number, height: number) {
   return new Phaser.Game({
     type: Phaser.AUTO,
     parent,
-    width: GAME_WIDTH,
-    height: GAME_HEIGHT,
+    width,
+    height,
     backgroundColor: "#d9b879",
     pixelArt: true,
     antialias: false,
     roundPixels: true,
+    physics: {
+      default: "arcade",
+      arcade: {
+        debug: false,
+        debugShowBody: true,
+        debugShowStaticBody: true,
+        debugShowVelocity: true,
+      },
+    },
     callbacks: {
       preBoot(game) {
-        game.registry.set(GAME_CONTROL_MODE_REGISTRY_KEY, initialControlMode);
+        game.registry.set(GAME_CONTROL_MODE_REGISTRY_KEY, INITIAL_GAME_CONTROL_MODE);
+        game.registry.set(CAMERA_FOLLOW_CHARACTER_REGISTRY_KEY, INITIAL_CAMERA_FOLLOW_CHARACTER);
       },
     },
     scale: {
-      mode: Phaser.Scale.FIT,
-      autoCenter: Phaser.Scale.CENTER_BOTH,
-      width: GAME_WIDTH,
-      height: GAME_HEIGHT,
+      mode: Phaser.Scale.NONE,
+      width,
+      height,
     },
-    scene: [MoonTideCoastScene],
+    scene: [PreloadScene, WorldMapScene, MoonTideCoastScene],
   });
 }

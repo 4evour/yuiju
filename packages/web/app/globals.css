@@ -2,6 +2,22 @@
 @import "tw-animate-css";
 
 @font-face {
+  font-family: "Fusion Pixel 8px Proportional";
+  src: url("/fonts/fusion-pixel-8px-proportional-zh-hans-v2026.07.20.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Fusion Pixel 10px Proportional";
+  src: url("/fonts/fusion-pixel-10px-proportional-zh-hans-v2026.07.20.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
   font-family: "Fusion Pixel 12px Proportional";
   src: url("/fonts/fusion-pixel-12px-proportional-zh-hans-v2026.07.20.woff2") format("woff2");
   font-style: normal;

@@ -47,10 +47,15 @@ function SpriteFrame({ frame, alt }: { frame: AnimationFrame; alt: string }) {
 
 export function SpriteEditor({ sourceSheets }: SpriteEditorProps) {
   const hoverPreviewTimer = useRef<number | undefined>(undefined);
+  const hoveredFrameKey = useRef<string | undefined>(undefined);
+  const logicalPixelHeightByFrameKey = useRef(new Map<string, number>());
   const [animationFrames, setAnimationFrames] = useState<AnimationFrame[]>([]);
   const [frameDuration, setFrameDuration] = useState(500);
   const [animationTick, setAnimationTick] = useState(0);
-  const [hoverPreviewFrame, setHoverPreviewFrame] = useState<AnimationFrame>();
+  const [hoverPreview, setHoverPreview] = useState<{
+    frame: AnimationFrame;
+    logicalPixelHeight: number;
+  }>();
 
   useEffect(() => {
     if (animationFrames.length === 0) {
@@ -94,15 +99,64 @@ export function SpriteEditor({ sourceSheets }: SpriteEditorProps) {
   };
 
   const startHoverPreview = (frame: AnimationFrame) => {
-    hoverPreviewTimer.current = window.setTimeout(() => {
-      setHoverPreviewFrame(frame);
+    hoveredFrameKey.current = frame.key;
+    hoverPreviewTimer.current = window.setTimeout(async () => {
+      let logicalPixelHeight = logicalPixelHeightByFrameKey.current.get(frame.key);
+
+      if (logicalPixelHeight === undefined) {
+        const image = new Image();
+        image.src = frame.sourceUrl;
+        await image.decode();
+
+        const canvas = document.createElement("canvas");
+        canvas.width = FRAME_SIZE;
+        canvas.height = FRAME_SIZE;
+        const context = canvas.getContext("2d")!;
+        context.drawImage(
+          image,
+          frame.offsetX,
+          frame.offsetY,
+          FRAME_SIZE,
+          FRAME_SIZE,
+          0,
+          0,
+          FRAME_SIZE,
+          FRAME_SIZE,
+        );
+
+        const framePixels = context.getImageData(0, 0, FRAME_SIZE, FRAME_SIZE).data;
+        let top = FRAME_SIZE;
+        let bottom = -1;
+        for (let y = 0; y < FRAME_SIZE; y += 1) {
+          for (let x = 0; x < FRAME_SIZE; x += 1) {
+            if (framePixels[(y * FRAME_SIZE + x) * 4 + 3] === 0) {
+              continue;
+            }
+
+            top = Math.min(top, y);
+            bottom = Math.max(bottom, y);
+          }
+        }
+
+        if (bottom === -1) {
+          throw new Error(`${frame.sourceName} 的帧 ${frame.offsetX}, ${frame.offsetY} 为空。`);
+        }
+
+        logicalPixelHeight = bottom - top + 1;
+        logicalPixelHeightByFrameKey.current.set(frame.key, logicalPixelHeight);
+      }
+
+      if (hoveredFrameKey.current === frame.key) {
+        setHoverPreview({ frame, logicalPixelHeight });
+      }
     }, 1000);
   };
 
   const stopHoverPreview = () => {
+    hoveredFrameKey.current = undefined;
     window.clearTimeout(hoverPreviewTimer.current);
     hoverPreviewTimer.current = undefined;
-    setHoverPreviewFrame(undefined);
+    setHoverPreview(undefined);
   };
 
   const moveFrame = (frameIndex: number, nextFrameIndex: number) => {
@@ -239,11 +293,14 @@ export function SpriteEditor({ sourceSheets }: SpriteEditorProps) {
                         </span>
                       ) : null}
 
-                      {hoverPreviewFrame?.key === frame.key ? (
+                      {hoverPreview?.frame.key === frame.key ? (
                         <div className="pointer-events-none absolute top-0 left-full z-50 ml-[10px] h-[256px] w-[256px] overflow-hidden rounded-[8px] border-4 border-[#493247] bg-[#d9b879] shadow-[0_18px_45px_rgb(72_48_59_/_30%)]">
                           <div className="origin-top-left scale-[2]">
                             <SpriteFrame frame={frame} alt="放大的素材帧" />
                           </div>
+                          <p className="absolute right-[8px] bottom-[8px] left-[8px] rounded-[4px] bg-[#493247]/90 px-[8px] py-[5px] text-center font-fusion-pixel text-[12px] text-[#fff9ea]">
+                            逻辑像素高：{hoverPreview.logicalPixelHeight} px
+                          </p>
                         </div>
                       ) : null}
                     </div>

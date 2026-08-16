@@ -21,7 +21,7 @@ export interface HomeResponse {
   data: {
     status?: {
       behavior?: string;
-      location?: string;
+      location?: Awaited<ReturnType<typeof initCharacterStateData>>["location"]["major"];
       stamina?: { current?: number; max?: number };
       satiety?: number;
       mood?: number;
