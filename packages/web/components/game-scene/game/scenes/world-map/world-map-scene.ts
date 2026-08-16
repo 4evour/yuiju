@@ -1,4 +1,4 @@
-import type { MajorScene } from "@yuiju/utils/types/state";
+import type { MajorScene } from "@yuiju/utils/types/major-scene";
 import Phaser from "phaser";
 import worldMap from "../../../assets/scenes/world-map.webp";
 import { CHARACTER_ANIMATION, CHARACTER_ATLAS } from "../../character/character-animation-constant";

@@ -1,4 +1,4 @@
-import { MajorScene } from "@yuiju/utils/types/state";
+import { MajorScene } from "@yuiju/utils/types/major-scene";
 import { MOON_TIDE_COAST_SCENE_KEY } from "../../scene";
 
 export const WORLD_MAP_CHARACTER_LOCATION_CHANGE_EVENT = "world-map-character-location-change";
