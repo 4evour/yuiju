@@ -100,14 +100,15 @@ export const trainStationAction: ActionMetadata[] = [
   },
   {
     action: ActionId.Take_Train_To_Coast_From_Train_Station,
-    description: "从羽浦站乘电车前往月汐海岸。[金币-3][体力-7][饱腹-5][耗时15分钟]",
+    description: `从羽浦站乘电车前往月汐海岸。[金币-3][体力-7][饱腹-5][需金币≥${TRAIN_FARE * 2}][耗时15分钟]`,
     proactiveShare: {
       enabled: true,
     },
     precondition(context) {
       return allTrue([
         () => isAtTrainStation(context),
-        () => context.characterStateData.money >= TRAIN_FARE,
+        // 预留往返车费：离开海岸的唯一方式是乘电车返回，同样需要 TRAIN_FARE
+        () => context.characterStateData.money >= TRAIN_FARE * 2,
       ]);
     },
     async executor(context) {
