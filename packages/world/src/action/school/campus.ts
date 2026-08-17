@@ -20,11 +20,14 @@ function isAtSchoolCampus(context: ActionContext) {
   );
 }
 
+/** 上课消耗 12 体力，且下课后「从学校回家」要求体力 ≥ 10，预留两者之和 */
+const STUDY_REQUIRED_STAMINA = 22;
+
 export const schoolAction: ActionMetadata[] = [
   {
     // TODO：逻辑优化，上课时间应该是固定的时间段，而不是随时可以上课
     action: ActionId.Study_At_School,
-    description: "在星见丘高校上课。[体力-12][饱腹-12][心情-5][耗时动态]",
+    description: `在星见丘高校上课。[体力-12][饱腹-12][心情-5][需体力≥${STUDY_REQUIRED_STAMINA}][耗时动态]`,
     proactiveShare: {
       enabled: true,
     },
@@ -37,6 +40,7 @@ export const schoolAction: ActionMetadata[] = [
           return (hour >= 9 && hour < 12) || (hour >= 14 && hour < 16);
         },
         isWeekday(context),
+        context.characterStateData.stamina >= STUDY_REQUIRED_STAMINA,
       ]);
     },
     async executor(context) {
@@ -94,7 +98,7 @@ export const schoolAction: ActionMetadata[] = [
   },
   {
     action: ActionId.Go_Home_From_School,
-    description: "从星见丘高校回家。[体力-7][饱腹-5][耗时20分钟]",
+    description: "从星见丘高校回家。[体力-7][饱腹-5][仅限下午][需体力≥10][耗时20分钟]",
     proactiveShare: {
       enabled: true,
     },
