@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 const navItems = [
   { key: "home", href: "/", label: "首页" },
+  { key: "chat", href: "/chat", label: "聊天" },
   { key: "activity", href: "/activity", label: "动态" },
   { key: "diary", href: "/diary", label: "日记" },
   { key: "logs", href: "/logs", label: "日志" },
@@ -13,6 +14,7 @@ const navItems = [
 ];
 
 type NavbarProps = {
+  showChat?: boolean;
   showActivity?: boolean;
   showDiary?: boolean;
   showLogs?: boolean;
@@ -20,6 +22,7 @@ type NavbarProps = {
 };
 
 export const Navbar = ({
+  showChat = true,
   showActivity = true,
   showDiary = true,
   showLogs = true,
@@ -31,6 +34,9 @@ export const Navbar = ({
     "bg-[#91c4ee]/30 text-[#2b2f36] shadow-[inset_0_0_0_1px_rgba(145,196,238,0.25)]";
   const idleLinkClass = "text-[#6b7480] hover:bg-[#91c4ee]/20 hover:text-[#2b2f36]";
   const visibleItems = navItems.filter((item) => {
+    if (item.key === "chat") {
+      return showChat;
+    }
     if (item.key === "activity") {
       return showActivity;
     }

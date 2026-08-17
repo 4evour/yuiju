@@ -5,8 +5,8 @@ import {
   getProtocolMessageSenderName,
   getProtocolMessageTimestampMs,
   projectStoredMessageContent,
-  type StoredSatoriChatMessage,
-} from "@/utils/message";
+} from "../utils/message/history";
+import type { StoredSatoriChatMessage } from "../utils/message/types";
 
 export interface ChatWindowMessageItem {
   speaker_name: string;

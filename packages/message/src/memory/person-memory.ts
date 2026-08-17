@@ -6,10 +6,12 @@ import {
   getProtocolMessageSenderName,
   getProtocolMessageTimestampMs,
   projectStoredMessageContent,
-  type StoredSatoriChatMessage,
-  type StoredSatoriGroupMessage,
-  type StoredSatoriPrivateMessage,
-} from "../utils/message";
+} from "../utils/message/history";
+import type {
+  StoredSatoriChatMessage,
+  StoredSatoriGroupMessage,
+  StoredSatoriPrivateMessage,
+} from "../utils/message/types";
 
 export interface ChatWindowState<TMessage extends StoredSatoriChatMessage> {
   sessionLabel: string;

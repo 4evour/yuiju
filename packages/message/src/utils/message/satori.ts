@@ -2,6 +2,7 @@ import type { h, Session } from "@satorijs/core";
 import type { Message as SatoriMessage } from "@satorijs/protocol";
 import { SUBJECT_NAME } from "@yuiju/utils";
 import { resolveSatoriImageDescriptions } from "./image";
+import { buildSatoriGroupSessionKey, buildSatoriPrivateSessionKey } from "./session-key";
 import type {
   HistoryMessageSegment,
   HistoryReplySegment,
@@ -9,6 +10,8 @@ import type {
   StoredSatoriMessageSender,
   StoredSatoriPrivateMessage,
 } from "./types";
+
+export { buildSatoriGroupSessionKey, buildSatoriPrivateSessionKey } from "./session-key";
 
 const HISTORY_TEXT_SEGMENT_LIMIT = 300;
 const HISTORY_TEXT_TRUNCATED_SUFFIX = "...[已截断]";
@@ -129,14 +132,6 @@ export async function createStoredSatoriPrivateBotMessage(input: {
     elements: input.elements,
     content: await projectSatoriElementsToHistoryContent(elementsWithoutQuote(input.elements)),
   };
-}
-
-export function buildSatoriGroupSessionKey(platform: string, channelId: string): string {
-  return `group:${platform}:${channelId}`;
-}
-
-export function buildSatoriPrivateSessionKey(platform: string, channelId: string): string {
-  return `private:${platform}:${channelId}`;
 }
 
 /**

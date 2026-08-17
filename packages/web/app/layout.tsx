@@ -1,4 +1,5 @@
 import { Analytics } from "@vercel/analytics/next";
+import { getYuijuConfig } from "@yuiju/utils";
 import type { Metadata } from "next";
 import { Toaster } from "@/components/ui/sonner";
 import { Navbar } from "@/lib/components/navbar";
@@ -22,6 +23,7 @@ export default function RootLayout({
     <html lang="zh-CN">
       <body className="antialiased">
         <Navbar
+          showChat={showInternalPages && getYuijuConfig().message.web.enabled}
           showActivity
           showDiary
           showLogs={showInternalPages}

@@ -64,9 +64,19 @@ export interface YuijuStickerConfig {
 export type YuijuStickerMap = Record<string, YuijuStickerConfig>;
 
 /**
+ * 本地 Web 私聊渠道配置。
+ */
+export interface YuijuWebChatConfig {
+  enabled: boolean;
+  ownerId: string;
+  ownerName: string;
+}
+
+/**
  * 消息服务相关配置。
  */
 export interface YuijuMessageConfig {
+  web: YuijuWebChatConfig;
   onebot: YuijuOneBotConfig;
   lark: YuijuLarkConfig;
   internalApi: YuijuMessageInternalApiConfig;

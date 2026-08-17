@@ -1,10 +1,11 @@
 # 消息服务 (@yuiju/message)
 
-`@yuiju/message` 是外部消息入口，负责接入 OneBot / Lark，标准化平台消息，调用 LLM 生成回复，并维护私聊、群聊上下文。
+`@yuiju/message` 是消息入口，负责接入 OneBot / Lark / 本地 Web 私聊，标准化平台消息，调用 LLM 生成回复，并维护私聊、群聊上下文。
 
 ## 当前职责
 
 - 通过 Satori 接入 OneBot 和 Lark。
+- 通过 `@yuiju/message/web-chat` 为本地 Web 提供复用完整私聊链路的稳定入口。
 - 根据 `message.onebot` / `message.lark` 白名单处理私聊和群聊。
 - 将平台消息转换成统一的内部消息结构。
 - 维护私聊、群聊历史、滚动摘要和记忆写入边界。
@@ -32,6 +33,7 @@ src/
 - `llm.models`
 - `message.onebot`
 - `message.lark`
+- `message.web`
 - `message.internalApi`
 - `message.stickers`
 

@@ -1,9 +1,9 @@
-import { embedTexts } from "@yuiju/utils/llm/embedding";
+import { embedTexts, hasEmbeddingModel } from "@yuiju/utils/llm/embedding";
 import { memoryRetrievalCacheEmbeddingInstruction } from "@yuiju/utils/prompt/memory-retrieval";
 import { getRedis } from "@yuiju/utils/redis/client";
 import { formatProjectTime, parseProjectTime } from "@yuiju/utils/time";
 import dayjs from "dayjs";
-import type { HistoryMessageSegment } from "@/utils/message/types";
+import type { HistoryMessageSegment } from "../utils/message/types";
 
 const MEMORY_RETRIEVAL_CACHE_SIMILARITY_THRESHOLD = 0.95;
 
@@ -13,7 +13,7 @@ interface MemoryRetrievalCacheEntry {
 }
 
 export interface MemoryRetrievalCacheLookup {
-  embedding: number[];
+  embedding: number[] | null;
   memory: string | null;
   similarity: number | null;
 }
@@ -41,6 +41,14 @@ export async function findMemoryRetrievalCache(input: {
   userId: string;
   messageContent: HistoryMessageSegment[];
 }): Promise<MemoryRetrievalCacheLookup> {
+  if (!hasEmbeddingModel()) {
+    return {
+      embedding: null,
+      memory: null,
+      similarity: null,
+    };
+  }
+
   const [[embedding], rawEntries] = await Promise.all([
     embedTexts([
       `Instruct: ${memoryRetrievalCacheEmbeddingInstruction}\nQuery: ${JSON.stringify(input.messageContent)}`,

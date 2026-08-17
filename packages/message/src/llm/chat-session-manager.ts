@@ -9,23 +9,25 @@ import {
 import { getLangfuseTelemetry } from "@yuiju/utils/llm/langfuse-telemetry";
 import { generateText } from "ai";
 import dayjs from "dayjs";
-import {
-  getProtocolMessageId,
-  getProtocolMessageSenderName,
-  getProtocolMessageTimestampMs,
-  type HistoryJsonItem,
-  projectStoredMessageContent,
-  type StoredSatoriChatMessage,
-  type StoredSatoriGroupMessage,
-  type StoredSatoriPrivateMessage,
-} from "@/utils/message";
-import type { StoredSatoriRecallMessage } from "@/utils/message/types";
 import { buildConversationEpisode, type ChatMoodChange } from "../memory/episode-builder";
 import { updateGroupMemoryForChatWindow } from "../memory/group-memory";
 import {
   writePersonMemoryUpdatesForGroupChatWindow,
   writePersonMemoryUpdatesForPrivateChatWindow,
 } from "../memory/person-memory";
+import {
+  getProtocolMessageId,
+  getProtocolMessageSenderName,
+  getProtocolMessageTimestampMs,
+  projectStoredMessageContent,
+} from "../utils/message/history";
+import type {
+  HistoryJsonItem,
+  StoredSatoriChatMessage,
+  StoredSatoriGroupMessage,
+  StoredSatoriPrivateMessage,
+  StoredSatoriRecallMessage,
+} from "../utils/message/types";
 
 export interface SessionHistoryContext {
   /**

@@ -19,8 +19,8 @@ import {
   getProtocolMessageSenderName,
   getProtocolMessageTimestampMs,
   projectStoredMessageContent,
-  type StoredSatoriGroupMessage,
-} from "@/utils/message";
+} from "../utils/message/history";
+import type { StoredSatoriGroupMessage } from "../utils/message/types";
 
 const GROUP_MEMORY_SECTION_KEYS = ["群聊印象"] as const;
 const GROUP_MEMORY_SECTION_MAX_LENGTH = 300;

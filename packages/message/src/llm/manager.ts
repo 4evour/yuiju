@@ -23,17 +23,19 @@ import { z } from "zod";
 import {
   findMemoryRetrievalCache,
   saveMemoryRetrievalCache,
-} from "@/memory/memory-retrieval-cache";
-import { stickerState } from "@/state/sticker";
-import { logger } from "@/utils/logger";
+} from "../memory/memory-retrieval-cache";
+import { stickerState } from "../state/sticker";
+import { logger } from "../utils/logger";
 import {
   getGroupDisplayName,
   getProtocolMessageId,
   getProtocolMessageSenderName,
-  type StoredSatoriGroupMessage,
-  type StoredSatoriPrivateMessage,
-} from "@/utils/message";
-import { buildSatoriGroupSessionKey, buildSatoriPrivateSessionKey } from "@/utils/message/satori";
+} from "../utils/message/history";
+import {
+  buildSatoriGroupSessionKey,
+  buildSatoriPrivateSessionKey,
+} from "../utils/message/session-key";
+import type { StoredSatoriGroupMessage, StoredSatoriPrivateMessage } from "../utils/message/types";
 import { ChatSessionManager } from "./chat-session-manager";
 
 interface ActiveChatTask {
@@ -280,11 +282,13 @@ export class LLMManager {
           abortSignal: controller.signal,
           semanticDiarySearchCallLimit: 2,
         });
-        await saveMemoryRetrievalCache({
-          userId: message.sender.id,
-          embedding: memoryCache.embedding,
-          memory,
-        });
+        if (memoryCache.embedding) {
+          await saveMemoryRetrievalCache({
+            userId: message.sender.id,
+            embedding: memoryCache.embedding,
+            memory,
+          });
+        }
       } else {
         logger.info("[message.memory-cache] 稳定记忆缓存命中", {
           scene: "group",
@@ -456,11 +460,13 @@ export class LLMManager {
           abortSignal: controller.signal,
           semanticDiarySearchCallLimit: 2,
         });
-        await saveMemoryRetrievalCache({
-          userId: message.sender.id,
-          embedding: memoryCache.embedding,
-          memory,
-        });
+        if (memoryCache.embedding) {
+          await saveMemoryRetrievalCache({
+            userId: message.sender.id,
+            embedding: memoryCache.embedding,
+            memory,
+          });
+        }
       } else {
         logger.info("[message.memory-cache] 稳定记忆缓存命中", {
           scene: "private",

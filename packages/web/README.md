@@ -8,6 +8,7 @@
 - Activity 页面展示行为轨迹和事件时间线。
 - Diary 页面展示日记列表和筛选。
 - Memory / File Browser 页面辅助查看记忆相关文件。
+- Chat 页面通过 `@yuiju/message/web-chat` 复用消息服务的状态、记忆、情绪、计划与工具链路。
 - Node API 读取 Redis / MongoDB，并按公开部署配置选择主库或同步库。
 
 ## 主要目录
@@ -18,6 +19,7 @@ app/
 ├── activity/      # 行为历史
 ├── diary/         # 日记
 ├── memory/        # 记忆查看
+├── chat/          # 本地单用户私聊
 ├── file-browser/  # 文件浏览
 └── api/           # Next Route / Hono API
 
@@ -31,6 +33,7 @@ lib/               # Web 侧查询与展示转换
 - Redis 用于读取实时状态。
 - MongoDB 用于读取行为历史、日记和记忆记录。
 - `app.publicDeployment` 为 true 时，部分接口读取 `syncMongoUri` / `syncRedisUrl`。
+- `message.web.enabled` 控制本地 Web 私聊入口；公开部署固定关闭。
 - `@yuiju/source` 只作为图片等静态资源来源，不提供 Prompt。
 
 ## 运行命令

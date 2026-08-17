@@ -46,6 +46,11 @@ const config = defineYuijuConfig({
   },
   world: {},
   message: {
+    web: {
+      enabled: false,
+      ownerId: "public-disabled",
+      ownerName: "访客",
+    },
     internalApi: {
       host: "127.0.0.1",
       port: 3020,
