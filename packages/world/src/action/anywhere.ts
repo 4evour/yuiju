@@ -17,6 +17,45 @@ import {
 import { logger } from "@/utils/logger";
 import { resolveFoodRecoveryPerUnit } from "../utils/food-utils";
 
+interface IdleTier {
+  durationMin: number;
+  staminaGain: number;
+  moodGain: number;
+}
+
+/**
+ * 发呆/休息的预设档位。
+ *
+ * 说明：
+ * - 数值刻意低于「待在家」（60min 体力+20/心情基础+5），保证家仍是首选休息地；
+ * - 体力恢复是全系统唯一不依赖地点的来源，承担"任何地点被困时的兜底自救"职责；
+ * - 心情走 recoverMood 递减结算，档位值仅为基础值。
+ */
+const IDLE_TIERS: IdleTier[] = [
+  { durationMin: 10, staminaGain: 2, moodGain: 1 },
+  { durationMin: 30, staminaGain: 5, moodGain: 2 },
+  { durationMin: 60, staminaGain: 8, moodGain: 3 },
+  { durationMin: 120, staminaGain: 12, moodGain: 4 },
+];
+
+const DEFAULT_IDLE_TIER = IDLE_TIERS[0];
+
+/**
+ * 将 LLM 给出的任意时长收敛到发呆支持的预设档位。
+ *
+ * 规则：未给出时长取默认档；非档位值取不小于该时长的最小档；超过最大值钳制到 120 分钟档。
+ */
+function resolveIdleTier(llmDurationMin?: number): IdleTier {
+  if (!llmDurationMin || llmDurationMin <= 0) {
+    return DEFAULT_IDLE_TIER;
+  }
+
+  return (
+    IDLE_TIERS.find((tier) => llmDurationMin <= tier.durationMin) ??
+    IDLE_TIERS[IDLE_TIERS.length - 1]
+  );
+}
+
 function getAvailableFoodOptions(context: ActionContext): ChoiceOption[] {
   const inventory = context.characterStateData.inventory || [];
   const availableFood = inventory.filter(
@@ -35,18 +74,48 @@ function getAvailableFoodOptions(context: ActionContext): ChoiceOption[] {
 export const anywhereAction: ActionMetadata[] = [
   {
     action: ActionId.Idle,
-    description: "休息等待，可以在任何地点进行。[耗时需要给出]",
+    description:
+      "休息等待，可以在任何地点进行，按 10/30/60/120 分钟四档安排时长，时间越久恢复越多，但恢复效果不如在家休息。[体力+2~+12][心情基础恢复+1~+4][耗时需要给出]",
     proactiveShare: {
       enabled: true,
     },
     precondition(_context) {
       return true;
     },
-    async executor(context) {
+    async executor(context, selectedAction) {
+      const selectedTier = resolveIdleTier(selectedAction?.durationMinute);
       await context.characterState.setAction(ActionId.Idle);
+
+      return {
+        executionResult: `原地休息，预计${selectedTier.durationMin}分钟`,
+        startContext: {
+          durationMin: selectedTier.durationMin,
+          staminaGain: selectedTier.staminaGain,
+          moodGain: selectedTier.moodGain,
+        },
+      };
     },
     async durationMin(_context, selectedAction) {
-      return selectedAction?.durationMinute ?? 10;
+      return resolveIdleTier(selectedAction?.durationMinute).durationMin;
+    },
+    async completionEvent(context, runningAction) {
+      const restContext = runningAction.startContext as IdleTier;
+
+      await context.characterState.changeStamina(restContext.staminaGain);
+      const actualMoodGain = await context.characterState.recoverMood(restContext.moodGain);
+      const location = context.characterStateData.location;
+      const locationText = `${location.major}${location.minor ? `-${location.minor}` : ""}`;
+
+      context.runtimeState.actionSummaryText = `悠酱在「${locationText}」休息了${restContext.durationMin}分钟，体力恢复了${restContext.staminaGain}点，心情提升了${actualMoodGain}点`;
+
+      return {
+        completionContext: {
+          durationMin: restContext.durationMin,
+          staminaGain: restContext.staminaGain,
+          moodGain: restContext.moodGain,
+          actualMoodGain,
+        },
+      };
     },
   },
   {

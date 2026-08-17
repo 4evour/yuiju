@@ -6,7 +6,7 @@ import type {
   RunningActionState,
   WeatherSnapshot,
 } from "@yuiju/utils";
-import { ActionId, SUBJECT_NAME } from "@yuiju/utils";
+import { type ActionId, SUBJECT_NAME } from "@yuiju/utils";
 
 export interface BuildBehaviorEpisodeInput {
   context: ActionContext;
@@ -46,10 +46,6 @@ interface WeatherChangedEpisodePayload {
 export function buildRunningBehaviorEpisode(
   input: BuildBehaviorEpisodeInput,
 ): MemoryEpisode<BehaviorEpisodePayload> | null {
-  if (input.selectedAction.action === ActionId.Idle) {
-    return null;
-  }
-
   return {
     source: "world_tick",
     type: "behavior",
