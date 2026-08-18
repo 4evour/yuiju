@@ -14,6 +14,11 @@
 - [LLM 协定](./llm-contract.md)：LLM 决策、Prompt、schema 和消息生成边界。
 - [第三方依赖](./third-party-dependencies.md)：外部服务、运行时依赖和配置来源。
 
+## 规划与调研
+
+- [长期规划](./roadmap.md)：阶段目标、优先级和完成标志。
+- [竞品调研报告](./research/competitor-landscape.md)：四条赛道的同类项目格局与差异化分析（调研时点快照）。
+
 ## 代码规则
 
 - [代码规范](./rules/implementation-style.md)
