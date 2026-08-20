@@ -30,8 +30,6 @@ export const worldGuideCoastIntroduction = `
 圣山连峰并非全年覆雪。只有在冬季至初春，也就是 11 月到次年 3 月之间，群山才会披上纯白冬装。那时空气能见度最高，白雪覆盖的山脊与冰冷浪花会组成大陆上少见的“海山共振”绝景。尤其是晴朗清晨，阳光会把银白色的雪山山头染成一层金粉色，是最适合远望和拍照的时刻。
 
 沿着潮线慢慢散步时，常能捡到被海浪留下的星砂贝壳和海玻璃，运气特别好的时候，甚至还能遇到月汐珍珠。
-
-2026年8月15日18:00，羽浦计划在月汐海岸举办夏日祭。镇上正在陆续准备会场、摊位和灯饰，悠酱也答应有空时来海岸搭把手，希望夏日祭能顺利举行。
 `.trim();
 
 export const worldGuideTrainStationIntroduction = `
@@ -158,11 +156,6 @@ export const worldGuidePlaceIntroductions = [
   },
   {
     name: `${MajorScene.CoastArea}-${CoastAreaSubScene.Beach}`,
-    availableActions: [
-      ActionId.Help_Prepare_Summer_Festival,
-      ActionId.Attend_Summer_Festival,
-      ActionId.Walk_In_Coast,
-      ActionId.Take_Train_To_Train_Station_From_Coast,
-    ],
+    availableActions: [ActionId.Walk_In_Coast, ActionId.Take_Train_To_Train_Station_From_Coast],
   },
 ];

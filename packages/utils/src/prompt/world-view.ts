@@ -1,6 +1,4 @@
-import dayjs from "dayjs";
 import { getTimeWithWeekday } from "../time";
-import { ActionId } from "../types/action";
 import type { CharacterStateData, WorldStateData } from "../types/state";
 import { baseInformation } from "./character-card";
 import { phoneApplicationsPrompt } from "./phone";
@@ -44,9 +42,6 @@ export const worldViewPrompt = `
   - 结灯神社：供奉神明的地方，可以参拜，恢复心情。
 - 海岸
   - 月汐海岸：需要从羽浦站乘电车抵达，适合散步放松，恢复心情。散步时可能可以捡到高价值物品，可以卖个好价钱。
-
-### 夏日祭
-羽浦计划在2026年8月15日18:00于月汐海岸举办夏日祭。镇上正在陆续准备会场、摊位和灯饰，你也答应有空时去月汐海岸搭把手，希望夏日祭能顺利举行。
 
 ### 设备
 - 手机：可以接收到来自现实世界的信息，也可以使用以下应用程序
@@ -150,29 +145,6 @@ function buildCommonStatePrompt(input: {
   const promptWeather = input.worldState.weather
     ? `${input.worldState.weather.type} / ${input.worldState.weather.temperatureLevel}`
     : "（未知）";
-  const festival = input.worldState.summerFestival;
-  const helpedPrepareFestivalToday = input.characterState.dailyActionsDoneToday.includes(
-    ActionId.Help_Prepare_Summer_Festival,
-  );
-  const festivalScheduledAt = dayjs(festival.scheduledAt);
-  const festivalEveningEndsAt = festivalScheduledAt.add(4, "hour");
-  let festivalStatus: string;
-  if (festival.heldAt) {
-    festivalStatus = `已经举行，举行时间为${getTimeWithWeekday(dayjs(festival.heldAt))}`;
-  } else if (
-    festival.preparationCount === festival.requiredPreparationCount &&
-    input.worldState.time.valueOf() >= festivalScheduledAt.valueOf() &&
-    input.worldState.time.valueOf() < festivalEveningEndsAt.valueOf()
-  ) {
-    festivalStatus = `正在月汐海岸举行，今晚22:00结束`;
-  } else if (input.worldState.time.valueOf() >= festivalEveningEndsAt.valueOf()) {
-    festivalStatus = `未能举行，最终准备进度${festival.preparationCount}/${festival.requiredPreparationCount}`;
-  } else if (festival.preparationCount === festival.requiredPreparationCount) {
-    festivalStatus = `准备已经完成，计划于${getTimeWithWeekday(festivalScheduledAt)}举行`;
-  } else {
-    festivalStatus = `准备中，当前进度${festival.preparationCount}/${festival.requiredPreparationCount}，计划于${getTimeWithWeekday(festivalScheduledAt)}举行`;
-  }
-
   return `当前时间：${getTimeWithWeekday(input.worldState.time)}
 当前天气：${promptWeather}
 地点：${promptLocation}
@@ -181,8 +153,6 @@ function buildCommonStatePrompt(input: {
 心情：${input.characterState.mood}/100
 金币：${input.characterState.money}
 手机电量：${input.characterState.phoneBattery}%
-夏日祭：${festivalStatus}
-今日是否已帮忙准备夏日祭：${helpedPrepareFestivalToday ? "是" : "否"}
 长期计划：${input.longTermPlanTitle || "（无）"}
 短期计划：
 ${generateShortTermPlanPrompt(input.shortTermPlanTitles)}
