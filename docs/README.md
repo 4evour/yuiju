@@ -18,6 +18,7 @@
 
 - [长期规划](./roadmap.md)：阶段目标、优先级和完成标志。
 - [竞品调研报告](./research/competitor-landscape.md)：四条赛道的同类项目格局与差异化分析（调研时点快照）。
+- [Agent 记忆机制调研](./research/agent-memory-mechanisms.md)：最新记忆机制、人类记忆科学映射、本地存储工程与 yuiju 类人记忆设计（调研时点快照）。
 
 ## 代码规则
 
