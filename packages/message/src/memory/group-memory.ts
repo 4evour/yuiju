@@ -8,9 +8,9 @@ import {
   formatProjectTime,
   generateStructuredOutput,
   getTimeWithWeekday,
-  getYuijuConfig,
   logger,
 } from "@yuiju/utils";
+import { getYuijuConfig } from "@yuiju/utils/config/config";
 import { Output, stepCountIs, tool } from "ai";
 import dayjs from "dayjs";
 import { z } from "zod";

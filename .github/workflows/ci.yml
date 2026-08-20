@@ -22,7 +22,7 @@ jobs:
           cache: pnpm
 
       - name: Prepare Config
-        run: cp yuiju.config.ts.example yuiju.config.ts
+        run: cp yuiju.config.json.example yuiju.config.json
       - name: Install
         run: pnpm install --frozen-lockfile
       - name: Lint

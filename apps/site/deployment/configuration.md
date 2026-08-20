@@ -1,6 +1,6 @@
 # 项目配置
 
-yuiju 的业务配置统一来自仓库根目录的 `yuiju.config.ts`。各应用进程启动时加载这份配置，读取结果会被缓存并深度冻结，运行期间不会自动重新加载。
+yuiju 的业务配置统一来自仓库根目录的 `yuiju.config.json`。各应用进程启动时加载这份配置，读取结果会被缓存并深度冻结，运行期间不会自动重新加载。
 
 修改配置后，需要重启相关 PM2 进程才能生效。
 
@@ -9,46 +9,44 @@ yuiju 的业务配置统一来自仓库根目录的 `yuiju.config.ts`。各应�
 从示例文件开始配置：
 
 ```bash
-cp yuiju.config.ts.example yuiju.config.ts
+cp yuiju.config.json.example yuiju.config.json
 ```
 
-配置文件通过 `defineYuijuConfig` 获得 TypeScript 类型检查：
+配置处理模块会先解析环境变量引用，再将用户配置与项目默认配置递归合并，最后通过 Zod 校验完整结构。普通对象递归合并，数组由用户配置整体替换；未知字段会被忽略，错误类型和缺失的必填字段会直接报错。
 
-```ts
-import { defineYuijuConfig } from './packages/utils/src/config/config-schema';
+任意字符串配置项都可以使用 `$env` 引用环境变量：
 
-const config = defineYuijuConfig({
-  app: {},
-  database: {},
-  llm: {},
-  world: {},
-  message: {},
-});
-
-export default config;
+```json
+{
+  "database": {
+    "syncMongoUri": {
+      "$env": "YUIJU_SYNC_MONGO_URI"
+    }
+  }
+}
 ```
 
-上面的空对象只用于展示顶层结构，不能直接运行。实际配置必须补齐下文列出的必填字段。
+`$env` 对象不能包含其他字段，引用的环境变量不存在或为空时配置加载会直接失败。配置模块不支持字符串局部插值或默认值语法。
 
 ## `app`：应用配置
 
 | 字段                   | 类型      | 必填 | 含义                                                                                                               |
 | ---------------------- | --------- | ---- | ------------------------------------------------------------------------------------------------------------------ |
-| `app.publicDeployment` | `boolean` | 是   | 是否以公开展示模式运行 Web。设为 `true` 时，部分内部页面与写操作会被限制，活动、日记和首页状态改从同步数据源读取。 |
-| `app.timezone`         | `string`  | 是   | 世界时间使用的 IANA 时区，例如 `Asia/Shanghai`。                                                                   |
+| `app.publicDeployment` | `boolean` | 否   | 是否以公开展示模式运行 Web，默认 `false`。设为 `true` 时，部分内部页面与写操作会被限制，活动、日记和首页状态改从同步数据源读取。 |
+| `app.timezone`         | `string`  | 否   | 世界时间使用的 IANA 时区，默认 `Asia/Shanghai`。                                                                   |
 | `app.memoryDir`        | `string`  | 是   | 文件型记忆的根目录。必须填写绝对路径，应用会在其下使用 `people`、`groups`、`core` 等子目录。                       |
 
 普通自托管实例应使用：
 
-```ts
-app: {
-  publicDeployment: false,
-  timezone: "Asia/Shanghai",
-  memoryDir: "/srv/yuiju-data/memory",
-},
+```json
+{
+  "app": {
+    "memoryDir": "/srv/yuiju-data/memory"
+  }
+}
 ```
 
-示例配置中的 `~/.local/share/yuiju/memory` 不应直接用于服务器部署；Node.js 不会在普通字符串中自动展开 `~`，请改为真实绝对路径。
+Node.js 不会在普通字符串中自动展开 `~`，请填写真实绝对路径。
 
 ## `database`：数据存储
 
@@ -61,11 +59,13 @@ app: {
 
 单实例部署示例：
 
-```ts
-database: {
-  mongoUri: "mongodb://127.0.0.1:27017/yuiju",
-  redisUrl: "redis://127.0.0.1:6379",
-},
+```json
+{
+  "database": {
+    "mongoUri": "mongodb://127.0.0.1:27017/yuiju",
+    "redisUrl": "redis://127.0.0.1:6379"
+  }
+}
 ```
 
 当 `app.publicDeployment` 为 `true` 时，Web 的相关查询会选择 `syncMongoUri` 和 `syncRedisUrl`，因此公开展示实例必须同时配置对应的同步数据源。
@@ -88,39 +88,41 @@ database: {
 
 示例：
 
-```ts
-llm: {
-  models: {
-    chat: [
+```json
+{
+  "llm": {
+    "models": {
+      "chat": [
       {
-        baseUrl: "https://api.example.com/v1",
-        apiKey: "your-api-key",
-        model: "chat-model",
-      },
+        "baseUrl": "https://api.example.com/v1",
+        "apiKey": "your-api-key",
+        "model": "chat-model"
+      }
     ],
-    strong: [
+      "strong": [
       {
-        baseUrl: "https://api.example.com/v1",
-        apiKey: "your-api-key",
-        model: "strong-model",
-      },
+        "baseUrl": "https://api.example.com/v1",
+        "apiKey": "your-api-key",
+        "model": "strong-model"
+      }
     ],
-    flash: [
+      "flash": [
       {
-        baseUrl: "https://api.example.com/v1",
-        apiKey: "your-api-key",
-        model: "flash-model",
-      },
+        "baseUrl": "https://api.example.com/v1",
+        "apiKey": "your-api-key",
+        "model": "flash-model"
+      }
     ],
-    vision: [
+      "vision": [
       {
-        baseUrl: "https://api.example.com/v1",
-        apiKey: "your-api-key",
-        model: "vision-model",
-      },
-    ],
-  },
-},
+        "baseUrl": "https://api.example.com/v1",
+        "apiKey": "your-api-key",
+        "model": "vision-model"
+      }
+    ]
+    }
+  }
+}
 ```
 
 ## `world.phone`：手机应用配置
@@ -132,12 +134,14 @@ llm: {
 | `world.phone`                      | `object` | 否   | 手机应用配置。               |
 | `world.phone.mapillaryAccessToken` | `string` | 否   | 云旅游查询街景使用的 token。 |
 
-```ts
-world: {
-  phone: {
-    mapillaryAccessToken: "your-mapillary-access-token",
-  },
-},
+```json
+{
+  "world": {
+    "phone": {
+      "mapillaryAccessToken": "your-mapillary-access-token"
+    }
+  }
+}
 ```
 
 未配置 `world.phone`、未配置 `mapillaryAccessToken` 或 token 为空字符串时，不启用云旅游功能。
@@ -148,8 +152,8 @@ message 进程会启动一个 HTTP 服务，供 world 获取群聊上下文和�
 
 | 字段                       | 类型     | 必填 | 含义                                                                      |
 | -------------------------- | -------- | ---- | ------------------------------------------------------------------------- |
-| `message.internalApi.host` | `string` | 是   | 内部 HTTP 服务监听地址。三个 PM2 进程位于同一台机器时可使用 `127.0.0.1`。 |
-| `message.internalApi.port` | `number` | 是   | 内部 HTTP 服务监听端口，例如 `3020`。                                     |
+| `message.internalApi.host` | `string` | 否   | 内部 HTTP 服务监听地址，默认 `127.0.0.1`。                                |
+| `message.internalApi.port` | `number` | 否   | 内部 HTTP 服务监听端口，默认 `3020`。                                     |
 
 该接口没有面向公网的用途，不应直接暴露到公网。
 
@@ -164,38 +168,38 @@ message 进程会启动一个 HTTP 服务，供 world 获取群聊上下文和�
 
 ## `message.onebot`：OneBot
 
-推荐使用 Napcat [https://github.com/NapNeko/NapCatQQ](https://github.com/NapNeko/NapCatQQ)，如果你不部署 @yuiju/message 聊天服务，可以不填
+推荐使用 Napcat [https://github.com/NapNeko/NapCatQQ](https://github.com/NapNeko/NapCatQQ)。当前完整配置结构仍要求提供 `selfId`、`endpoint` 和 `token`；如果不部署 `@yuiju/message`，可以填写空字符串。
 
 | 字段                             | 类型       | 必填 | 含义                                                    |
 | -------------------------------- | ---------- | ---- | ------------------------------------------------------- |
-| `message.onebot.protocol`        | `"ws"`     | 是   | 当前 OneBot 连接协议，固定为 WebSocket。                |
+| `message.onebot.protocol`        | `"ws"`     | 否   | 当前 OneBot 连接协议，默认 `ws`。                       |
 | `message.onebot.selfId`          | `string`   | 是   | 机器人自身的 OneBot 账号 ID。                           |
 | `message.onebot.endpoint`        | `string`   | 是   | OneBot WebSocket 服务地址，例如 `ws://127.0.0.1:3001`。 |
 | `message.onebot.token`           | `string`   | 是   | OneBot access token，应与服务端配置一致。               |
-| `message.onebot.retryTimes`      | `number`   | 是   | WebSocket 连接失败后的快速重试次数。                    |
-| `message.onebot.retryInterval`   | `number`   | 是   | 快速重试间隔，单位为毫秒。                              |
-| `message.onebot.retryLazy`       | `number`   | 是   | 快速重试耗尽后的重试间隔，单位为毫秒。                  |
-| `message.onebot.responseTimeout` | `number`   | 是   | 等待 OneBot 操作响应的最长时间，单位为毫秒。            |
-| `message.onebot.whiteList`       | `number[]` | 是   | OneBot 用户白名单字段。当前消息业务处理没有读取该字段。 |
-| `message.onebot.ownerList`       | `number[]` | 是   | 允许与角色进行 OneBot 私聊的 QQ 号列表。                |
-| `message.onebot.groupWhiteList`  | `number[]` | 是   | 允许处理消息的 QQ 群号列表。                            |
+| `message.onebot.retryTimes`      | `number`   | 否   | WebSocket 连接失败后的快速重试次数，默认 `6`。          |
+| `message.onebot.retryInterval`   | `number`   | 否   | 快速重试间隔，默认 `5000` 毫秒。                        |
+| `message.onebot.retryLazy`       | `number`   | 否   | 快速重试耗尽后的重试间隔，默认 `60000` 毫秒。           |
+| `message.onebot.responseTimeout` | `number`   | 否   | 等待 OneBot 操作响应的最长时间，默认 `120000` 毫秒。    |
+| `message.onebot.whiteList`       | `number[]` | 否   | OneBot 用户白名单字段，默认空数组。                     |
+| `message.onebot.ownerList`       | `number[]` | 否   | 允许与角色进行 OneBot 私聊的 QQ 号列表，默认空数组。    |
+| `message.onebot.groupWhiteList`  | `number[]` | 否   | 允许处理消息的 QQ 群号列表，默认空数组。                |
 
 ## `message.lark`：飞书
 
-如果你不部署 @yuiju/message 聊天服务，可以不填
+当前完整配置结构仍要求提供 `appId` 和 `appSecret`；如果不部署 `@yuiju/message`，可以填写空字符串。
 
 | 字段                          | 类型       | 必填 | 含义                                                               |
 | ----------------------------- | ---------- | ---- | ------------------------------------------------------------------ |
-| `message.lark.protocol`       | `"ws"`     | 是   | 当前飞书连接协议，固定为 WebSocket。                               |
-| `message.lark.endpoint`       | `string`   | 是   | 飞书开放平台 API 地址，通常为 `https://open.feishu.cn/open-apis`。 |
+| `message.lark.protocol`       | `"ws"`     | 否   | 当前飞书连接协议，默认 `ws`。                                      |
+| `message.lark.endpoint`       | `string`   | 否   | 飞书开放平台 API 地址，默认 `https://open.feishu.cn/open-apis`。   |
 | `message.lark.appId`          | `string`   | 是   | 飞书应用的 App ID。                                                |
 | `message.lark.appSecret`      | `string`   | 是   | 飞书应用的 App Secret。                                            |
-| `message.lark.retryTimes`     | `number`   | 是   | WebSocket 连接失败后的快速重试次数。                               |
-| `message.lark.retryInterval`  | `number`   | 是   | 快速重试间隔，单位为毫秒。                                         |
-| `message.lark.retryLazy`      | `number`   | 是   | 快速重试耗尽后的重试间隔，单位为毫秒。                             |
-| `message.lark.whiteList`      | `string[]` | 是   | 允许进行飞书私聊的用户 ID 列表。                                   |
-| `message.lark.ownerList`      | `string[]` | 是   | 飞书所有者用户 ID 列表；所有者可以私聊，并可发送群聊开关命令。     |
-| `message.lark.groupWhiteList` | `string[]` | 是   | 允许处理消息的飞书群聊 ID 列表。                                   |
+| `message.lark.retryTimes`     | `number`   | 否   | WebSocket 连接失败后的快速重试次数，默认 `6`。                     |
+| `message.lark.retryInterval`  | `number`   | 否   | 快速重试间隔，默认 `5000` 毫秒。                                   |
+| `message.lark.retryLazy`      | `number`   | 否   | 快速重试耗尽后的重试间隔，默认 `60000` 毫秒。                      |
+| `message.lark.whiteList`      | `string[]` | 否   | 允许进行飞书私聊的用户 ID 列表，默认空数组。                       |
+| `message.lark.ownerList`      | `string[]` | 否   | 飞书所有者用户 ID 列表，默认空数组。                               |
+| `message.lark.groupWhiteList` | `string[]` | 否   | 允许处理消息的飞书群聊 ID 列表，默认空数组。                       |
 
 ## `message.stickers`：表情资源
 
@@ -203,17 +207,21 @@ message 进程会启动一个 HTTP 服务，供 world 获取群聊上下文和�
 
 | 字段                                 | 类型                      | 必填 | 含义                                                               |
 | ------------------------------------ | ------------------------- | ---- | ------------------------------------------------------------------ |
-| `message.stickers`                   | `Record<string, Sticker>` | 是   | 全部可用表情的映射；不需要表情时可以使用空对象。                   |
+| `message.stickers`                   | `Record<string, Sticker>` | 否   | 全部可用表情的映射，默认空对象。                                   |
 | `message.stickers.<key>.uri`         | `string`                  | 是   | 图片相对于项目根目录的路径。消息服务启动时会读取文件并缓存到内存。 |
 | `message.stickers.<key>.description` | `string`                  | 是   | 提供给 LLM 的使用语境说明，帮助模型判断何时使用该表情。            |
 
-```ts
-stickers: {
-  crying: {
-    uri: "packages/source/picture/crying.png",
-    description: "角色难过到大哭时使用。",
-  },
-},
+```json
+{
+  "message": {
+    "stickers": {
+      "crying": {
+        "uri": "packages/source/picture/crying.png",
+        "description": "角色难过到大哭时使用。"
+      }
+    }
+  }
+}
 ```
 
 无法读取的表情文件会在 message 启动时记录警告，并且不会进入可用表情列表。

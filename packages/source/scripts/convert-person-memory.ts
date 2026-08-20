@@ -1,6 +1,6 @@
 import { readdir, readFile, unlink, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { getYuijuConfig } from "@yuiju/utils";
+import { getYuijuConfig } from "@yuiju/utils/config/config";
 
 const PERSON_MEMORY_HEAT_FILENAME = "person-memory-heat.json";
 const PERSON_MEMORY_SECTION_KEYS = [

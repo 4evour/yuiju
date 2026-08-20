@@ -1,4 +1,4 @@
-import { getYuijuConfig } from "@yuiju/utils";
+import { getYuijuConfig } from "@yuiju/utils/config/config";
 import dayjs, { type Dayjs } from "dayjs";
 import { WEATHER_PERIOD_HOURS } from "./constants";
 

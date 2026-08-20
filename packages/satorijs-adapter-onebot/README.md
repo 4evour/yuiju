@@ -10,7 +10,7 @@ OneBot 的 Satori adapter，本仓库基于旧版 `@satorijs/adapter-onebot` 改
 
 ## 配置入口
 
-本包不直接读取项目配置。`@yuiju/message` 从根目录 `yuiju.config.ts` 读取 `message.onebot` 后创建 adapter 实例。
+本包不直接读取项目配置。`@yuiju/message` 从根目录 `yuiju.config.json` 读取 `message.onebot` 后创建 adapter 实例。
 
 ## 修改注意事项
 

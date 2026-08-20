@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 /**
  * 消息平台 WebSocket 重连配置。
  */
@@ -173,13 +175,127 @@ export interface YuijuConfig {
   observability?: YuijuObservabilityConfig;
 }
 
+const yuijuMessageWebSocketReconnectConfigShape = {
+  retryTimes: z.number(),
+  retryInterval: z.number(),
+  retryLazy: z.number(),
+};
+
+const yuijuMessageInternalApiConfigSchema: z.ZodType<YuijuMessageInternalApiConfig> = z.object({
+  host: z.string(),
+  port: z.number(),
+});
+
+const yuijuOneBotConfigSchema: z.ZodType<YuijuOneBotConfig> = z.object({
+  ...yuijuMessageWebSocketReconnectConfigShape,
+  protocol: z.literal("ws"),
+  selfId: z.string(),
+  endpoint: z.string(),
+  token: z.string(),
+  responseTimeout: z.number(),
+  whiteList: z.array(z.number()),
+  ownerList: z.array(z.number()),
+  groupWhiteList: z.array(z.number()),
+});
+
+const yuijuLarkConfigSchema: z.ZodType<YuijuLarkConfig> = z.object({
+  ...yuijuMessageWebSocketReconnectConfigShape,
+  protocol: z.literal("ws"),
+  endpoint: z.string(),
+  appId: z.string(),
+  appSecret: z.string(),
+  whiteList: z.array(z.string()),
+  ownerList: z.array(z.string()),
+  groupWhiteList: z.array(z.string()),
+});
+
+const yuijuStickerConfigSchema: z.ZodType<YuijuStickerConfig> = z.object({
+  uri: z.string(),
+  description: z.string(),
+});
+
+const yuijuMessageConfigSchema: z.ZodType<YuijuMessageConfig> = z.object({
+  onebot: yuijuOneBotConfigSchema,
+  lark: yuijuLarkConfigSchema,
+  internalApi: yuijuMessageInternalApiConfigSchema,
+  proactive: z.object({
+    onebotGroupTargetId: z.number().optional(),
+    larkGroupTargetId: z.string().optional(),
+  }),
+  stickers: z.record(z.string(), yuijuStickerConfigSchema),
+});
+
+const yuijuDatabaseConfigSchema: z.ZodType<YuijuDatabaseConfig> = z.object({
+  mongoUri: z.string(),
+  redisUrl: z.string(),
+  qdrant: z
+    .object({
+      baseUrl: z.string(),
+      apiKey: z.string().optional(),
+    })
+    .optional(),
+  syncMongoUri: z.string().optional(),
+  syncRedisUrl: z.string().optional(),
+});
+
+const yuijuLlmModelConfigSchema: z.ZodType<YuijuLlmModelConfig> = z.object({
+  baseUrl: z.string(),
+  apiKey: z.string(),
+  model: z.string(),
+});
+
+const yuijuLlmModelSourcesConfigSchema: z.ZodType<YuijuLlmModelSourcesConfig> = z.tuple(
+  [yuijuLlmModelConfigSchema],
+  yuijuLlmModelConfigSchema,
+);
+
+const yuijuEmbeddingModelConfigSchema: z.ZodType<YuijuEmbeddingModelConfig> = z.object({
+  baseUrl: z.string(),
+  apiKey: z.string(),
+  model: z.string(),
+  dimensions: z.number(),
+});
+
+const yuijuLlmConfigSchema: z.ZodType<YuijuLlmConfig> = z.object({
+  models: z.object({
+    chat: yuijuLlmModelSourcesConfigSchema,
+    strong: yuijuLlmModelSourcesConfigSchema,
+    flash: yuijuLlmModelSourcesConfigSchema,
+    vision: yuijuLlmModelSourcesConfigSchema,
+    embedding: yuijuEmbeddingModelConfigSchema.optional(),
+  }),
+});
+
+const yuijuWorldConfigSchema: z.ZodType<YuijuWorldConfig> = z.object({
+  phone: z
+    .object({
+      mapillaryAccessToken: z.string().optional(),
+    })
+    .optional(),
+});
+
+const yuijuObservabilityConfigSchema: z.ZodType<YuijuObservabilityConfig> = z.object({
+  langfuse: z.object({
+    publicKey: z.string(),
+    secretKey: z.string(),
+    baseUrl: z.string(),
+  }),
+});
+
+const yuijuAppConfigSchema: z.ZodType<YuijuAppConfig> = z.object({
+  publicDeployment: z.boolean(),
+  timezone: z.string(),
+  memoryDir: z.string(),
+});
+
 /**
- * 为根配置文件提供类型约束与自动补全。
- *
- * 说明：
- * - 该函数本身不做运行时转换，只负责让 yuiju.config.ts 获得清晰的类型提示；
- * - 单独拆到 schema 模块中，避免与配置读取器产生循环依赖。
+ * JSON 配置完成环境变量解析和默认值合并后的最终结构。
  */
-export function defineYuijuConfig(config: YuijuConfig): YuijuConfig {
-  return config;
-}
+export const yuijuConfigSchema: z.ZodType<YuijuConfig> = z.object({
+  app: yuijuAppConfigSchema,
+  database: yuijuDatabaseConfigSchema,
+  llm: yuijuLlmConfigSchema,
+  world: yuijuWorldConfigSchema,
+  message: yuijuMessageConfigSchema,
+  observability: yuijuObservabilityConfigSchema.optional(),
+});

@@ -1,4 +1,4 @@
-import { getYuijuConfig } from "@yuiju/utils";
+import { getYuijuConfig } from "@yuiju/utils/config/config";
 
 export type InternalMessagePlatform = "onebot" | "lark";
 

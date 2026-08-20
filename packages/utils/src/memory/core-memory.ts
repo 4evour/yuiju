@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { Output, stepCountIs, tool } from "ai";
 import dayjs from "dayjs";
 import { z } from "zod";
-import { getYuijuConfig } from "../config";
+import { getYuijuConfig } from "../config/config";
 import type { IMemoryEpisode } from "../db";
 import { createToolCallLoggingHooks, generateStructuredOutput } from "../llm";
 import { chatModel, flashModel } from "../llm/models";

@@ -1,4 +1,5 @@
-import { getYuijuConfig, type MongoReadSource } from "@yuiju/utils";
+import type { MongoReadSource } from "@yuiju/utils";
+import { getYuijuConfig } from "@yuiju/utils/config/config";
 import { Hono } from "hono";
 import {
   ACTIVITY_TYPES,

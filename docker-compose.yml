@@ -41,7 +41,7 @@ services:
       YUIJU_MOONSHOT_API_KEY: ${YUIJU_MOONSHOT_API_KEY:-xxx}
       YUIJU_NAPCAT_ACCESS_TOKEN: ${YUIJU_NAPCAT_ACCESS_TOKEN:-xxx}
     volumes:
-      - ./yuiju.config.ts:/app/yuiju.config.ts:ro
+      - ./yuiju.config.json:/app/yuiju.config.json:ro
       - ./packages/source/picture:/app/packages/source/picture:ro
 
   mongodb:

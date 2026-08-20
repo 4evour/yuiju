@@ -1,4 +1,5 @@
-import { flashModel, getCharacterCardPrompt, getRedis, getYuijuConfig } from "@yuiju/utils";
+import { flashModel, getCharacterCardPrompt, getRedis } from "@yuiju/utils";
+import { getYuijuConfig } from "@yuiju/utils/config/config";
 import { convertToModelMessages, stepCountIs, streamText, type UIMessage } from "ai";
 import { isPublicDeployment } from "@/lib/public-deployment";
 

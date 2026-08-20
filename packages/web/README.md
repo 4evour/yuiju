@@ -27,7 +27,7 @@ lib/               # Web 侧查询与展示转换
 
 ## 配置与依赖
 
-- 配置来自根目录 `yuiju.config.ts`。
+- 配置来自根目录 `yuiju.config.json`。
 - Redis 用于读取实时状态。
 - MongoDB 用于读取行为历史、日记和记忆记录。
 - `app.publicDeployment` 为 true 时，部分接口读取 `syncMongoUri` / `syncRedisUrl`。

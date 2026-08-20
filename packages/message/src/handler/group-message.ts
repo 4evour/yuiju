@@ -1,5 +1,6 @@
 import type { Session } from "@satorijs/core";
-import { ActionId, getYuijuConfig, initCharacterStateData } from "@yuiju/utils";
+import { ActionId, initCharacterStateData } from "@yuiju/utils";
+import { getYuijuConfig } from "@yuiju/utils/config/config";
 import { llmManager } from "@/llm/manager";
 import { logger } from "@/utils/logger";
 import {

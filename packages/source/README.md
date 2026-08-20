@@ -35,5 +35,5 @@ pnpm tsx packages/source/scripts/jsonl-transfer.ts
 ## 修改注意事项
 
 - 不要把新的 Prompt 文案放回 `@yuiju/source`。
-- 新增素材时，优先通过 `yuiju.config.ts` 或明确代码路径引用。
+- 新增素材时，优先通过 `yuiju.config.json` 或明确代码路径引用。
 - 数据集字段结构变化需要确认下游脚本是否依赖。

@@ -1,5 +1,5 @@
 import mongoose, { type Connection } from "mongoose";
-import { getYuijuConfig } from "../config";
+import { getYuijuConfig } from "../config/config";
 
 export type MongoReadSource = "primary" | "sync";
 
@@ -17,7 +17,7 @@ export const connectDB = async () => {
 
   const uri = getYuijuConfig().database.mongoUri.trim();
   if (!uri) {
-    throw new Error("yuiju.config.ts 中的 database.mongoUri 未配置");
+    throw new Error("yuiju.config.json 中的 database.mongoUri 未配置");
   }
 
   const connectionPromise = mongoose.connect(uri).then(() => mongoose.connection);

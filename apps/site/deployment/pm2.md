@@ -1,6 +1,6 @@
 # 使用 PM2 部署
 
-完成环境准备和 `yuiju.config.ts` 配置后，在仓库根目录执行本页命令。
+完成环境准备和 `yuiju.config.json` 配置后，在仓库根目录执行本页命令。
 
 ## 部署前检查
 
@@ -13,7 +13,7 @@ pnpm run type-check
 pnpm run build:web
 ```
 
-`build:web` 会在构建时读取 `yuiju.config.ts`。如果配置值不满足 TypeScript 类型要求，构建会失败，需要根据类型错误修正配置。
+`build:web` 会在构建时读取 `yuiju.config.json`。如果配置无法通过运行时 schema 校验，构建会失败，需要根据配置错误修正对应字段。
 
 ## 启动全部进程
 

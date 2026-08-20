@@ -1,5 +1,5 @@
 import Redis from "ioredis";
-import { getYuijuConfig } from "../config";
+import { getYuijuConfig } from "../config/config";
 
 let redis: Redis | null = null;
 let syncRedis: Redis | null = null;

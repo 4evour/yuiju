@@ -1,5 +1,4 @@
 import {
-  getYuijuConfig,
   initCharacterStateData,
   initPlanStateData,
   initWorldStateData,
@@ -8,6 +7,7 @@ import {
   worldMapPlaces,
   worldMapTerminalUi,
 } from "@yuiju/utils";
+import { getYuijuConfig } from "@yuiju/utils/config/config";
 import { Hono } from "hono";
 
 export const homeRoute = new Hono();

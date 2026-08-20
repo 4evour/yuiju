@@ -34,12 +34,12 @@
 
 ### 3.2 项目配置
 
-当前项目的业务配置统一来自项目根目录的 `yuiju.config.ts`，而不是旧文档中的 `.env.example`。
+当前项目的业务配置统一来自项目根目录的 `yuiju.config.json`，而不是旧文档中的 `.env.example`。
 
 1. 基于示例文件创建本地配置：
 
 ```bash
-cp yuiju.config.ts.example yuiju.config.ts
+cp yuiju.config.json.example yuiju.config.json
 ```
 
 2. 至少确认以下配置项：
@@ -54,8 +54,8 @@ cp yuiju.config.ts.example yuiju.config.ts
 
 3. 额外说明：
 
-- `NODE_ENV` 仍然是运行时环境变量，不放在 `yuiju.config.ts` 中
-- `yuiju.config.ts` 是本地真实配置，通常不提交到仓库
+- `NODE_ENV` 仍然是运行时环境变量，不放在 `yuiju.config.json` 中
+- `yuiju.config.json` 是本地真实配置，通常不提交到仓库
 - 如果暂时不启动消息服务，可以先保留 `message` 下的默认结构，按实际环境补全连接参数
 
 ### 3.3 启动步骤（推荐）
@@ -102,8 +102,8 @@ pnpm run test:world
 ### 3.5 常见问题
 
 - `git pull` 报错 `Could not read from remote repository`：通常是 SSH key 或仓库权限问题，不影响本地开发。
-- 启动时报 Redis/Mongo 连接错误：先确认本地服务是否启动，再检查 `yuiju.config.ts` 中的 `database.redisUrl` 和 `database.mongoUri`。
-- 启动消息服务失败：优先检查 `yuiju.config.ts` 中的 `message.onebot` / `message.lark` 配置，以及对应平台服务本身是否可连接。
+- 启动时报 Redis/Mongo 连接错误：先确认本地服务是否启动，再检查 `yuiju.config.json` 中的 `database.redisUrl` 和 `database.mongoUri`。
+- 启动消息服务失败：优先检查 `yuiju.config.json` 中的 `message.onebot` / `message.lark` 配置，以及对应平台服务本身是否可连接。
 - Web 页面接口报数据库不可用：`web` 会在启动时尝试连接 MongoDB，若 `database.mongoUri` 为空或服务不可达，部分接口会不可用。
 
 ## 4. 项目部署（PM2）
@@ -193,7 +193,7 @@ pnpm run lint
 pnpm run type-check
 ```
 
-- 部署机器需要提前准备好项目根目录的 `yuiju.config.ts`，至少补全 `database.mongoUri`、`database.redisUrl`、`llm.models` 等关键配置。
+- 部署机器需要提前准备好项目根目录的 `yuiju.config.json`，至少补全 `database.mongoUri`、`database.redisUrl`、`llm.models` 等关键配置。
 - 当前根目录 `package.json` 已声明 `pm2` 开发依赖，推荐通过 `pnpm run start` / `pnpm run stop` / `pnpm run restart` 使用仓库脚本。
 - `ecosystem.config.js` 中当前配置了 `autorestart: false`，若需要异常自动拉起，需要按运维策略调整。
 - `yuiju-web` 在 PM2 中会先执行构建再启动；如果只想更新前端服务，建议先确认构建环境可用，再执行 `pm2 restart yuiju-web`。

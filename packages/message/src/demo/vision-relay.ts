@@ -1,9 +1,6 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
-import {
-  buildMessageImageDescriptionSystemPrompt,
-  generateStructuredOutput,
-  getYuijuConfig,
-} from "@yuiju/utils";
+import { buildMessageImageDescriptionSystemPrompt, generateStructuredOutput } from "@yuiju/utils";
+import { getYuijuConfig } from "@yuiju/utils/config/config";
 import { Output } from "ai";
 import { z } from "zod";
 

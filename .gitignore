@@ -152,7 +152,7 @@ packages/python/__pycache__/
 .DS_Store
 .devtools
 
-yuiju.config.ts
+yuiju.config.json
 /memory/
 CLAUDE.md
 

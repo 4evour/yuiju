@@ -1,6 +1,6 @@
 import { mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises";
 import { dirname, extname, relative, resolve } from "node:path";
-import { getYuijuConfig, getYuijuProjectRoot } from "@yuiju/utils";
+import { getYuijuConfig, getYuijuProjectRoot } from "@yuiju/utils/config/config";
 import { Hono } from "hono";
 import { rejectPublicRequest } from "./public-guard";
 

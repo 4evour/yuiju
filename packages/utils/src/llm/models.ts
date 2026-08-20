@@ -1,10 +1,7 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { wrapLanguageModel } from "ai";
-import {
-  getYuijuConfig,
-  type YuijuLlmModelSourcesConfig,
-  type YuijuLlmModelsConfig,
-} from "../config";
+import { getYuijuConfig } from "../config/config";
+import type { YuijuLlmModelSourcesConfig, YuijuLlmModelsConfig } from "../config/config-schema";
 import { logger } from "../logger";
 
 const config = getYuijuConfig();

@@ -26,7 +26,7 @@ src/
 
 ## 配置与依赖
 
-消息服务读取根目录 `yuiju.config.ts`：
+消息服务读取根目录 `yuiju.config.json`：
 
 - `database.mongoUri`
 - `llm.models`

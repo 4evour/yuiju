@@ -1,12 +1,9 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { h } from "@satorijs/core";
-import {
-  buildStickerPromptSection,
-  getYuijuConfig,
-  getYuijuProjectRoot,
-  type YuijuStickerConfig,
-} from "@yuiju/utils";
+import { buildStickerPromptSection } from "@yuiju/utils";
+import { getYuijuConfig, getYuijuProjectRoot } from "@yuiju/utils/config/config";
+import type { YuijuStickerConfig } from "@yuiju/utils/config/config-schema";
 import { logger } from "@/utils/logger";
 
 export interface ResolvedSticker {
