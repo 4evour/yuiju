@@ -162,7 +162,7 @@ Python / Graphiti 服务用于长期记忆图谱写入和语义检索。它只�
 
 ## 数据与基础设施
 
-项目配置统一来自根目录 `yuiju.config.ts`。
+项目配置统一来自根目录 `yuiju.config.json`。
 
 核心基础设施包括：
 

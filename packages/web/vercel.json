@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "buildCommand": "cp ../../yuiju.config.vercel.ts ../../yuiju.config.ts && pnpm run build",
+  "buildCommand": "cp ../../yuiju.config.vercel.json ../../yuiju.config.json && pnpm run build",
   "git": {
     "deploymentEnabled": {
       "main": true,

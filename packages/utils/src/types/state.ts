@@ -1,15 +1,9 @@
 import type { Dayjs } from "dayjs";
 import type { ActionId, ActionProactiveShareIntent } from "./action";
+import { MajorScene } from "./major-scene";
 import type { WeatherSnapshot } from "./weather";
 
-// 大场景
-export enum MajorScene {
-  Home = "家",
-  School = "星见丘高校",
-  BusinessDistrict = "商业区",
-  ParkArea = "公园周边",
-  CoastArea = "海岸",
-}
+export { MajorScene };
 
 // 世界具体小场景
 export enum WorldSubScene {

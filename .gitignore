@@ -152,8 +152,10 @@ packages/python/__pycache__/
 .DS_Store
 .devtools
 
-yuiju.config.ts
+yuiju.config.json
 /memory/
 CLAUDE.md
 
 .codex-pet-runs/
+
+packages/source/aigc/pixel/generate/

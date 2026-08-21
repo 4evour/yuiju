@@ -24,7 +24,7 @@ src/
 
 ## 配置与依赖
 
-- 业务配置来自根目录 `yuiju.config.ts`。
+- 业务配置来自根目录 `yuiju.config.json`。
 - Redis 是角色和世界实时状态真相源。
 - MongoDB 保存行为历史、记忆和日记等可追溯记录。
 - LLM 模型来源来自 `llm.models`，由 `@yuiju/utils` 统一创建。

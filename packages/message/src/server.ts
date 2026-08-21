@@ -1,7 +1,8 @@
 import LarkBot from "@satorijs/adapter-lark";
 import { Context, HTTP } from "@satorijs/core";
 import OneBotBot from "@yuiju/satorijs-adapter-onebot";
-import { connectDB, getYuijuConfig, initializePersonMemoryHeat } from "@yuiju/utils";
+import { connectDB, initializePersonMemoryHeat } from "@yuiju/utils";
+import { getYuijuConfig } from "@yuiju/utils/config/config";
 import { initializeLangfuseTelemetry } from "@yuiju/utils/llm/langfuse-telemetry";
 import { groupMessageHandler } from "./handler/group-message";
 import { messageRecallHandler } from "./handler/message-recall";

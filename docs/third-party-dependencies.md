@@ -4,12 +4,12 @@
 
 ## 配置来源
 
-业务配置统一来自项目根目录 `yuiju.config.ts`。
+业务配置统一来自项目根目录 `yuiju.config.json`。
 
-- TypeScript 包通过 `@yuiju/utils` 的 `getYuijuConfig()` 读取配置。
-- `NODE_ENV` 仍然是运行时环境变量，不放进 `yuiju.config.ts`。
+- TypeScript 包通过 `@yuiju/utils/config/config` 的 `getYuijuConfig()` 读取配置。
+- `NODE_ENV` 仍然是运行时环境变量，不放进 `yuiju.config.json`。
 - 日志相关运行时参数仍通过环境变量读取，例如 `LOG_LEVEL`、`LOG_MAX_SIZE`、`LOG_MAX_FILES`。
-- Python 侧会优先通过 Node/tsx 读取 `yuiju.config.ts`，部分 Graphiti 敏感信息仍从环境变量读取。
+- Python 侧的 Graphiti 敏感信息仍从环境变量读取。
 
 不要新增分散的 `.env`、子包 `config.ts` 或隐式配置来源。
 
@@ -142,7 +142,7 @@ TypeScript 侧通过 AI SDK 的 OpenAI-compatible provider 调用模型。
 
 `docker-compose.yml` 构建应用镜像，并编排 MongoDB 与 Redis。
 
-当前 TypeScript 配置读取器只读取根目录 `yuiju.config.ts`。Compose 中传入的 `YUIJU_*` 环境变量不会自动覆盖配置，除非本地 `yuiju.config.ts` 显式读取这些环境变量。
+配置读取器只读取根目录 `yuiju.config.json`。Compose 中传入的 `YUIJU_*` 环境变量不会自动覆盖同名配置；只有写成 `{ "$env": "变量名" }` 的字符串配置项会显式读取对应环境变量。
 
 ### PM2
 

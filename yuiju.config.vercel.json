@@ -1,0 +1,63 @@
+{
+  "app": {
+    "publicDeployment": true,
+    "memoryDir": "/tmp/yuiju/memory"
+  },
+  "database": {
+    "mongoUri": "",
+    "redisUrl": "",
+    "syncMongoUri": {
+      "$env": "YUIJU_SYNC_MONGO_URI"
+    },
+    "syncRedisUrl": {
+      "$env": "YUIJU_SYNC_REDIS_URL"
+    }
+  },
+  "llm": {
+    "models": {
+      "chat": [
+        {
+          "baseUrl": "",
+          "apiKey": "",
+          "model": ""
+        }
+      ],
+      "strong": [
+        {
+          "baseUrl": "",
+          "apiKey": "",
+          "model": ""
+        }
+      ],
+      "flash": [
+        {
+          "baseUrl": "",
+          "apiKey": "",
+          "model": ""
+        }
+      ],
+      "vision": [
+        {
+          "baseUrl": "",
+          "apiKey": "",
+          "model": ""
+        }
+      ]
+    }
+  },
+  "message": {
+    "proactive": {
+      "onebotGroupTargetId": 0,
+      "larkGroupTargetId": ""
+    },
+    "onebot": {
+      "selfId": "",
+      "endpoint": "",
+      "token": ""
+    },
+    "lark": {
+      "appId": "",
+      "appSecret": ""
+    }
+  }
+}

@@ -1,5 +1,5 @@
 import type { Session } from "@satorijs/core";
-import { getYuijuConfig } from "@yuiju/utils";
+import { getYuijuConfig } from "@yuiju/utils/config/config";
 import { llmManager } from "@/llm/manager";
 import { logger } from "@/utils/logger";
 import { replyToStoredGroupMessage } from "./group-message";
