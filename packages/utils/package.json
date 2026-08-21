@@ -12,6 +12,24 @@
     "test": "NODE_ENV=development vitest run",
     "type-check": "tsc --noEmit"
   },
+  "dependencies": {
+    "@ai-sdk/openai-compatible": "^3.0.7",
+    "@langfuse/otel": "^5.10.0",
+    "@langfuse/vercel-ai-sdk": "^5.10.0",
+    "@opentelemetry/sdk-node": "^0.221.0",
+    "@qdrant/js-client-rest": "~1.16.0",
+    "ai": "^7.0.22",
+    "dayjs": "^1.11.19",
+    "ioredis": "^5.8.2",
+    "lodash-es": "^4.17.21",
+    "mongoose": "^8.20.0",
+    "winston": "^3.18.3",
+    "winston-daily-rotate-file": "^5.0.0",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@types/lodash-es": "^4.17.12"
+  },
   "keywords": [],
   "author": "",
   "license": "AGPL-3.0-or-later",

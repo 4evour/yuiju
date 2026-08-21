@@ -272,19 +272,23 @@ export class ChatSessionManager<TMessage extends StoredSatoriChatMessage> {
   }
 
   async flushUserWindow(sessionId: string) {
+    // 先摘出两个待归档窗口，再进入异步流程，避免期间到来的新消息被误删。
     const summaryChunk = this.summaryChunkBySessionId.get(sessionId);
+    const episodeState = this.episodeStateBySessionId.get(sessionId);
+
     if (summaryChunk) {
       this.summaryChunkBySessionId.delete(sessionId);
+    }
+    if (episodeState) {
+      this.episodeStateBySessionId.delete(sessionId);
+    }
+
+    if (summaryChunk) {
       await this.enqueueSummaryRefresh(sessionId, summaryChunk);
     }
-
-    const episodeState = this.episodeStateBySessionId.get(sessionId);
-    if (!episodeState) {
-      return;
+    if (episodeState) {
+      await this.finalizeEpisodeWindow(episodeState);
     }
-
-    this.episodeStateBySessionId.delete(sessionId);
-    await this.finalizeEpisodeWindow(episodeState);
   }
 
   private appendConversationEntry(input: ChatMessageInput<TMessage>) {
