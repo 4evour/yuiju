@@ -39,6 +39,11 @@
     }
   },
   "message": {
+    "web": {
+      "enabled": true,
+      "ownerId": "local-owner",
+      "ownerName": "你的名字"
+    },
     "proactive": {
       "onebotGroupTargetId": 838986741,
       "larkGroupTargetId": "xxx"

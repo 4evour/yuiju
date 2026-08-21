@@ -25,6 +25,11 @@ function createUserConfig() {
       },
     },
     message: {
+      web: {
+        enabled: true,
+        ownerId: "local-owner",
+        ownerName: "主人",
+      },
       onebot: {
         selfId: "10000",
         endpoint: "ws://localhost:3001",

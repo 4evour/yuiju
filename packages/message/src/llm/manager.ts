@@ -146,6 +146,10 @@ export class LLMManager {
     });
   }
 
+  public async flushPrivateChatSession(sessionId: string): Promise<void> {
+    await this.privateSession.flushUserWindow(sessionId);
+  }
+
   public recordGroupMessageRecall(input: {
     platform: string;
     channelId: string;
