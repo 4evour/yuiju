@@ -59,6 +59,7 @@
   "homepage": "https://github.com/yixiaojiu/yuiju#readme",
   "devDependencies": {
     "@biomejs/biome": "^2.3.5",
+    "@playwright/test": "^1.62.1",
     "@types/lodash-es": "^4.17.12",
     "@types/node": "^24.10.0",
     "husky": "^9.1.7",
