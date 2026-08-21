@@ -1,4 +1,4 @@
-import type { TemperatureLevel, WeatherType } from "@yuiju/utils";
+import type { TemperatureLevel, WeatherType } from "@yuiju/utils/types/weather";
 
 /**
  * 天气定时任务的 cron 表达式。

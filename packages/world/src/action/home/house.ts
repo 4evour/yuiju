@@ -10,6 +10,7 @@ import {
   SchoolSubScene,
 } from "@yuiju/utils/types/state";
 import { allTrue } from "@yuiju/utils/utils";
+import { type MorningMoodResult, resolveMorningMood } from "@/engine/character/morning-mood";
 import { planHomeCookingAgent } from "@/llm/agent/home";
 import { generateDailyMemoriesForDate, resolveDiaryDateForSleep } from "@/memory/diary/day";
 import { refreshDiarySummariesForDate } from "@/memory/diary/summary";
@@ -20,6 +21,10 @@ import {
 } from "../../utils/cooking-utils";
 import { resolveFoodRecoveryPerUnit } from "../../utils/food-utils";
 import { isAfternoon, isEvening, isMorning, isNight, isWeekday, isWeekend } from "../utils";
+
+interface WakeUpStartContext {
+  morningMood: MorningMoodResult;
+}
 
 interface HomeCookingStartContext {
   ingredients: CookingIngredientSnapshot[];
@@ -37,7 +42,7 @@ function isAtHomeHouse(context: ActionContext) {
 export const homeAction: ActionMetadata[] = [
   {
     action: ActionId.Wake_Up,
-    description: "起床并洗漱，新的一天开始。[体力=85][饱腹=20][耗时10分钟]",
+    description: "起床并洗漱，新的一天开始。[耗时10分钟]",
     proactiveShare: {
       enabled: true,
     },
@@ -50,8 +55,36 @@ export const homeAction: ActionMetadata[] = [
       await context.characterState.setStamina(85);
       await context.characterState.setSatiety(20);
       await context.characterState.clearDailyActions();
+
+      const weather = context.worldState.getWeather();
+      if (!weather) {
+        logger.warn("[homeAction.Wake_Up] current weather unavailable, skip morning mood reset");
+        return;
+      }
+
+      const morningMood = resolveMorningMood({
+        weather,
+        isWeekend: isWeekend(context),
+      });
+      await context.characterState.setMood(morningMood.value);
+
+      return { startContext: { morningMood } };
     },
     durationMin: 10,
+    completionEvent(context, runningAction) {
+      const wakeUpContext = runningAction.startContext as unknown as WakeUpStartContext | undefined;
+      if (!wakeUpContext) {
+        context.runtimeState.actionSummaryText = "悠酱起床洗漱，新的一天开始了";
+        return;
+      }
+
+      const { morningMood } = wakeUpContext;
+      context.runtimeState.actionSummaryText = `悠酱起床洗漱，今日心情为${morningMood.value}，主要受到${morningMood.primaryReasons.join("和")}影响`;
+
+      return {
+        completionContext: { morningMood },
+      };
+    },
   },
   {
     action: ActionId.Sleep_For_A_Little,
