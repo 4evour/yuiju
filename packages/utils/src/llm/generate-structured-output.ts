@@ -9,7 +9,7 @@ import { logger } from "../logger";
 import { structuredOutputJsonPrompt, structuredOutputRepairPrompt } from "../prompt";
 import { extractLastJson } from "../utils/extract-last-json";
 import { getLangfuseTelemetry } from "./langfuse-telemetry";
-import { flashModel } from "./models";
+import { getFlashModel } from "./models";
 
 type GenerateTextOptions = Parameters<typeof generateText>[0];
 type GenerateTextResult = Awaited<ReturnType<typeof generateText>>;
@@ -102,7 +102,7 @@ export async function generateStructuredOutput<OUTPUT extends StructuredOutput>(
 
     const repairResult = await generateText({
       model: wrapLanguageModel({
-        model: flashModel,
+        model: getFlashModel(),
         middleware: extractJsonMiddleware({
           transform: (text) => extractLastJson(text) ?? text.trim(),
         }),

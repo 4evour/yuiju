@@ -1,5 +1,6 @@
 import type { ActionContext, BehaviorRecord, ChoiceOption, PlanState } from "@yuiju/utils";
-import { flashModel, generateStructuredOutput, planHomeCookingPrompt } from "@yuiju/utils";
+import { generateStructuredOutput, planHomeCookingPrompt } from "@yuiju/utils";
+import { getFlashModel } from "@yuiju/utils/llm/models";
 import { Output } from "ai";
 import dayjs from "dayjs";
 import { z } from "zod";
@@ -39,7 +40,7 @@ export async function planHomeCookingAgent(
   for (let i = 0; i < RETRY_COUNT; i++) {
     try {
       const { output } = await generateStructuredOutput({
-        model: flashModel,
+        model: getFlashModel(),
         providerOptions: {
           flash: {
             enable_thinking: false,

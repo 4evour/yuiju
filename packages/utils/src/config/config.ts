@@ -1,7 +1,7 @@
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import userConfig from "../../../../yuiju.config.json";
-import { resolveYuijuConfig } from "./config-resolver";
+import { resolveYuijuConfig, resolveYuijuConfigWithoutSchemaValidation } from "./config-resolver";
 import type { YuijuConfig } from "./config-schema";
 
 let cachedConfig: Readonly<YuijuConfig> | null = null;
@@ -38,7 +38,8 @@ function deepFreezeConfig<T>(value: T): Readonly<T> {
  *
  * 说明：
  * - 用户配置源固定为项目根目录的 yuiju.config.json；
- * - 配置处理模块负责解析环境变量引用、合并默认值并校验最终结构；
+ * - 配置处理模块负责解析环境变量引用并合并默认值；
+ * - 非公开部署校验完整结构，公开部署把缺失能力的错误推迟到实际运行入口；
  * - 读取结果会被缓存并深度冻结，供 monorepo 各子包复用。
  */
 export function getYuijuConfig(): Readonly<YuijuConfig> {
@@ -46,7 +47,11 @@ export function getYuijuConfig(): Readonly<YuijuConfig> {
     return cachedConfig;
   }
 
-  cachedConfig = deepFreezeConfig(resolveYuijuConfig(userConfig, process.env));
+  cachedConfig = deepFreezeConfig(
+    userConfig.app.publicDeployment
+      ? resolveYuijuConfigWithoutSchemaValidation(userConfig, process.env)
+      : resolveYuijuConfig(userConfig, process.env),
+  );
   return cachedConfig;
 }
 

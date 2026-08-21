@@ -17,9 +17,9 @@ import {
   queryStaticGuideTool,
   readCoreMemory,
   reviewPlanChangesTool,
-  strongModel,
   todayEventSearchTool,
 } from "@yuiju/utils";
+import { getStrongModel } from "@yuiju/utils/llm/models";
 import { Output, stepCountIs } from "ai";
 import dayjs from "dayjs";
 import { z } from "zod";
@@ -55,7 +55,7 @@ export async function chooseActionAgent(
   for (let i = 0; i < RETRY_COUNT; i++) {
     try {
       const { output } = await generateStructuredOutput({
-        model: strongModel,
+        model: getStrongModel(),
         providerOptions: {
           strong: {
             enable_thinking: true,

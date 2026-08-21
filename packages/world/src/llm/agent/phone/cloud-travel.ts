@@ -1,6 +1,6 @@
 import { getYuijuConfig } from "@yuiju/utils/config/config";
 import { getLangfuseTelemetry } from "@yuiju/utils/llm/langfuse-telemetry";
-import { visionModel } from "@yuiju/utils/llm/models";
+import { getVisionModel } from "@yuiju/utils/llm/models";
 import { baseInformation } from "@yuiju/utils/prompt/character-card";
 import { cloudTravelSystemPrompt } from "@yuiju/utils/prompt/phone";
 import { generateText } from "ai";
@@ -227,7 +227,7 @@ export async function runCloudTravel(location: string | null) {
     ? await findSpecifiedJapanStreetView(location)
     : await findRandomJapanStreetView();
   const { text } = await generateText({
-    model: visionModel,
+    model: getVisionModel(),
     telemetry: getLangfuseTelemetry(),
     instructions: [baseInformation, cloudTravelSystemPrompt].join("\n\n"),
     providerOptions: {

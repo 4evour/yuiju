@@ -2,7 +2,6 @@ import {
   buildChatPlanProposalPrompt,
   buildMessageHistoryUserPrompt,
   changeCharacterMoodByChat,
-  chatModel,
   chatReplyRulesPrompt,
   createChatPlanChangesProposalTool,
   createToolCallLoggingHooks,
@@ -12,6 +11,7 @@ import {
   messageHistorySchemaPrompt,
   readCoreMemory,
 } from "@yuiju/utils";
+import { getChatModel } from "@yuiju/utils/llm/models";
 import { todayEventSearchTool } from "@yuiju/utils/llm/tools/memory-search";
 import { queryAvailableInventoryItems } from "@yuiju/utils/llm/tools/query-available-inventory-items";
 import { queryStateTool } from "@yuiju/utils/llm/tools/query-state";
@@ -298,7 +298,7 @@ export class LLMManager {
       }
 
       const result = await generateStructuredOutput({
-        model: chatModel,
+        model: getChatModel(),
         providerOptions: {
           chat: {
             enable_thinking: true,
@@ -474,7 +474,7 @@ export class LLMManager {
       }
 
       const result = await generateStructuredOutput({
-        model: chatModel,
+        model: getChatModel(),
         providerOptions: {
           chat: {
             enable_thinking: false,

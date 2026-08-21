@@ -2,7 +2,6 @@ import {
   buildDiarySystemPrompt,
   DEFAULT_DIARY_SUBJECT,
   type DiarySummaryMaterial,
-  flashModel,
   getRecentMemoryEpisodes,
   type IMemoryEpisode,
   SUBJECT_NAME,
@@ -11,6 +10,7 @@ import {
   upsertMemoryDiary,
 } from "@yuiju/utils";
 import { getLangfuseTelemetry } from "@yuiju/utils/llm/langfuse-telemetry";
+import { getFlashModel } from "@yuiju/utils/llm/models";
 import { indexDailyDiary } from "@yuiju/utils/memory/diary-vector-index";
 import { generateText } from "ai";
 import dayjs from "dayjs";
@@ -37,7 +37,7 @@ async function writeDiaryText(input: {
   materials: DiarySummaryMaterial[];
 }): Promise<string> {
   const result = await generateText({
-    model: flashModel,
+    model: getFlashModel(),
     telemetry: getLangfuseTelemetry(),
     providerOptions: {
       flash: {

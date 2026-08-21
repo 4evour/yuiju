@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolveYuijuConfig } from "./config-resolver";
+import { resolveYuijuConfig, resolveYuijuConfigWithoutSchemaValidation } from "./config-resolver";
 
 const modelSource = {
   baseUrl: "https://example.com/v1",
@@ -133,5 +133,41 @@ describe("resolveYuijuConfig", () => {
     const config = resolveYuijuConfig(userConfig, {});
 
     expect(config.app).not.toHaveProperty("unknown");
+  });
+
+  it("公开部署跳过完整 Schema 校验", () => {
+    const config = resolveYuijuConfigWithoutSchemaValidation(
+      {
+        app: {
+          publicDeployment: true,
+        },
+        database: {
+          redisUrl: "redis://localhost:6379",
+          syncMongoUri: { $env: "YUIJU_SYNC_MONGO_URI" },
+          syncRedisUrl: { $env: "YUIJU_SYNC_REDIS_URL" },
+        },
+        llm: {
+          models: {
+            flash: [modelSource],
+          },
+        },
+      },
+      {
+        YUIJU_SYNC_MONGO_URI: "mongodb://sync.example.com:27017/yuiju",
+        YUIJU_SYNC_REDIS_URL: "redis://sync.example.com:6379",
+      },
+    );
+
+    expect(config.app).toEqual({
+      publicDeployment: true,
+      timezone: "Asia/Shanghai",
+    });
+    expect(config.database.mongoUri).toBeUndefined();
+    expect(config.llm.models.chat).toBeUndefined();
+    expect(config.message.onebot).toMatchObject({
+      protocol: "ws",
+      retryTimes: 6,
+      whiteList: [],
+    });
   });
 });

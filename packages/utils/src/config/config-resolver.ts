@@ -48,13 +48,23 @@ export function resolveYuijuConfig(
   userConfig: unknown,
   environment: NodeJS.ProcessEnv,
 ): YuijuConfig {
-  const resolvedUserConfig = resolveEnvironmentReferences(userConfig, environment, "配置");
-  const mergedConfig = mergeWith(
-    {},
-    defaultYuijuConfig,
-    resolvedUserConfig,
-    (_defaultValue, userValue) => (Array.isArray(userValue) ? userValue : undefined),
-  );
+  return yuijuConfigSchema.parse(mergeYuijuConfig(userConfig, environment));
+}
 
-  return yuijuConfigSchema.parse(mergedConfig);
+/**
+ * 公开部署只解析环境变量并合并默认配置，不在构建阶段校验完整项目配置。
+ * 缺失能力由实际使用该能力的运行时入口报错。
+ */
+export function resolveYuijuConfigWithoutSchemaValidation(
+  userConfig: unknown,
+  environment: NodeJS.ProcessEnv,
+): YuijuConfig {
+  return mergeYuijuConfig(userConfig, environment) as YuijuConfig;
+}
+
+function mergeYuijuConfig(userConfig: unknown, environment: NodeJS.ProcessEnv): unknown {
+  const resolvedUserConfig = resolveEnvironmentReferences(userConfig, environment, "配置");
+  return mergeWith({}, defaultYuijuConfig, resolvedUserConfig, (_defaultValue, userValue) =>
+    Array.isArray(userValue) ? userValue : undefined,
+  );
 }

@@ -1,6 +1,6 @@
 import { generateText, stepCountIs, tool } from "ai";
 import { getLangfuseTelemetry } from "../llm/langfuse-telemetry";
-import { flashModel } from "../llm/models";
+import { getFlashModel } from "../llm/models";
 import { createToolCallLoggingHooks } from "../llm/tool-call-logger";
 import { diarySearchTool, semanticDiarySearchTool } from "../llm/tools/memory-search";
 import { getPersonMemoryTool, listPersonMemoriesTool } from "../llm/tools/person-memory";
@@ -39,7 +39,7 @@ export async function retrieveMemory(input: MemoryRetrievalInput): Promise<strin
   const toolNames = Object.keys(tools) as Array<keyof typeof tools>;
 
   const result = await generateText({
-    model: flashModel,
+    model: getFlashModel(),
     providerOptions: {
       flash: {
         enable_thinking: false,

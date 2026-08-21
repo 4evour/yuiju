@@ -1,5 +1,5 @@
 import { generateStructuredOutput } from "@yuiju/utils/llm/generate-structured-output";
-import { flashModel } from "@yuiju/utils/llm/models";
+import { getFlashModel } from "@yuiju/utils/llm/models";
 import { buildPhoneUseSystemPrompt } from "@yuiju/utils/prompt/phone";
 import { Output } from "ai";
 import { z } from "zod";
@@ -11,7 +11,7 @@ export type PhoneApplication = z.infer<typeof phoneApplicationSchema>;
 
 export async function generatePhoneUsePlanFromReason(actionReason: string) {
   const { output } = await generateStructuredOutput({
-    model: flashModel,
+    model: getFlashModel(),
     instructions: buildPhoneUseSystemPrompt(),
     providerOptions: {
       flash: {

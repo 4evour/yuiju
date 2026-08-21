@@ -1,5 +1,6 @@
-import { flashModel, getCharacterCardPrompt, getRedis } from "@yuiju/utils";
+import { getCharacterCardPrompt, getRedis } from "@yuiju/utils";
 import { getYuijuConfig } from "@yuiju/utils/config/config";
+import { getFlashModel } from "@yuiju/utils/llm/models";
 import { convertToModelMessages, stepCountIs, streamText, type UIMessage } from "ai";
 import { isPublicDeployment } from "@/lib/public-deployment";
 
@@ -150,7 +151,7 @@ export async function POST(request: Request) {
   const systemPrompt = getCharacterCardPrompt();
 
   const result = await streamText({
-    model: flashModel,
+    model: getFlashModel(),
     messages: modelMessages,
     instructions: systemPrompt,
     stopWhen: stepCountIs(5),

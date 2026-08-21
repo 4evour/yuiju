@@ -7,7 +7,7 @@
 
 import { getYuijuConfig } from "@yuiju/utils/config/config";
 import { generateStructuredOutput } from "@yuiju/utils/llm/generate-structured-output";
-import { chatModel } from "@yuiju/utils/llm/models";
+import { getChatModel } from "@yuiju/utils/llm/models";
 import { createToolCallLoggingHooks } from "@yuiju/utils/llm/tool-call-logger";
 import { diarySearchTool, todayEventSearchTool } from "@yuiju/utils/llm/tools/memory-search";
 import { getCharacterCardPrompt } from "@yuiju/utils/prompt/character-card";
@@ -89,7 +89,7 @@ async function shareActionCompletionToGroup(
       10,
     );
     const result = await generateStructuredOutput({
-      model: chatModel,
+      model: getChatModel(),
       providerOptions: {
         chat: {
           enable_thinking: true,

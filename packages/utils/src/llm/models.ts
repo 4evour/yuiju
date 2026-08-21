@@ -1,13 +1,13 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { wrapLanguageModel } from "ai";
 import { getYuijuConfig } from "../config/config";
-import type { YuijuLlmModelSourcesConfig, YuijuLlmModelsConfig } from "../config/config-schema";
+import type { YuijuLlmModelSourcesConfig } from "../config/config-schema";
 import { logger } from "../logger";
-
-const config = getYuijuConfig();
 
 // 模型调用失败后的冷却时间
 const MODEL_SOURCE_FAILURE_COOLDOWN_MS = 5 * 60 * 1000;
+
+type LlmModelName = "chat" | "strong" | "flash" | "vision";
 
 class LlmModelSourceAvailability {
   private cooldownUntilList: number[];
@@ -36,10 +36,7 @@ class LlmModelSourceAvailability {
   }
 }
 
-function createFallbackModel(
-  name: keyof YuijuLlmModelsConfig,
-  sources: YuijuLlmModelSourcesConfig,
-) {
+function createFallbackModel(name: LlmModelName, sources: YuijuLlmModelSourcesConfig) {
   const models = sources.map((source) => {
     const provider = createOpenAICompatible({
       baseURL: source.baseUrl,
@@ -133,22 +130,50 @@ function createFallbackModel(
   });
 }
 
+type FallbackModel = ReturnType<typeof createFallbackModel>;
+
+const modelCache: Partial<Record<LlmModelName, FallbackModel>> = {};
+
+function getModel(name: LlmModelName): FallbackModel {
+  const cachedModel = modelCache[name];
+  if (cachedModel) {
+    return cachedModel;
+  }
+
+  const sources = getYuijuConfig().llm?.models?.[name];
+  if (!sources) {
+    throw new Error(`llm.models.${name} 未配置`);
+  }
+
+  const model = createFallbackModel(name, sources);
+  modelCache[name] = model;
+  return model;
+}
+
 /**
- * 用于复杂决策、长链路思考的强模型。
+ * 用于聊天场景，选择角色扮演效果好，响应速度快的模型
  */
-export const chatModel = createFallbackModel("chat", config.llm.models.chat);
+export function getChatModel() {
+  return getModel("chat");
+}
 
 /**
  * 用于复杂决策、长链路思考的强模型。
  */
-export const strongModel = createFallbackModel("strong", config.llm.models.strong);
+export function getStrongModel() {
+  return getModel("strong");
+}
 
 /**
  * 需要快速响应、轻文本类工作
  */
-export const flashModel = createFallbackModel("flash", config.llm.models.flash);
+export function getFlashModel() {
+  return getModel("flash");
+}
 
 /**
  * 主要用于图片描述（识图场景）
  */
-export const visionModel = createFallbackModel("vision", config.llm.models.vision);
+export function getVisionModel() {
+  return getModel("vision");
+}

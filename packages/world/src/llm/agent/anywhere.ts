@@ -1,5 +1,6 @@
 import type { ActionContext, BehaviorRecord, ChoiceOption, PlanState } from "@yuiju/utils";
-import { chooseFoodPrompt, flashModel, generateStructuredOutput } from "@yuiju/utils";
+import { chooseFoodPrompt, generateStructuredOutput } from "@yuiju/utils";
+import { getFlashModel } from "@yuiju/utils/llm/models";
 import { Output } from "ai";
 import dayjs from "dayjs";
 import { z } from "zod";
@@ -34,7 +35,7 @@ export async function chooseFoodAgent(
   for (let i = 0; i < RETRY_COUNT; i++) {
     try {
       const { output } = await generateStructuredOutput({
-        model: flashModel,
+        model: getFlashModel(),
         providerOptions: {
           flash: {
             enable_thinking: false,
