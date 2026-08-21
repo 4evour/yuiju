@@ -40,7 +40,8 @@
     "type-check": "pnpm run type-check:world && pnpm run type-check:message && pnpm run type-check:utils",
     "docs:dev": "pnpm --filter @yuiju/site run dev",
     "docs:build": "pnpm --filter @yuiju/site run build",
-    "docs:preview": "pnpm --filter @yuiju/site run preview"
+    "docs:preview": "pnpm --filter @yuiju/site run preview",
+    "image": "node --use-env-proxy packages/source/aigc/pixel/generate/generate-image.js"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json,jsonc,css,md}": "biome check --write --no-errors-on-unmatched"

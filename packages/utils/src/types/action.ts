@@ -140,10 +140,6 @@ export enum ActionId {
   Take_Train_To_Train_Station_From_Coast = "从月汐海岸乘电车回羽浦站",
   /** 在月汐海岸散步 */
   Walk_In_Coast = "在月汐海岸散步",
-  /** 帮忙准备夏日祭 */
-  Help_Prepare_Summer_Festival = "帮忙准备夏日祭",
-  /** 参加夏日祭 */
-  Attend_Summer_Festival = "参加夏日祭",
 }
 
 export interface ActionContext {

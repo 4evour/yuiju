@@ -56,7 +56,7 @@ LLM 不应判断未进入候选列表的 Action，也不应绕过 `precondition`
 
 ## 模型来源
 
-模型来源统一来自根目录 `yuiju.config.ts` 的 `llm.models`：
+模型来源统一来自根目录 `yuiju.config.json` 的 `llm.models`：
 
 - `chat`：对话类模型。
 - `strong`：复杂决策和长链路推理。

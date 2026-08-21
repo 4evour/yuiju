@@ -45,7 +45,7 @@ ENV YUIJU_SILICONFLOW_API_KEY=${YUIJU_SILICONFLOW_API_KEY}
 ENV YUIJU_MOONSHOT_API_KEY=${YUIJU_MOONSHOT_API_KEY}
 ENV YUIJU_NAPCAT_ACCESS_TOKEN=${YUIJU_NAPCAT_ACCESS_TOKEN}
 
-RUN cp yuiju.config.ts.example yuiju.config.ts
+RUN cp yuiju.config.json.example yuiju.config.json
 
 FROM base AS runner
 

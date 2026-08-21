@@ -1,4 +1,4 @@
-import { getYuijuConfig } from "@yuiju/utils";
+import { getYuijuConfig } from "@yuiju/utils/config/config";
 import cron, { type ScheduledTask } from "node-cron";
 import { logger } from "@/utils/logger";
 import { WEATHER_CRON_EXPRESSION } from "./constants";

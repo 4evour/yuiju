@@ -36,10 +36,10 @@ pnpm run infra:down
 
 ## 2. 配置项目连接地址
 
-确保根目录存在 `yuiju.config.ts`
+确保根目录存在 `yuiju.config.json`
 
 ```bash
-cp yuiju.config.ts.example yuiju.config.ts
+cp yuiju.config.json.example yuiju.config.json
 ```
 
 确认以下配置项：
@@ -59,7 +59,7 @@ pnpm run start:python
 ## 4. 常见问题
 
 - `world` / `message` 无法启动并提示 Mongo 配置错误：
-  - `connectDB` 会强制要求 `yuiju.config.ts` 中 `database.mongoUri` 非空且可连接。
+  - `connectDB` 会强制要求 `yuiju.config.json` 中 `database.mongoUri` 非空且可连接。
 - `message` 启动失败：
   - 除 MongoDB 外，还依赖 OneBot / Lark 连接信息可用与 `message.onebot` / `message.lark` 配置正确。
 - `web` 部分接口不可用：

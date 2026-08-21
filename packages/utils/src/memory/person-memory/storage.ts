@@ -2,7 +2,7 @@ import { mkdir, readFile, stat } from "node:fs/promises";
 import { resolve } from "node:path";
 import dayjs from "dayjs";
 import { z } from "zod";
-import { getYuijuConfig } from "../../config";
+import { getYuijuConfig } from "../../config/config";
 import {
   assertValidSectionContent,
   normalizeSectionContent,

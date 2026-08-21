@@ -98,10 +98,10 @@ docker run -d \
 从仓库提供的示例创建真实配置文件：
 
 ```bash
-cp yuiju.config.ts.example yuiju.config.ts
+cp yuiju.config.json.example yuiju.config.json
 ```
 
-`yuiju.config.ts` 包含数据库凭据、LLM API Key 和消息平台密钥，通常不应提交到 Git。接下来按照[项目配置](./configuration)逐项填写。
+`yuiju.config.json` 包含数据库凭据、LLM API Key 和消息平台密钥，通常不应提交到 Git。接下来按照[项目配置](./configuration)逐项填写。
 
 ## 准备本地目录
 

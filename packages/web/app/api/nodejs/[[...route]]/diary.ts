@@ -2,11 +2,11 @@ import {
   countMemoryDiaries,
   DEFAULT_DIARY_SUBJECT,
   getMemoryDiaries,
-  getYuijuConfig,
   type IMemoryDiary,
   isDev,
   type MongoReadSource,
 } from "@yuiju/utils";
+import { getYuijuConfig } from "@yuiju/utils/config/config";
 import dayjs from "dayjs";
 import { Hono } from "hono";
 import { rejectPublicRequest } from "./public-guard";

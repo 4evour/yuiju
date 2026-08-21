@@ -4,7 +4,7 @@
 
 ## 当前职责
 
-- 读取根目录 `yuiju.config.ts`。
+- 读取根目录 `yuiju.config.json`。
 - 定义 Character、World、Action、Plan、Memory 等领域类型。
 - 提供 Redis 客户端和状态读写封装。
 - 提供 MongoDB 连接、schema 和读写操作。
@@ -16,7 +16,7 @@
 
 ```text
 src/
-├── config/      # yuiju.config.ts 类型与读取器
+├── config/      # yuiju.config.json 默认值、schema、环境变量解析与读取器
 ├── constants/   # 角色和世界静态常量
 ├── db/          # MongoDB 连接、schema、operations
 ├── llm/         # 模型来源、工具调用、structured output
@@ -29,8 +29,8 @@ src/
 
 ## 配置边界
 
-- 业务配置只从根目录 `yuiju.config.ts` 读取。
-- `NODE_ENV` 仍是运行时环境变量，不进入 `yuiju.config.ts`。
+- 业务配置只从根目录 `yuiju.config.json` 读取。
+- `NODE_ENV` 仍是运行时环境变量，不进入 `yuiju.config.json`。
 - `env.ts` 只保留 `isDev` / `isProd` 这类运行模式判断，不负责加载配置文件。
 - 不要在业务包里新增分散配置读取逻辑。
 

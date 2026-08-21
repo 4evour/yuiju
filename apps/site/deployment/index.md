@@ -17,7 +17,7 @@ MongoDB 和 Redis 是独立的基础设施，不由 PM2 启动或管理。部署
 ## 部署流程
 
 1. [准备运行环境](./preparation)：安装 Node.js、pnpm，准备 MongoDB 和 Redis，并拉取项目代码。
-2. [完成项目配置](./configuration)：创建 `yuiju.config.ts`，逐项配置数据库、模型与消息平台。
+2. [完成项目配置](./configuration)：创建 `yuiju.config.json`，逐项配置数据库、模型与消息平台。
 3. [使用 PM2 部署](./pm2)：检查项目并启动三个应用进程。
 4. [日常运维](./operations)：查看日志、更新代码、重启服务和设置开机恢复。
 
@@ -25,7 +25,7 @@ MongoDB 和 Redis 是独立的基础设施，不由 PM2 启动或管理。部署
 
 - 当前 PM2 配置只管理 `message`、`world` 和 `web`。
 - 本章不负责安装或管理 MongoDB、Redis。
-- 业务配置只从仓库根目录的 `yuiju.config.ts` 读取。
+- 业务配置只从仓库根目录的 `yuiju.config.json` 读取。
 
 ## 端口与网络
 
