@@ -4,7 +4,7 @@ import type LarkBot from "@satorijs/adapter-lark";
 import type OneBotBot from "@yuiju/satorijs-adapter-onebot";
 import { SUBJECT_NAME } from "@yuiju/utils";
 import { getYuijuConfig } from "@yuiju/utils/config/config";
-import { webChatMessageInputSchema } from "@yuiju/utils/types/web-chat";
+import { webChatHistoryQuerySchema, webChatMessageInputSchema } from "@yuiju/utils/types/web-chat";
 import { Hono } from "hono";
 import { llmManager } from "@/llm/manager";
 import { stickerState } from "@/state/sticker";
@@ -15,7 +15,7 @@ import {
   createStoredSatoriGroupBotMessage,
 } from "@/utils/message/satori";
 import type { StoredSatoriGroupMessage } from "@/utils/message/types";
-import { chatThroughWebChannel, getWebChatSticker } from "@/web-chat";
+import { chatThroughWebChannel, getWebChatHistory, getWebChatSticker } from "@/web-chat";
 
 type MessagePlatform = "onebot" | "lark";
 
@@ -102,6 +102,27 @@ export function startMessageInternalApi(input: InternalApiInput) {
 
     const result = await chatThroughWebChannel(parsedMessage.data);
     return context.json(result);
+  });
+
+  app.get("/internal/web/messages", async (context) => {
+    if (!config.message.web.enabled) {
+      return context.json({ error: { code: "WEB_CHAT_DISABLED" } }, 403);
+    }
+
+    const cursorSentAt = context.req.query("cursorSentAt");
+    const cursorId = context.req.query("cursorId");
+    const parsedQuery = webChatHistoryQuerySchema.safeParse({
+      limit: Number(context.req.query("limit")),
+      cursor:
+        cursorSentAt === undefined && cursorId === undefined
+          ? undefined
+          : { sentAt: Number(cursorSentAt), id: cursorId },
+    });
+    if (!parsedQuery.success) {
+      return context.json({ error: { code: "INVALID_WEB_CHAT_HISTORY_QUERY" } }, 400);
+    }
+
+    return context.json(await getWebChatHistory(parsedQuery.data));
   });
 
   app.get("/internal/web/stickers/:key", (context) => {
