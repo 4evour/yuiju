@@ -9,6 +9,7 @@ import { messageRecallHandler } from "./handler/message-recall";
 import { onebotPokeHandler } from "./handler/poke";
 import { privateMessageHandler } from "./handler/private-message";
 import { startMessageInternalApi } from "./internal-api";
+import { llmManager } from "./llm/manager";
 import { stickerState } from "./state/sticker";
 import { logger } from "./utils/logger";
 import { normalizeSatoriSession } from "./utils/satori/session";
@@ -77,6 +78,7 @@ async function main() {
   await initializePersonMemoryHeat();
   // 初始化表情
   await stickerState.initialize();
+  await llmManager.restoreConversationBackups();
   startMessageInternalApi({ onebot, lark });
   await satori.start();
   logger.info("[message.server] 消息服务启动完成");

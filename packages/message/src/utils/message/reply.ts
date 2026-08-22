@@ -36,7 +36,7 @@ export async function sendAndRecordSatoriPrivateReply(input: {
       timestamp: Date.now(),
     });
 
-    llmManager.recordPrivateMessage(storedSentMessage);
+    await llmManager.recordPrivateMessage(storedSentMessage);
 
     const nextLine = replyLines[lineIndex + 1];
     if (nextLine) {
@@ -75,7 +75,7 @@ export async function sendAndRecordSatoriGroupReply(input: {
       timestamp: Date.now(),
     });
 
-    llmManager.recordGroupMessage(storedSentMessage);
+    await llmManager.recordGroupMessage(storedSentMessage);
 
     const nextLine = replyLines[lineIndex + 1];
     if (nextLine) {

@@ -74,7 +74,7 @@ export async function privateMessageHandler(session: Session) {
       content: storedMessage.content,
     });
 
-    llmManager.recordPrivateMessage(storedMessage, sessionLabel);
+    await llmManager.recordPrivateMessage(storedMessage, sessionLabel);
 
     await replyToStoredPrivateMessage({ session, storedMessage, userId });
   } catch (error) {

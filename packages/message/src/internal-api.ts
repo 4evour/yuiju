@@ -154,7 +154,7 @@ export function startMessageInternalApi(input: InternalApiInput) {
         elements,
         timestamp: currentTimestamp,
       });
-      llmManager.recordGroupMessage(storedSentMessage);
+      await llmManager.recordGroupMessage(storedSentMessage);
 
       const nextLine = replyLines[lineIndex + 1];
       if (nextLine) {

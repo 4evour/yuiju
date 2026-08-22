@@ -35,7 +35,7 @@ export async function messageRecallHandler(session: Session) {
         return;
       }
 
-      const recallMessage = llmManager.recordPrivateMessageRecall({
+      const recallMessage = await llmManager.recordPrivateMessageRecall({
         platform: session.platform,
         channelId: session.channelId,
         messageId: session.messageId,
@@ -78,7 +78,7 @@ export async function messageRecallHandler(session: Session) {
       return;
     }
 
-    const recallMessage = llmManager.recordGroupMessageRecall({
+    const recallMessage = await llmManager.recordGroupMessageRecall({
       platform: session.platform,
       channelId: session.channelId,
       messageId: session.messageId,

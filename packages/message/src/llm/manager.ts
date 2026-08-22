@@ -121,26 +121,30 @@ export class LLMManager {
   /**
    * 将群原始消息写入群会话历史，保证群聊模型拿到稳定上下文。
    */
-  public recordGroupMessage(message: StoredSatoriGroupMessage, sessionLabel?: string) {
+  public async recordGroupMessage(message: StoredSatoriGroupMessage, sessionLabel?: string) {
+    const sessionId = this.buildGroupSessionKey(message);
     this.groupSession.recordMessage({
-      sessionId: this.buildGroupSessionKey(message),
+      sessionId,
       sessionLabel: sessionLabel ?? getGroupDisplayName(message),
       message,
     });
+    await this.groupSession.saveConversationBackup(sessionId);
   }
 
   /**
    * 将私聊原始消息写入私聊会话历史，保证回复模型与真实会话事实源保持一致。
    */
-  public recordPrivateMessage(message: StoredSatoriPrivateMessage, sessionLabel?: string) {
+  public async recordPrivateMessage(message: StoredSatoriPrivateMessage, sessionLabel?: string) {
+    const sessionId = this.buildPrivateSessionKey(message);
     this.privateSession.recordMessage({
-      sessionId: this.buildPrivateSessionKey(message),
+      sessionId,
       sessionLabel: sessionLabel ?? getProtocolMessageSenderName(message),
       message,
     });
+    await this.privateSession.saveConversationBackup(sessionId);
   }
 
-  public recordGroupMessageRecall(input: {
+  public async recordGroupMessageRecall(input: {
     platform: string;
     channelId: string;
     messageId: string;
@@ -170,10 +174,11 @@ export class LLMManager {
       this.activeGroupChatTaskBySessionId.delete(sessionId);
     }
 
+    await this.groupSession.saveConversationBackup(sessionId);
     return recallMessage;
   }
 
-  public recordPrivateMessageRecall(input: {
+  public async recordPrivateMessageRecall(input: {
     platform: string;
     channelId: string;
     messageId: string;
@@ -203,7 +208,20 @@ export class LLMManager {
       this.activePrivateChatTaskBySessionId.delete(sessionId);
     }
 
+    await this.privateSession.saveConversationBackup(sessionId);
     return recallMessage;
+  }
+
+  public async restoreConversationBackups(): Promise<void> {
+    const [group, privateChat] = await Promise.all([
+      this.groupSession.restoreConversationBackup(),
+      this.privateSession.restoreConversationBackup(),
+    ]);
+
+    logger.info("[message.session] Redis 会话备份恢复完成", {
+      group,
+      private: privateChat,
+    });
   }
 
   private buildPrivateSessionKey(message: StoredSatoriPrivateMessage): string {

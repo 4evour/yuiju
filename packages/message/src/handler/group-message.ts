@@ -59,7 +59,7 @@ export async function groupMessageHandler(session: Session) {
     content: storedMessage.content,
   });
 
-  llmManager.recordGroupMessage(storedMessage);
+  await llmManager.recordGroupMessage(storedMessage);
 
   await replyToStoredGroupMessage({ session, storedMessage });
 }

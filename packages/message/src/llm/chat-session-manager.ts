@@ -7,6 +7,11 @@ import {
 } from "@yuiju/utils";
 import { getLangfuseTelemetry } from "@yuiju/utils/llm/langfuse-telemetry";
 import { getFlashModel } from "@yuiju/utils/llm/models";
+import {
+  deleteChatSessionConversationBackups,
+  readChatSessionConversationBackups,
+  saveChatSessionConversationBackup,
+} from "@yuiju/utils/redis/chat-session";
 import { generateText } from "ai";
 import dayjs from "dayjs";
 import {
@@ -128,6 +133,11 @@ interface ChatSessionManagerInput {
 }
 
 /**
+ * 服务启动后，恢复对话的最长间隔时间。
+ */
+const CONVERSATION_RECOVERY_MAX_IDLE_MS = 5 * 60 * 1000;
+
+/**
  * 群聊/私聊共享的会话核心实现。
  *
  * 说明：
@@ -246,6 +256,54 @@ export class ChatSessionManager<TMessage extends StoredSatoriChatMessage> {
     }
 
     episodeState.moodChanges.push({ delta: input.delta });
+  }
+
+  async saveConversationBackup(sessionId: string): Promise<void> {
+    const messages = this.conversationBySessionId.get(sessionId) ?? [];
+    await saveChatSessionConversationBackup({
+      scene: this.sceneLabel,
+      sessionId,
+      backup: {
+        updatedAt: Date.now(),
+        messages: messages.map(({ rawSession: _rawSession, ...message }) => message),
+      },
+    });
+  }
+
+  async restoreConversationBackup(): Promise<{
+    restoredSessionCount: number;
+    discardedSessionCount: number;
+  }> {
+    const backups = await readChatSessionConversationBackups<Omit<TMessage, "rawSession">>(
+      this.sceneLabel,
+    );
+    const discardedSessionIds: string[] = [];
+    let restoredSessionCount = 0;
+
+    for (const [sessionId, backup] of Object.entries(backups)) {
+      if (Date.now() - backup.updatedAt > CONVERSATION_RECOVERY_MAX_IDLE_MS) {
+        discardedSessionIds.push(sessionId);
+        continue;
+      }
+
+      const messages = this.trimConversation(backup.messages as TMessage[]);
+      if (!messages.length) {
+        discardedSessionIds.push(sessionId);
+        continue;
+      }
+
+      this.conversationBySessionId.set(sessionId, messages);
+      restoredSessionCount += 1;
+    }
+
+    if (discardedSessionIds.length) {
+      await deleteChatSessionConversationBackups(this.sceneLabel, discardedSessionIds);
+    }
+
+    return {
+      restoredSessionCount,
+      discardedSessionCount: discardedSessionIds.length,
+    };
   }
 
   async getHistoryJson(sessionId: string, limit?: number): Promise<SessionHistoryContext> {
