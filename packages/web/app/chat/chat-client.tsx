@@ -1,16 +1,16 @@
 "use client";
 
-import type { WebChatReplyPart } from "@yuiju/utils/types/web-chat";
+import type {
+  WebChatHistoryCursor,
+  WebChatHistoryMessage,
+  WebChatHistoryPage,
+  WebChatReplyPart,
+} from "@yuiju/utils/types/web-chat";
 import { ArrowUp, MapPin, Sparkles } from "lucide-react";
 import Image from "next/image";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import useSWR from "swr";
 import { fetchHomeSummary, HOME_SUMMARY_ENDPOINT } from "@/lib/api/home";
-
-type ChatMessage =
-  | { id: string; role: "user"; text: string; createdAt: number }
-  | { id: string; role: "assistant"; parts: WebChatReplyPart[]; createdAt: number }
-  | { id: string; role: "notice"; text: string; createdAt: number; tone: "quiet" | "error" };
 
 type ChatResponse =
   | {
@@ -21,6 +21,31 @@ type ChatResponse =
     }
   | { data: { status: "NO_REPLY" } }
   | { error: { code: string; message: string } };
+
+type ChatHistoryResponse =
+  | { data: WebChatHistoryPage }
+  | { error: { code: string; message: string } };
+
+const CHAT_HISTORY_ENDPOINT = "/api/chat/messages?limit=50";
+
+async function fetchChatHistory(endpoint: string): Promise<WebChatHistoryPage> {
+  const response = await fetch(endpoint);
+  const payload = (await response.json()) as ChatHistoryResponse;
+
+  if (!response.ok || !("data" in payload)) {
+    throw new Error("error" in payload ? payload.error.message : "聊天记录暂时无法读取");
+  }
+
+  return payload.data;
+}
+
+function prependUniqueMessages(
+  olderMessages: WebChatHistoryMessage[],
+  currentMessages: WebChatHistoryMessage[],
+): WebChatHistoryMessage[] {
+  const olderIds = new Set(olderMessages.map((message) => message.id));
+  return [...olderMessages, ...currentMessages.filter((message) => !olderIds.has(message.id))];
+}
 
 function formatTime(timestamp: number) {
   return new Intl.DateTimeFormat("zh-CN", {
@@ -115,16 +140,66 @@ function MessageContent({ parts }: { parts: WebChatReplyPart[] }) {
 }
 
 export function ChatClient() {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const { data: initialHistory, error: historyError } = useSWR(
+    CHAT_HISTORY_ENDPOINT,
+    fetchChatHistory,
+  );
+  const [messages, setMessages] = useState<WebChatHistoryMessage[]>([]);
+  const [nextCursor, setNextCursor] = useState<WebChatHistoryCursor | null>(null);
+  const [isLoadingOlder, setIsLoadingOlder] = useState(false);
+  const [historyPageError, setHistoryPageError] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
   const [isSending, setIsSending] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
+  const hasHydratedHistory = useRef(false);
+  const shouldScrollToEnd = useRef(true);
 
   useEffect(() => {
+    if (!initialHistory || hasHydratedHistory.current) {
+      return;
+    }
+
+    hasHydratedHistory.current = true;
+    setMessages((current) => prependUniqueMessages(initialHistory.messages, current));
+    setNextCursor(initialHistory.nextCursor);
+  }, [initialHistory]);
+
+  useEffect(() => {
+    if (messages.length === 0) {
+      return;
+    }
+    if (!shouldScrollToEnd.current) {
+      return;
+    }
+
     endRef.current?.scrollIntoView({
       behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
     });
-  });
+    shouldScrollToEnd.current = false;
+  }, [messages]);
+
+  async function loadOlderMessages() {
+    if (!nextCursor || isLoadingOlder) {
+      return;
+    }
+
+    setIsLoadingOlder(true);
+    setHistoryPageError(null);
+    try {
+      const searchParams = new URLSearchParams({
+        limit: "50",
+        cursorSentAt: String(nextCursor.sentAt),
+        cursorId: nextCursor.id,
+      });
+      const history = await fetchChatHistory(`/api/chat/messages?${searchParams}`);
+      setMessages((current) => prependUniqueMessages(history.messages, current));
+      setNextCursor(history.nextCursor);
+    } catch (error) {
+      setHistoryPageError(error instanceof Error ? error.message : "更早的聊天记录暂时无法读取");
+    } finally {
+      setIsLoadingOlder(false);
+    }
+  }
 
   async function sendMessage(event: FormEvent) {
     event.preventDefault();
@@ -135,6 +210,7 @@ export function ChatClient() {
 
     const messageId = crypto.randomUUID();
     const sentAt = Date.now();
+    shouldScrollToEnd.current = true;
     setMessages((current) => [
       ...current,
       { id: messageId, role: "user", text, createdAt: sentAt },
@@ -155,6 +231,7 @@ export function ChatClient() {
       }
 
       if (payload.data.status === "NO_REPLY") {
+        shouldScrollToEnd.current = true;
         setMessages((current) => [
           ...current,
           {
@@ -169,6 +246,7 @@ export function ChatClient() {
       }
 
       const reply = payload.data.reply;
+      shouldScrollToEnd.current = true;
       setMessages((current) => [
         ...current,
         {
@@ -179,10 +257,11 @@ export function ChatClient() {
         },
       ]);
     } catch (error) {
+      shouldScrollToEnd.current = true;
       setMessages((current) => [
         ...current,
         {
-          id: `${messageId}:error`,
+          id: `${messageId}:failed`,
           role: "notice",
           text: error instanceof Error ? error.message : "消息没有送达，请稍后再试。",
           createdAt: Date.now(),
@@ -211,7 +290,30 @@ export function ChatClient() {
           </header>
 
           <div className="flex-1 overflow-y-auto px-6 py-7 max-[640px]:px-4" aria-live="polite">
-            {messages.length === 0 ? (
+            {nextCursor ? (
+              <div className="mb-6 flex justify-center">
+                <button
+                  type="button"
+                  disabled={isLoadingOlder}
+                  onClick={loadOlderMessages}
+                  className="rounded-full border border-[#d9e6f5] bg-white px-4 py-2 text-xs font-bold text-[#7e8ccb] transition hover:bg-[#f7fbff] disabled:cursor-wait disabled:opacity-50 motion-reduce:transition-none"
+                >
+                  {isLoadingOlder ? "正在读取…" : "加载更早的消息"}
+                </button>
+              </div>
+            ) : null}
+            {historyPageError ? (
+              <p className="mb-5 text-center text-xs text-[#b35d70]" role="alert">
+                {historyPageError}
+              </p>
+            ) : null}
+            {historyError && messages.length === 0 ? (
+              <div className="mx-auto mt-[12vh] max-w-sm text-center text-sm text-[#b35d70]">
+                {historyError instanceof Error
+                  ? historyError.message
+                  : "聊天记录暂时无法读取，请刷新重试。"}
+              </div>
+            ) : messages.length === 0 ? (
               <div className="mx-auto mt-[12vh] max-w-sm text-center">
                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f1e4f7]/70 text-[#7e8ccb]">
                   <Sparkles className="h-5 w-5" />

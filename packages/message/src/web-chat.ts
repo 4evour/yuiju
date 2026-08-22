@@ -2,7 +2,17 @@ import { extname } from "node:path";
 import { h } from "@satorijs/core";
 import { getYuijuConfig } from "@yuiju/utils/config/config";
 import { SUBJECT_NAME } from "@yuiju/utils/constants/character";
+import {
+  beginWebChatMessage,
+  completeWebChatMessage,
+  getWebChatMessagesPage,
+  matchesWebChatMessageInput,
+  projectStoredWebChatResult,
+} from "@yuiju/utils/db/operations/web-chat-message";
 import type {
+  WebChatHistoryMessage,
+  WebChatHistoryPage,
+  WebChatHistoryQuery,
   WebChatMessageInput,
   WebChatReplyPart,
   WebChatResult,
@@ -72,19 +82,51 @@ function appendWebReplyParts(parts: WebChatReplyPart[], elements: h[], needsLine
 
 export async function chatThroughWebChannel(input: WebChatMessageInput): Promise<WebChatResult> {
   const sourceMessage = createWebPrivateMessage(input);
-  await llmManager.recordPrivateMessage(sourceMessage);
+  const writeInput = {
+    sessionId: sourceMessage.sessionId,
+    messageId: input.messageId,
+    sender: {
+      id: sourceMessage.sender.id,
+      displayName: sourceMessage.sender.displayName,
+    },
+    text: input.text,
+    sentAt: input.sentAt,
+  };
+  const beginResult = await beginWebChatMessage(writeInput);
+  if (beginResult.status === "existing") {
+    if (!matchesWebChatMessageInput(beginResult.message, writeInput)) {
+      return { status: "message-conflict" };
+    }
+    return projectStoredWebChatResult(beginResult.message);
+  }
 
-  const result = await llmManager.chatWithLLM(sourceMessage);
+  let result: Awaited<ReturnType<typeof llmManager.chatWithLLM>>;
+  try {
+    await llmManager.recordPrivateMessage(sourceMessage);
+    result = await llmManager.chatWithLLM(sourceMessage);
+  } catch (error) {
+    await completeWebChatMessage(sourceMessage.sessionId, input.messageId, { status: "failed" });
+    throw error;
+  }
+
   if (result.status === "cancelled") {
+    await completeWebChatMessage(sourceMessage.sessionId, input.messageId, {
+      status: "superseded",
+    });
     return { status: "superseded" };
   }
   if (result.status === "failed") {
+    await completeWebChatMessage(sourceMessage.sessionId, input.messageId, { status: "failed" });
     return { status: "failed" };
   }
   if (!llmManager.isLatestPrivateChatRequest(sourceMessage.sessionId, result.requestId)) {
+    await completeWebChatMessage(sourceMessage.sessionId, input.messageId, {
+      status: "superseded",
+    });
     return { status: "superseded" };
   }
   if (!result.shouldReply || !result.reply.trim()) {
+    await completeWebChatMessage(sourceMessage.sessionId, input.messageId, { status: "no-reply" });
     return { status: "no-reply" };
   }
 
@@ -92,35 +134,114 @@ export async function chatThroughWebChannel(input: WebChatMessageInput): Promise
   const replyLines = result.reply.split("\n").filter((line) => line.trim().length > 0);
   const createdAt = Date.now();
 
-  for (const [lineIndex, line] of replyLines.entries()) {
-    const elements = stickerState.buildSatoriElementsFromLine(line);
-    if (!elements.length) {
-      continue;
-    }
+  try {
+    for (const [lineIndex, line] of replyLines.entries()) {
+      const elements = stickerState.buildSatoriElementsFromLine(line);
+      if (!elements.length) {
+        continue;
+      }
 
-    appendWebReplyParts(parts, elements, parts.length > 0);
-    await llmManager.recordPrivateMessage({
-      ...sourceMessage,
-      messageId: `${input.messageId}:reply:${lineIndex}`,
-      sender: {
-        id: "web:yuiju",
-        displayName: SUBJECT_NAME,
-        isSelf: true,
-      },
-      elements,
-      timestamp: createdAt,
-      content: projectWebReplyContent(elements),
-    });
+      appendWebReplyParts(parts, elements, parts.length > 0);
+      await llmManager.recordPrivateMessage({
+        ...sourceMessage,
+        messageId: `${input.messageId}:reply:${lineIndex}`,
+        sender: {
+          id: "web:yuiju",
+          displayName: SUBJECT_NAME,
+          isSelf: true,
+        },
+        elements,
+        timestamp: createdAt,
+        content: projectWebReplyContent(elements),
+      });
+    }
+  } catch (error) {
+    await completeWebChatMessage(sourceMessage.sessionId, input.messageId, { status: "failed" });
+    throw error;
   }
 
-  return {
+  if (parts.length === 0) {
+    await completeWebChatMessage(sourceMessage.sessionId, input.messageId, { status: "failed" });
+    throw new Error(`Web chat reply has no supported content: ${input.messageId}`);
+  }
+
+  const webResult = {
     status: "replied",
     reply: {
       id: `${input.messageId}:reply`,
       parts,
       createdAt,
     },
-  };
+  } as const;
+  await completeWebChatMessage(sourceMessage.sessionId, input.messageId, webResult);
+  return webResult;
+}
+
+export async function getWebChatHistory(query: WebChatHistoryQuery): Promise<WebChatHistoryPage> {
+  const { ownerId } = getYuijuConfig().message.web;
+  const sessionId = buildSatoriPrivateSessionKey("web", ownerId);
+  const page = await getWebChatMessagesPage({
+    sessionId,
+    limit: query.limit,
+    cursor: query.cursor,
+  });
+  const messages: WebChatHistoryMessage[] = [];
+
+  for (const document of page.messages) {
+    const createdAt = document.sentAt.getTime();
+    messages.push({
+      id: document.messageId,
+      role: "user",
+      text: document.text,
+      createdAt,
+    });
+
+    if (document.responseStatus === "pending") {
+      continue;
+    }
+    if (!document.completedAt) {
+      throw new Error(`Web chat completion time is missing: ${document.messageId}`);
+    }
+
+    if (document.responseStatus === "replied") {
+      const reply = document.reply;
+      if (!reply) {
+        throw new Error(`Web chat reply is missing: ${document.messageId}`);
+      }
+      messages.push({
+        id: reply.id,
+        role: "assistant",
+        parts: reply.parts,
+        createdAt: reply.createdAt,
+      });
+    } else if (document.responseStatus === "no-reply") {
+      messages.push({
+        id: `${document.messageId}:no-reply`,
+        role: "notice",
+        text: "她看到了，但此刻没有回复。",
+        createdAt: document.completedAt.getTime(),
+        tone: "quiet",
+      });
+    } else if (document.responseStatus === "failed") {
+      messages.push({
+        id: `${document.messageId}:failed`,
+        role: "notice",
+        text: "悠酱暂时无法组织回复。",
+        createdAt: document.completedAt.getTime(),
+        tone: "error",
+      });
+    } else if (document.responseStatus === "superseded") {
+      messages.push({
+        id: `${document.messageId}:superseded`,
+        role: "notice",
+        text: "这条消息已被更新的消息替代。",
+        createdAt: document.completedAt.getTime(),
+        tone: "quiet",
+      });
+    }
+  }
+
+  return { messages, nextCursor: page.nextCursor };
 }
 
 export function getWebChatSticker(key: string) {
