@@ -11,7 +11,7 @@ import { getChatModel } from "@yuiju/utils/llm/models";
 import { createToolCallLoggingHooks } from "@yuiju/utils/llm/tool-call-logger";
 import { diarySearchTool, todayEventSearchTool } from "@yuiju/utils/llm/tools/memory-search";
 import { getCharacterCardPrompt } from "@yuiju/utils/prompt/character-card";
-import { messageHistorySchemaPrompt } from "@yuiju/utils/prompt/message";
+import { chatReplyRulesPrompt, messageHistorySchemaPrompt } from "@yuiju/utils/prompt/message";
 import { buildProactiveGroupMessagePrompt } from "@yuiju/utils/prompt/proactive-message";
 import type { ActionMetadata } from "@yuiju/utils/types/action";
 import type {
@@ -98,6 +98,7 @@ async function shareActionCompletionToGroup(
       instructions: [
         getCharacterCardPrompt(),
         messageHistorySchemaPrompt,
+        chatReplyRulesPrompt,
         stickers.promptSection,
       ].join("\n\n"),
       messages: [
