@@ -7,6 +7,7 @@ import {
   FileText,
   House,
   Menu,
+  MessageCircle,
   PanelLeftClose,
   PanelLeftOpen,
   Settings,
@@ -21,6 +22,7 @@ import { cn } from "@/lib/utils";
 
 const NAVIGATION_ITEMS = [
   { key: "home", href: "/", label: "首页", icon: House },
+  { key: "chat", href: "/chat", label: "聊天", icon: MessageCircle },
   { key: "activity", href: "/activity", label: "动态", icon: Activity },
   { key: "diary", href: "/diary", label: "日记", icon: BookOpenText },
   { key: "logs", href: "/logs", label: "日志", icon: FileText },
@@ -73,14 +75,19 @@ function NavigationLinks({ closeDrawer, collapsed, items }: NavigationLinksProps
 interface AppShellProps {
   children: React.ReactNode;
   showInternalPages: boolean;
+  showWebChat: boolean;
 }
 
-export function AppShell({ children, showInternalPages }: AppShellProps) {
+export function AppShell({ children, showInternalPages, showWebChat }: AppShellProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
-  const visibleItems = NAVIGATION_ITEMS.filter(
-    (item) => showInternalPages || (item.key !== "logs" && item.key !== "memory"),
-  );
+  const visibleItems = NAVIGATION_ITEMS.filter((item) => {
+    if (item.key === "chat") {
+      return showWebChat;
+    }
+
+    return showInternalPages || (item.key !== "logs" && item.key !== "memory");
+  });
 
   return (
     <Sheet open={mobileDrawerOpen} onOpenChange={setMobileDrawerOpen}>
