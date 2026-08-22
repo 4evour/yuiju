@@ -43,13 +43,27 @@ export class WorldMapScene extends Phaser.Scene {
     this.cameras.main.fadeIn(200, 73, 50, 71);
     this.add.image(0, 0, WORLD_MAP_TEXTURE_KEY).setOrigin(0);
 
+    const resizeCamera = () => {
+      const viewportScale = Math.max(
+        this.scale.gameSize.width / WORLD_MAP_WIDTH,
+        this.scale.gameSize.height / WORLD_MAP_HEIGHT,
+      );
+      this.cameras.main.setZoom(Math.max(1, viewportScale));
+      if (viewportScale > 1) {
+        this.cameras.main.centerOn(WORLD_MAP_WIDTH / 2, WORLD_MAP_HEIGHT / 2);
+      }
+    };
+    this.scale.on(Phaser.Scale.Events.RESIZE, resizeCamera);
+
     const characterMarker = this.add
       .sprite(0, 0, CHARACTER_ATLAS.textureKey, CHARACTER_ANIMATION.worldMapMarker.frames[0])
       .setOrigin(0.5, 1)
       .setDepth(2)
       .setVisible(false);
     const updateCharacterMarker = (majorScene: MajorScene) => {
-      const region = WORLD_MAP_REGIONS.find((region) => region.majorScene === majorScene)!;
+      const region = WORLD_MAP_REGIONS.find(
+        (candidateRegion) => candidateRegion.majorScene === majorScene,
+      )!;
       characterMarker.setPosition(region.labelX, region.labelY);
       if (!characterMarker.visible) {
         characterMarker.setVisible(true).play(CHARACTER_ANIMATION.worldMapMarker.key);
@@ -59,6 +73,7 @@ export class WorldMapScene extends Phaser.Scene {
     this.game.events.on(WORLD_MAP_CHARACTER_LOCATION_CHANGE_EVENT, updateCharacterMarker);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.game.events.off(WORLD_MAP_CHARACTER_LOCATION_CHANGE_EVENT, updateCharacterMarker);
+      this.scale.off(Phaser.Scale.Events.RESIZE, resizeCamera);
     });
 
     for (const region of WORLD_MAP_REGIONS) {
@@ -107,6 +122,7 @@ export class WorldMapScene extends Phaser.Scene {
 
     this.cameras.main.setBounds(0, 0, WORLD_MAP_WIDTH, WORLD_MAP_HEIGHT);
     this.cameras.main.centerOn(WORLD_MAP_WIDTH / 2, WORLD_MAP_HEIGHT / 2);
+    resizeCamera();
 
     const keyboard = this.input.keyboard!;
     this.cursorKeys = keyboard.createCursorKeys();
