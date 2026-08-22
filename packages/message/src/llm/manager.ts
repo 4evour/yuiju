@@ -9,14 +9,12 @@ import {
   getCharacterCardPrompt,
   initCharacterStateData,
   messageHistorySchemaPrompt,
-  readCoreMemory,
 } from "@yuiju/utils";
 import { getChatModel } from "@yuiju/utils/llm/models";
 import { todayEventSearchTool } from "@yuiju/utils/llm/tools/memory-search";
 import { queryAvailableInventoryItems } from "@yuiju/utils/llm/tools/query-available-inventory-items";
 import { queryStateTool } from "@yuiju/utils/llm/tools/query-state";
-import { retrieveMemory } from "@yuiju/utils/memory/memory-retrieval";
-import { buildChatMemoryRetrievalQuery } from "@yuiju/utils/prompt/message";
+import { createChatMemoryRetrievalTool } from "@yuiju/utils/memory/memory-retrieval";
 import { Output, stepCountIs } from "ai";
 import { z } from "zod";
 // import { getGroupMemoryPromptSection } from "@/memory/group-memory";
@@ -258,11 +256,6 @@ export class LLMManager {
 
     const { historyJson, summary } = await this.groupSession.getHistoryJson(sessionKey);
     const characterState = await initCharacterStateData();
-    const coreMemory = await readCoreMemory();
-    // const groupMemoryPrompt = await getGroupMemoryPromptSection({
-    //   sessionId: sessionKey,
-    //   sessionLabel: getGroupDisplayName(message),
-    // });
 
     const systemPrompt = [
       getCharacterCardPrompt(),
@@ -273,25 +266,29 @@ export class LLMManager {
     ].join("\n\n");
 
     try {
-      const memory = await retrieveMemory({
-        query: buildChatMemoryRetrievalQuery({
-          summary,
-          historyJson,
-          memory: coreMemory ?? undefined,
-        }),
+      const memoryRetrieval = createChatMemoryRetrievalTool({
+        summary,
+        historyJson,
         abortSignal: controller.signal,
         semanticDiarySearchCallLimit: 2,
       });
-
-      if (!this.isLatestGroupChatRequest(sessionKey, requestId)) {
-        return { status: "cancelled" };
-      }
-
+      const tools = {
+        retrieveMemory: memoryRetrieval.tool,
+        todayEventSearch: todayEventSearchTool,
+        queryStateTool,
+        queryAvailableInventoryItems,
+        proposePlanChanges: createChatPlanChangesProposalTool({
+          scene: "group",
+          summary,
+          historyJson,
+        }),
+      };
+      const toolNames = Object.keys(tools) as Array<keyof typeof tools>;
       const result = await generateStructuredOutput({
         model: getChatModel(),
         providerOptions: {
           chat: {
-            enable_thinking: true,
+            enable_thinking: false,
           },
         },
         instructions: systemPrompt,
@@ -302,19 +299,18 @@ export class LLMManager {
               summary,
               historyJson,
               characterState,
-              memory,
             }),
           },
         ],
-        tools: {
-          todayEventSearch: todayEventSearchTool,
-          queryStateTool,
-          queryAvailableInventoryItems,
-          proposePlanChanges: createChatPlanChangesProposalTool({
-            scene: "group",
-            summary,
-            historyJson,
-          }),
+        tools,
+        prepareStep: () => {
+          if (!memoryRetrieval.hasBeenCalled()) {
+            return;
+          }
+
+          return {
+            activeTools: toolNames.filter((toolName) => toolName !== "retrieveMemory"),
+          };
         },
         stopWhen: stepCountIs(20),
         abortSignal: controller.signal,
@@ -419,7 +415,6 @@ export class LLMManager {
 
     const { historyJson, summary } = await this.privateSession.getHistoryJson(sessionId);
     const characterState = await initCharacterStateData();
-    const coreMemory = await readCoreMemory();
     const sessionLabel = getProtocolMessageSenderName(message);
     const systemPrompt = [
       getCharacterCardPrompt(),
@@ -430,20 +425,24 @@ export class LLMManager {
     ].join("\n\n");
 
     try {
-      const memory = await retrieveMemory({
-        query: buildChatMemoryRetrievalQuery({
-          summary,
-          historyJson,
-          memory: coreMemory ?? undefined,
-        }),
+      const memoryRetrieval = createChatMemoryRetrievalTool({
+        summary,
+        historyJson,
         abortSignal: controller.signal,
         semanticDiarySearchCallLimit: 2,
       });
-
-      if (!this.isLatestPrivateChatRequest(sessionId, requestId)) {
-        return { status: "cancelled" };
-      }
-
+      const tools = {
+        retrieveMemory: memoryRetrieval.tool,
+        todayEventSearch: todayEventSearchTool,
+        queryStateTool,
+        queryAvailableInventoryItems,
+        proposePlanChanges: createChatPlanChangesProposalTool({
+          scene: "private",
+          summary,
+          historyJson,
+        }),
+      };
+      const toolNames = Object.keys(tools) as Array<keyof typeof tools>;
       const result = await generateStructuredOutput({
         model: getChatModel(),
         providerOptions: {
@@ -459,19 +458,18 @@ export class LLMManager {
               summary,
               historyJson,
               characterState,
-              memory,
             }),
           },
         ],
-        tools: {
-          todayEventSearch: todayEventSearchTool,
-          queryStateTool,
-          queryAvailableInventoryItems,
-          proposePlanChanges: createChatPlanChangesProposalTool({
-            scene: "private",
-            summary,
-            historyJson,
-          }),
+        tools,
+        prepareStep: () => {
+          if (!memoryRetrieval.hasBeenCalled()) {
+            return;
+          }
+
+          return {
+            activeTools: toolNames.filter((toolName) => toolName !== "retrieveMemory"),
+          };
         },
         stopWhen: stepCountIs(20),
         abortSignal: controller.signal,

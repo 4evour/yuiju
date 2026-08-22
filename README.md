@@ -22,7 +22,11 @@ yuiju 是一个 LLM 驱动的虚拟角色自主生活模拟项目。
 
 [Bilibili 视频](https://www.bilibili.com/video/BV1fRR2BYEb1)
 
-[Web 页面体验](https://yuiju-web.yixiaojiu.top/)
+Web 页面体验 [https://yuiju-web.yixiaojiu.top](https://yuiju-web.yixiaojiu.top)
+
+<p align="center">
+  <img src="packages/source/picture/无辜-这会是个好项目吗.webp" alt="ゆいじゅ（悠酱）" width="150" />
+</p>
 
 ## 特性
 
