@@ -59,7 +59,7 @@ function createContext(input: {
       stamina: input.stamina ?? 0,
     },
     worldState: {
-      time: dayjs(input.time ?? "2026-08-17T09:30:00+08:00"),
+      time: dayjs(input.time ?? "2026-08-17T09:30:00"),
     },
     runtimeState: {
       actionStartedAt: new Date("2026-08-17T01:30:00.000Z"),
@@ -175,13 +175,13 @@ describe("world action softlock invariants", () => {
       major: MajorScene.School,
       minor: SchoolSubScene.Campus,
       stamina: 22,
-      time: "2026-08-22T09:30:00+08:00",
+      time: "2026-08-22T09:30:00",
     });
     const outsideClassTime = createContext({
       major: MajorScene.School,
       minor: SchoolSubScene.Campus,
       stamina: 22,
-      time: "2026-08-17T13:00:00+08:00",
+      time: "2026-08-17T13:00:00",
     });
 
     expect(await studyAtSchoolAction.precondition(insufficientStamina.context)).toBe(false);
