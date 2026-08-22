@@ -2,7 +2,7 @@ import { generateText } from "ai";
 import { NICKNAME, SUBJECT_NAME } from "../../constants";
 import { messageHistorySchemaPrompt } from "../../prompt";
 import { getLangfuseTelemetry } from "../langfuse-telemetry";
-import { flashModel } from "../models";
+import { getFlashModel } from "../models";
 
 const SUBJECT_DISPLAY_NAME = `${SUBJECT_NAME}（${NICKNAME}）`;
 
@@ -41,7 +41,7 @@ export async function summarizeConversationMessages(
   input: SummarizeConversationMessagesInput,
 ): Promise<string | null> {
   const result = await generateText({
-    model: flashModel,
+    model: getFlashModel(),
     telemetry: getLangfuseTelemetry(),
     instructions: summarizeConversationMessagesSystemPrompt,
     providerOptions: {
@@ -77,7 +77,7 @@ export async function summarizeConversationDiaryMaterials(
   materials: DiarySummaryMaterial[],
 ): Promise<DiarySummaryMaterial> {
   const result = await generateText({
-    model: flashModel,
+    model: getFlashModel(),
     telemetry: getLangfuseTelemetry(),
     providerOptions: {
       flash: {

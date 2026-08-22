@@ -1,13 +1,13 @@
 import {
   buildDiarySummarySystemPrompt,
   DEFAULT_DIARY_SUBJECT,
-  flashModel,
   getMemoryDiaries,
   type MemoryDiaryPeriod,
   type MemoryDiarySummaryPeriod,
   upsertMemoryDiary,
 } from "@yuiju/utils";
 import { getLangfuseTelemetry } from "@yuiju/utils/llm/langfuse-telemetry";
+import { getFlashModel } from "@yuiju/utils/llm/models";
 import { generateText } from "ai";
 import dayjs from "dayjs";
 import { logger } from "@/utils/logger";
@@ -21,7 +21,7 @@ async function writeDiarySummaryText(input: {
   sourceDiaries: { diaryDate: Date; diaryEndDate: Date; text: string }[];
 }): Promise<string> {
   const result = await generateText({
-    model: flashModel,
+    model: getFlashModel(),
     telemetry: getLangfuseTelemetry(),
     providerOptions: {
       flash: {

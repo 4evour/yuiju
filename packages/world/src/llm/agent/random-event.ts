@@ -1,5 +1,5 @@
 import { generateStructuredOutput } from "@yuiju/utils/llm/generate-structured-output";
-import { flashModel } from "@yuiju/utils/llm/models";
+import { getFlashModel } from "@yuiju/utils/llm/models";
 import { createToolCallLoggingHooks } from "@yuiju/utils/llm/tool-call-logger";
 import { queryStaticGuideTool } from "@yuiju/utils/llm/tools/query-static-guide";
 import { buildActionRandomEventPrompt } from "@yuiju/utils/prompt/action-random-event";
@@ -42,7 +42,7 @@ export async function generateActionRandomEvent(
     type === "positive" ? POSITIVE_MOOD_CHANGE_RANGE : NEGATIVE_MOOD_CHANGE_RANGE;
 
   const { output } = await generateStructuredOutput({
-    model: flashModel,
+    model: getFlashModel(),
     tools: {
       queryStaticGuide: queryStaticGuideTool,
     },

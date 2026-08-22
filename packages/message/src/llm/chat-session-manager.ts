@@ -1,12 +1,12 @@
 import {
   buildMessageSummaryPrompt,
-  flashModel,
   getTimeWithWeekday,
   isDev,
   saveMemoryEpisode,
   summarizeConversationMessages,
 } from "@yuiju/utils";
 import { getLangfuseTelemetry } from "@yuiju/utils/llm/langfuse-telemetry";
+import { getFlashModel } from "@yuiju/utils/llm/models";
 import { generateText } from "ai";
 import dayjs from "dayjs";
 import { buildConversationEpisode, type ChatMoodChange } from "../memory/episode-builder";
@@ -465,7 +465,7 @@ export class ChatSessionManager<TMessage extends StoredSatoriChatMessage> {
     const transcript = JSON.stringify(this.buildHistoryItems(input.messages), null, 2);
 
     const result = await generateText({
-      model: flashModel,
+      model: getFlashModel(),
       telemetry: getLangfuseTelemetry(),
       providerOptions: {
         flash: {

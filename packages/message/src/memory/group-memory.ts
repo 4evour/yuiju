@@ -4,13 +4,13 @@ import {
   buildGroupMemoryProposalPrompt,
   buildGroupMemoryReviewPrompt,
   createToolCallLoggingHooks,
-  flashModel,
   formatProjectTime,
   generateStructuredOutput,
   getTimeWithWeekday,
   logger,
 } from "@yuiju/utils";
 import { getYuijuConfig } from "@yuiju/utils/config/config";
+import { getFlashModel } from "@yuiju/utils/llm/models";
 import { Output, stepCountIs, tool } from "ai";
 import dayjs from "dayjs";
 import { z } from "zod";
@@ -180,7 +180,7 @@ async function generateGroupMemoryProposal(
   input: GroupMemoryProposalContext,
 ): Promise<GroupMemoryProposal | null> {
   const { output } = await generateStructuredOutput({
-    model: flashModel,
+    model: getFlashModel(),
     providerOptions: {
       flash: {
         enable_thinking: true,
@@ -220,7 +220,7 @@ function reviewGroupMemoryProposalTool(input: GroupMemoryProposalContext) {
     execute: async ({ proposal }) => {
       const normalizedProposal = normalizeProposal(proposal);
       const { output } = await generateStructuredOutput({
-        model: flashModel,
+        model: getFlashModel(),
         providerOptions: {
           flash: {
             enable_thinking: true,

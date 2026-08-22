@@ -5,9 +5,9 @@ import {
   chooseSellableItemPrompt,
   chooseShopProductPrompt,
   chooseSupermarketProductPrompt,
-  flashModel,
   generateStructuredOutput,
 } from "@yuiju/utils";
+import { getFlashModel } from "@yuiju/utils/llm/models";
 import { Output } from "ai";
 import dayjs from "dayjs";
 import { z } from "zod";
@@ -46,7 +46,7 @@ export async function chooseShopProductAgent(
   for (let i = 0; i < RETRY_COUNT; i++) {
     try {
       const { output } = await generateStructuredOutput({
-        model: flashModel,
+        model: getFlashModel(),
         providerOptions: {
           flash: {
             enable_thinking: false,
@@ -101,7 +101,7 @@ export async function chooseCafeCoffeeAgent(
   for (let i = 0; i < RETRY_COUNT; i++) {
     try {
       const { output } = await generateStructuredOutput({
-        model: flashModel,
+        model: getFlashModel(),
         providerOptions: {
           flash: {
             enable_thinking: false,
@@ -156,7 +156,7 @@ export async function chooseSupermarketProductAgent(
   for (let i = 0; i < RETRY_COUNT; i++) {
     try {
       const { output } = await generateStructuredOutput({
-        model: flashModel,
+        model: getFlashModel(),
         providerOptions: {
           flash: {
             enable_thinking: false,
@@ -217,7 +217,7 @@ export async function chooseSellableItemAgent(
   for (let i = 0; i < RETRY_COUNT; i++) {
     try {
       const { output } = await generateStructuredOutput({
-        model: flashModel,
+        model: getFlashModel(),
         providerOptions: {
           flash: {
             enable_thinking: false,
@@ -278,7 +278,7 @@ export async function chooseDinerMealAgent(
   for (let i = 0; i < RETRY_COUNT; i++) {
     try {
       const { output } = await generateStructuredOutput({
-        model: flashModel,
+        model: getFlashModel(),
         providerOptions: {
           flash: {
             enable_thinking: false,

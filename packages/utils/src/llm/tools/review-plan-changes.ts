@@ -8,7 +8,7 @@ import {
 } from "../../prompt";
 import type { AgentPlanChange } from "../../types";
 import { generateStructuredOutput } from "../generate-structured-output";
-import { flashModel } from "../models";
+import { getFlashModel } from "../models";
 import { createToolCallLoggingHooks } from "../tool-call-logger";
 import { queryStateTool } from "./query-state";
 import { agentPlanChangeSchema } from "./schema";
@@ -34,7 +34,7 @@ export async function reviewPlanChanges(
   const planState = await planManager.getState();
 
   const { output } = await generateStructuredOutput({
-    model: flashModel,
+    model: getFlashModel(),
     output: Output.object({
       schema: reviewResultSchema,
     }),

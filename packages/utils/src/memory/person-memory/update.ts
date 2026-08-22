@@ -3,7 +3,7 @@ import { Output, stepCountIs, tool } from "ai";
 import dayjs from "dayjs";
 import { z } from "zod";
 import { createToolCallLoggingHooks, generateStructuredOutput } from "../../llm";
-import { flashModel } from "../../llm/models";
+import { getFlashModel } from "../../llm/models";
 import { logger } from "../../logger";
 import { buildPersonMemoryProposalPrompt, buildPersonMemoryReviewPrompt } from "../../prompt";
 import { formatProjectTime } from "../../time";
@@ -129,7 +129,7 @@ async function generatePersonMemoryProposal(
   const currentTime = formatProjectTime(new Date(), "YYYY-MM-DD");
 
   const { output } = await generateStructuredOutput({
-    model: flashModel,
+    model: getFlashModel(),
     providerOptions: {
       flash: {
         enable_thinking: true,
@@ -177,7 +177,7 @@ function reviewPersonMemoryProposalTool(input: Omit<PersonMemoryReviewContext, "
     execute: async ({ proposal }) => {
       const normalizedProposal = normalizeProposal(proposal);
       const { output } = await generateStructuredOutput({
-        model: flashModel,
+        model: getFlashModel(),
         providerOptions: {
           flash: {
             enable_thinking: true,

@@ -6,7 +6,7 @@ import { z } from "zod";
 import { getYuijuConfig } from "../config/config";
 import type { IMemoryEpisode } from "../db";
 import { createToolCallLoggingHooks, generateStructuredOutput } from "../llm";
-import { chatModel, flashModel } from "../llm/models";
+import { getChatModel, getFlashModel } from "../llm/models";
 import { logger } from "../logger";
 import { buildCoreMemoryProposalPrompt, buildCoreMemoryReviewPrompt } from "../prompt";
 
@@ -105,7 +105,7 @@ async function generateCoreMemoryProposal(input: {
   let approvedProposal: string | null = null;
 
   const { output } = await generateStructuredOutput({
-    model: chatModel,
+    model: getChatModel(),
     providerOptions: {
       chat: {
         enable_thinking: true,
@@ -120,7 +120,7 @@ async function generateCoreMemoryProposal(input: {
         execute: async ({ proposal }) => {
           const normalizedProposal = normalizeCoreMemoryProposal(proposal);
           const { output: review } = await generateStructuredOutput({
-            model: flashModel,
+            model: getFlashModel(),
             providerOptions: {
               flash: {
                 enable_thinking: true,

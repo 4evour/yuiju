@@ -1,9 +1,6 @@
 import type { h, Session } from "@satorijs/core";
-import {
-  buildMessageImageDescriptionSystemPrompt,
-  generateStructuredOutput,
-  visionModel,
-} from "@yuiju/utils";
+import { buildMessageImageDescriptionSystemPrompt, generateStructuredOutput } from "@yuiju/utils";
+import { getVisionModel } from "@yuiju/utils/llm/models";
 import { Output } from "ai";
 import { z } from "zod";
 import { imageCacheState } from "@/state/image-cache";
@@ -86,7 +83,7 @@ export async function resolveSatoriImageDescriptions(
 
   try {
     const result = await generateStructuredOutput({
-      model: visionModel,
+      model: getVisionModel(),
       providerOptions: {
         vision: {
           enable_thinking: false,

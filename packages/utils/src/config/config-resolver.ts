@@ -42,19 +42,24 @@ function resolveEnvironmentReferences(
 /**
  * 将用户 JSON 配置解析为完整项目配置。
  *
- * 用户数组会整体替换默认数组；普通对象递归合并。
+ * 用户数组会整体替换默认数组；普通对象递归合并。公开部署跳过完整 Schema 校验，
+ * 缺失能力由实际使用该能力的运行时入口报错。
  */
 export function resolveYuijuConfig(
   userConfig: unknown,
   environment: NodeJS.ProcessEnv,
 ): YuijuConfig {
-  const resolvedUserConfig = resolveEnvironmentReferences(userConfig, environment, "配置");
-  const mergedConfig = mergeWith(
-    {},
-    defaultYuijuConfig,
-    resolvedUserConfig,
-    (_defaultValue, userValue) => (Array.isArray(userValue) ? userValue : undefined),
-  );
+  const mergedConfig = mergeYuijuConfig(userConfig, environment);
+  if ((mergedConfig as { app: { publicDeployment: unknown } }).app.publicDeployment === true) {
+    return mergedConfig as YuijuConfig;
+  }
 
   return yuijuConfigSchema.parse(mergedConfig);
+}
+
+function mergeYuijuConfig(userConfig: unknown, environment: NodeJS.ProcessEnv): unknown {
+  const resolvedUserConfig = resolveEnvironmentReferences(userConfig, environment, "配置");
+  return mergeWith({}, defaultYuijuConfig, resolvedUserConfig, (_defaultValue, userValue) =>
+    Array.isArray(userValue) ? userValue : undefined,
+  );
 }
