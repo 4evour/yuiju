@@ -6,7 +6,8 @@
     "dev": "NODE_ENV=development next dev -p 3010",
     "build": "next build",
     "start": "next build && NODE_ENV=production next start -p 3010",
-    "test": "vitest run"
+    "test": "vitest run",
+    "type-check": "next typegen && tsc --noEmit"
   },
   "dependencies": {
     "@ai-sdk/react": "^3.0.118",
