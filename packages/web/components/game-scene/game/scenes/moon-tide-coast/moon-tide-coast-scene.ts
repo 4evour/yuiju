@@ -8,6 +8,10 @@ import {
   CHARACTER_WINK_ANIMATION_KEYS,
 } from "../../character/character-animation-constant";
 import { CharacterAutoWander } from "../../character/character-auto-wander";
+import {
+  CHARACTER_MOVE_SPEED,
+  CHARACTER_MOVE_SPEED_MULTIPLIER_REGISTRY_KEY,
+} from "../../character/character-movement-speed";
 import { GridPathfinder } from "../../navigation/grid-pathfinder";
 import {
   GAME_ACTIVE_SCENE_CHANGE_EVENT,
@@ -61,8 +65,6 @@ const CAMERA_ZOOM = 1.5;
 const CAMERA_FOLLOW_OFFSET_Y = 32;
 // 每帧向角色位置靠近的比例；越接近 1，跟随响应越快。
 const CAMERA_FOLLOW_LERP = 0.08;
-// 角色自动和手动行走共用的速度，单位为场景逻辑像素/秒。
-const CHARACTER_MOVE_SPEED = 30;
 // EasyStar 寻路网格的单格边长，单位为场景逻辑像素。
 const NAVIGATION_CELL_SIZE = 16;
 // 随机目的地与角色当前位置之间允许的最短直线距离。
@@ -90,6 +92,7 @@ export class MoonTideCoastScene extends Phaser.Scene {
   };
   private readonly cameraMovement = new Phaser.Math.Vector2();
   private readonly characterMovement = new Phaser.Math.Vector2();
+  private characterMoveSpeed!: number;
   private character!: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
   private characterAutoWander!: CharacterAutoWander;
   private characterShadow!: Phaser.GameObjects.Sprite;
@@ -119,6 +122,8 @@ export class MoonTideCoastScene extends Phaser.Scene {
   }
 
   create() {
+    this.characterMoveSpeed =
+      CHARACTER_MOVE_SPEED * this.registry.get(CHARACTER_MOVE_SPEED_MULTIPLIER_REGISTRY_KEY);
     this.game.events.emit(GAME_ACTIVE_SCENE_CHANGE_EVENT, MOON_TIDE_COAST_SCENE_KEY);
     this.cameras.main.fadeIn(200, 73, 50, 71);
 
@@ -223,7 +228,7 @@ export class MoonTideCoastScene extends Phaser.Scene {
     this.characterAutoWander = new CharacterAutoWander(
       pathfinder,
       {
-        speed: CHARACTER_MOVE_SPEED,
+        speed: this.characterMoveSpeed,
         minimumDestinationDistance: CHARACTER_WANDER_MINIMUM_DESTINATION_DISTANCE,
         idleDurationMin: CHARACTER_WANDER_IDLE_DURATION_MIN,
         idleDurationMax: CHARACTER_WANDER_IDLE_DURATION_MAX,
@@ -326,9 +331,9 @@ export class MoonTideCoastScene extends Phaser.Scene {
         this.startCameraFollow();
       }
       if (horizontalDirection !== 0) {
-        this.characterMovement.set(horizontalDirection * CHARACTER_MOVE_SPEED, 0);
+        this.characterMovement.set(horizontalDirection * this.characterMoveSpeed, 0);
       } else {
-        this.characterMovement.set(0, verticalDirection * CHARACTER_MOVE_SPEED);
+        this.characterMovement.set(0, verticalDirection * this.characterMoveSpeed);
       }
       this.character.setVelocity(this.characterMovement.x, this.characterMovement.y);
       this.playWalkAnimation(this.characterMovement);

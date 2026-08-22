@@ -4,6 +4,10 @@ import { Maximize2, Minimize2 } from "lucide-react";
 import type Phaser from "phaser";
 import { useEffect, useRef, useState } from "react";
 import { CHARACTER_ATLAS } from "./game/character/character-animation-constant";
+import {
+  CHARACTER_MOVE_SPEED_MULTIPLIER_DEFAULT,
+  CHARACTER_MOVE_SPEED_MULTIPLIER_STORAGE_KEY,
+} from "./game/character/character-movement-speed";
 import { createGame } from "./game/create-game";
 import {
   GAME_ACTIVE_SCENE_CHANGE_EVENT,
@@ -35,6 +39,13 @@ export function GameSceneClient() {
     let createdGame: Phaser.Game | undefined;
     let resizeObserver: ResizeObserver | undefined;
     let disposed = false;
+    const storedCharacterMoveSpeedMultiplier = localStorage.getItem(
+      CHARACTER_MOVE_SPEED_MULTIPLIER_STORAGE_KEY,
+    );
+    const characterMoveSpeedMultiplier =
+      storedCharacterMoveSpeedMultiplier === null
+        ? CHARACTER_MOVE_SPEED_MULTIPLIER_DEFAULT
+        : Number(storedCharacterMoveSpeedMultiplier);
     const characterAtlasImage = new Image();
     characterAtlasImage.src = CHARACTER_ATLAS.source;
 
@@ -60,7 +71,12 @@ export function GameSceneClient() {
           return;
         }
 
-        createdGame = createGame(gameContainer, gameWidth, gameHeight);
+        createdGame = createGame(
+          gameContainer,
+          gameWidth,
+          gameHeight,
+          characterMoveSpeedMultiplier,
+        );
         createdGame.events.on(GAME_ACTIVE_SCENE_CHANGE_EVENT, setActiveSceneKey);
         setGame(createdGame);
       });
