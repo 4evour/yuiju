@@ -17,7 +17,14 @@ import {
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { type ChangeEvent, useEffect, useState, useTransition } from "react";
+import {
+  CHARACTER_MOVE_SPEED_MULTIPLIER_DEFAULT,
+  CHARACTER_MOVE_SPEED_MULTIPLIER_MAX,
+  CHARACTER_MOVE_SPEED_MULTIPLIER_MIN,
+  CHARACTER_MOVE_SPEED_MULTIPLIER_STEP,
+  CHARACTER_MOVE_SPEED_MULTIPLIER_STORAGE_KEY,
+} from "@/components/game-scene/game/character/character-movement-speed";
 import { useInterfacePreferences } from "@/lib/components/interface-preferences";
 import type { ServiceStatus, SettingsSnapshot } from "./settings-data";
 
@@ -147,8 +154,24 @@ function PreferenceSwitch({
 export function SettingsClient({ snapshot }: { snapshot: SettingsSnapshot }) {
   const router = useRouter();
   const [isRefreshing, startRefreshing] = useTransition();
+  const [characterMoveSpeedMultiplier, setCharacterMoveSpeedMultiplier] = useState(
+    CHARACTER_MOVE_SPEED_MULTIPLIER_DEFAULT,
+  );
   const { showMessageTime, reduceMotion, setShowMessageTime, setReduceMotion } =
     useInterfacePreferences();
+
+  useEffect(() => {
+    const storedMultiplier = localStorage.getItem(CHARACTER_MOVE_SPEED_MULTIPLIER_STORAGE_KEY);
+    if (storedMultiplier !== null) {
+      setCharacterMoveSpeedMultiplier(Number(storedMultiplier));
+    }
+  }, []);
+
+  const handleCharacterMoveSpeedChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const multiplier = Number(event.currentTarget.value);
+    setCharacterMoveSpeedMultiplier(multiplier);
+    localStorage.setItem(CHARACTER_MOVE_SPEED_MULTIPLIER_STORAGE_KEY, String(multiplier));
+  };
 
   return (
     <main className="min-h-[calc(100vh-78px)] bg-[#f7fbff] px-4 py-8 text-[#2b2f36] sm:px-6">
@@ -265,6 +288,32 @@ export function SettingsClient({ snapshot }: { snapshot: SettingsSnapshot }) {
               </h2>
             </div>
             <div className="border-t border-[#d9e6f5]">
+              <SettingsRow
+                icon={Gauge}
+                label="人物移速"
+                detail="调整月汐海岸中人物的移动速度，下次打开游戏时生效"
+                value={
+                  <div className="flex items-center gap-3">
+                    <input
+                      id="character-move-speed"
+                      type="range"
+                      min={CHARACTER_MOVE_SPEED_MULTIPLIER_MIN}
+                      max={CHARACTER_MOVE_SPEED_MULTIPLIER_MAX}
+                      step={CHARACTER_MOVE_SPEED_MULTIPLIER_STEP}
+                      value={characterMoveSpeedMultiplier}
+                      aria-label="人物移速"
+                      onChange={handleCharacterMoveSpeedChange}
+                      className="h-1.5 w-28 cursor-pointer accent-[#7e8ccb] sm:w-44"
+                    />
+                    <output
+                      htmlFor="character-move-speed"
+                      className="inline-flex min-w-11 justify-center rounded-md bg-[#f4f8fc] px-2 py-1 text-xs font-bold tabular-nums text-[#6c78b8]"
+                    >
+                      {characterMoveSpeedMultiplier}×
+                    </output>
+                  </div>
+                }
+              />
               <SettingsRow
                 icon={Clock3}
                 label="消息时间"
