@@ -4,6 +4,7 @@ import {
   Activity,
   BookOpenText,
   Brain,
+  ContactRound,
   FileText,
   House,
   Menu,
@@ -27,6 +28,7 @@ const NAVIGATION_ITEMS = [
   { key: "diary", href: "/diary", label: "日记", icon: BookOpenText },
   { key: "logs", href: "/logs", label: "日志", icon: FileText },
   { key: "memory", href: "/memory", label: "记忆", icon: Brain },
+  { key: "character", href: "/character", label: "角色资料", icon: ContactRound },
   { key: "settings", href: "/settings", label: "设置", icon: Settings },
 ] as const;
 
