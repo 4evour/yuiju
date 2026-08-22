@@ -156,3 +156,20 @@
     @apply bg-background text-foreground;
   }
 }
+
+html[data-show-message-time="false"] .chat-message-time {
+  display: none;
+}
+
+html[data-reduce-motion="true"] {
+  scroll-behavior: auto !important;
+}
+
+html[data-reduce-motion="true"] *,
+html[data-reduce-motion="true"] *::before,
+html[data-reduce-motion="true"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  scroll-behavior: auto !important;
+  transition-duration: 0.01ms !important;
+}
