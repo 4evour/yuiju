@@ -16,6 +16,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { InterfacePreferencesProvider } from "@/lib/components/interface-preferences";
 import { cn } from "@/lib/utils";
 
 const NAVIGATION_ITEMS = [
@@ -150,7 +151,7 @@ export function AppShell({ children, showInternalPages }: AppShellProps) {
           sidebarCollapsed ? "md:pl-16" : "md:pl-[220px]",
         )}
       >
-        {children}
+        <InterfacePreferencesProvider>{children}</InterfacePreferencesProvider>
       </div>
     </Sheet>
   );
