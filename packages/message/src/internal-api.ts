@@ -4,6 +4,7 @@ import type LarkBot from "@satorijs/adapter-lark";
 import type OneBotBot from "@yuiju/satorijs-adapter-onebot";
 import { SUBJECT_NAME } from "@yuiju/utils";
 import { getYuijuConfig } from "@yuiju/utils/config/config";
+import { webChatMessageInputSchema } from "@yuiju/utils/types/web-chat";
 import { Hono } from "hono";
 import { llmManager } from "@/llm/manager";
 import { stickerState } from "@/state/sticker";
@@ -14,6 +15,7 @@ import {
   createStoredSatoriGroupBotMessage,
 } from "@/utils/message/satori";
 import type { StoredSatoriGroupMessage } from "@/utils/message/types";
+import { chatThroughWebChannel, getWebChatSticker } from "@/web-chat";
 
 type MessagePlatform = "onebot" | "lark";
 
@@ -78,6 +80,43 @@ export function startMessageInternalApi(input: InternalApiInput) {
         key: sticker.key,
         description: sticker.description,
       })),
+    });
+  });
+
+  app.post("/internal/web/messages", async (context) => {
+    if (!config.message.web.enabled) {
+      return context.json({ error: { code: "WEB_CHAT_DISABLED" } }, 403);
+    }
+
+    let body: unknown;
+    try {
+      body = await context.req.json();
+    } catch {
+      return context.json({ error: { code: "INVALID_WEB_CHAT_MESSAGE" } }, 400);
+    }
+
+    const parsedMessage = webChatMessageInputSchema.safeParse(body);
+    if (!parsedMessage.success) {
+      return context.json({ error: { code: "INVALID_WEB_CHAT_MESSAGE" } }, 400);
+    }
+
+    const result = await chatThroughWebChannel(parsedMessage.data);
+    return context.json(result);
+  });
+
+  app.get("/internal/web/stickers/:key", (context) => {
+    if (!config.message.web.enabled) {
+      return context.json({ error: { code: "WEB_CHAT_DISABLED" } }, 403);
+    }
+
+    const sticker = getWebChatSticker(context.req.param("key"));
+    if (!sticker) {
+      return context.body(null, 404);
+    }
+
+    return context.body(new Uint8Array(sticker.fileBuffer), 200, {
+      "Cache-Control": "private, max-age=86400",
+      "Content-Type": sticker.contentType,
     });
   });
 
