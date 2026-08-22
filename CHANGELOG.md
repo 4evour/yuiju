@@ -1,4 +1,4 @@
-# Changelog
+# Changelog（破坏性更新）
 
 ## 2026-08-21
 
