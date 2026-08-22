@@ -254,7 +254,7 @@ export class LLMManager {
       requestId,
     });
 
-    const { historyJson, summary } = await this.groupSession.getHistoryJson(sessionKey);
+    const { historyJson, summary } = this.groupSession.getHistoryJson(sessionKey);
     const characterState = await initCharacterStateData();
 
     const systemPrompt = [
@@ -413,7 +413,7 @@ export class LLMManager {
       requestId,
     });
 
-    const { historyJson, summary } = await this.privateSession.getHistoryJson(sessionId);
+    const { historyJson, summary } = this.privateSession.getHistoryJson(sessionId);
     const characterState = await initCharacterStateData();
     const sessionLabel = getProtocolMessageSenderName(message);
     const systemPrompt = [

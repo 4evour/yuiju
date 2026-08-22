@@ -306,9 +306,7 @@ export class ChatSessionManager<TMessage extends StoredSatoriChatMessage> {
     };
   }
 
-  async getHistoryJson(sessionId: string, limit?: number): Promise<SessionHistoryContext> {
-    await this.pendingSummaryBySessionId.get(sessionId);
-
+  getHistoryJson(sessionId: string, limit?: number): SessionHistoryContext {
     const list = this.conversationBySessionId.get(sessionId) ?? [];
     const trimmedMessages = this.trimConversation(list);
     if (trimmedMessages.length !== list.length) {

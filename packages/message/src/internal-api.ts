@@ -155,7 +155,7 @@ export function startMessageInternalApi(input: InternalApiInput) {
       platform,
       groupId,
     });
-    const groupContext = await llmManager.groupSession.getHistoryJson(
+    const groupContext = llmManager.groupSession.getHistoryJson(
       buildSatoriGroupSessionKey(platform, groupId),
       limit,
     );
