@@ -6,20 +6,22 @@ import {
   type MemoryDiarySummaryPeriod,
   upsertMemoryDiary,
 } from "@yuiju/utils";
+import { getPromptCustomizationOverrides } from "@yuiju/utils/db/operations/prompt-customization";
 import { getLangfuseTelemetry } from "@yuiju/utils/llm/langfuse-telemetry";
 import { getFlashModel } from "@yuiju/utils/llm/models";
+import { getPromptCustomizationContent } from "@yuiju/utils/prompt/prompt-customization";
 import { generateText } from "ai";
 import dayjs from "dayjs";
 import { logger } from "@/utils/logger";
 
 async function writeDiarySummaryText(input: {
-  subject: string;
   period: MemoryDiarySummaryPeriod;
   periodStartDate: Date;
   diaryEndDate: Date;
   sourcePeriod: MemoryDiaryPeriod;
   sourceDiaries: { diaryDate: Date; diaryEndDate: Date; text: string }[];
 }): Promise<string> {
+  const promptOverrides = await getPromptCustomizationOverrides(["character"]);
   const result = await generateText({
     model: getFlashModel(),
     telemetry: getLangfuseTelemetry(),
@@ -28,13 +30,15 @@ async function writeDiarySummaryText(input: {
         enable_thinking: true,
       },
     },
-    instructions: buildDiarySummarySystemPrompt({
-      subject: input.subject,
-      period: input.period,
-      periodStartDate: input.periodStartDate,
-      diaryEndDate: input.diaryEndDate,
-      sourcePeriod: input.sourcePeriod,
-    }),
+    instructions: [
+      getPromptCustomizationContent("character", promptOverrides),
+      buildDiarySummarySystemPrompt({
+        period: input.period,
+        periodStartDate: input.periodStartDate,
+        diaryEndDate: input.diaryEndDate,
+        sourcePeriod: input.sourcePeriod,
+      }),
+    ].join("\n\n"),
     prompt: [
       "以下是这一阶段已经生成的下级 Diary 或阶段总结，请严格基于这些内容整理阶段性回忆。",
       JSON.stringify(
@@ -131,7 +135,6 @@ async function refreshDiarySummaryForPeriod(input: {
   }
 
   const summaryText = await writeDiarySummaryText({
-    subject: input.subject,
     period: input.period,
     periodStartDate,
     diaryEndDate,

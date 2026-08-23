@@ -1,20 +1,19 @@
 import {
-  buildChatPlanProposalPrompt,
   buildMessageHistoryUserPrompt,
   changeCharacterMoodByChat,
-  chatReplyRulesPrompt,
   createChatPlanChangesProposalTool,
   createToolCallLoggingHooks,
   generateStructuredOutput,
-  getCharacterCardPrompt,
   initCharacterStateData,
-  messageHistorySchemaPrompt,
 } from "@yuiju/utils";
+import { getPromptCustomizationOverrides } from "@yuiju/utils/db/operations/prompt-customization";
 import { getChatModel } from "@yuiju/utils/llm/models";
 import { todayEventSearchTool } from "@yuiju/utils/llm/tools/memory-search";
 import { queryAvailableInventoryItems } from "@yuiju/utils/llm/tools/query-available-inventory-items";
 import { queryStateTool } from "@yuiju/utils/llm/tools/query-state";
 import { createChatMemoryRetrievalTool } from "@yuiju/utils/memory/memory-retrieval";
+import { buildChatSystemPrompt } from "@yuiju/utils/prompt/message";
+import { getPromptCustomizationContent } from "@yuiju/utils/prompt/prompt-customization";
 import { Output, stepCountIs } from "ai";
 import { z } from "zod";
 // import { getGroupMemoryPromptSection } from "@/memory/group-memory";
@@ -29,6 +28,17 @@ import {
 } from "@/utils/message";
 import { buildSatoriGroupSessionKey, buildSatoriPrivateSessionKey } from "@/utils/message/satori";
 import { ChatSessionManager } from "./chat-session-manager";
+
+async function getEffectiveChatSystemPrompt(): Promise<string> {
+  const overrides = await getPromptCustomizationOverrides(["character", "world", "chat"]);
+
+  return buildChatSystemPrompt({
+    characterPrompt: getPromptCustomizationContent("character", overrides),
+    worldPrompt: getPromptCustomizationContent("world", overrides),
+    chatPrompt: getPromptCustomizationContent("chat", overrides),
+    stickerPrompt: stickerState.getPromptSection(),
+  });
+}
 
 interface ActiveChatTask {
   controller: AbortController;
@@ -257,13 +267,7 @@ export class LLMManager {
     const { historyJson, summary } = this.groupSession.getHistoryJson(sessionKey);
     const characterState = await initCharacterStateData();
 
-    const systemPrompt = [
-      getCharacterCardPrompt(),
-      stickerState.getPromptSection(),
-      messageHistorySchemaPrompt,
-      chatReplyRulesPrompt,
-      buildChatPlanProposalPrompt(),
-    ].join("\n\n");
+    const systemPrompt = await getEffectiveChatSystemPrompt();
 
     try {
       const memoryRetrieval = createChatMemoryRetrievalTool({
@@ -416,13 +420,7 @@ export class LLMManager {
     const { historyJson, summary } = this.privateSession.getHistoryJson(sessionId);
     const characterState = await initCharacterStateData();
     const sessionLabel = getProtocolMessageSenderName(message);
-    const systemPrompt = [
-      getCharacterCardPrompt(),
-      stickerState.getPromptSection(),
-      messageHistorySchemaPrompt,
-      chatReplyRulesPrompt,
-      buildChatPlanProposalPrompt(),
-    ].join("\n\n");
+    const systemPrompt = await getEffectiveChatSystemPrompt();
 
     try {
       const memoryRetrieval = createChatMemoryRetrievalTool({

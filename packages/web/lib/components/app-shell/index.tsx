@@ -4,6 +4,8 @@ import {
   Activity,
   BookOpenText,
   Brain,
+  ChevronDown,
+  FilePenLine,
   FileText,
   House,
   Menu,
@@ -11,10 +13,11 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Settings,
+  SlidersHorizontal,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { InterfacePreferencesProvider } from "@/lib/components/interface-preferences";
@@ -27,7 +30,11 @@ const NAVIGATION_ITEMS = [
   { key: "diary", href: "/diary", label: "日记", icon: BookOpenText },
   { key: "logs", href: "/logs", label: "日志", icon: FileText },
   { key: "memory", href: "/memory", label: "记忆", icon: Brain },
-  { key: "settings", href: "/settings", label: "设置", icon: Settings },
+] as const;
+
+const SETTINGS_NAVIGATION_ITEMS = [
+  { href: "/settings", label: "常规设置", icon: SlidersHorizontal },
+  { href: "/settings/prompts", label: "提示词管理", icon: FilePenLine },
 ] as const;
 
 interface NavigationLinksProps {
@@ -72,6 +79,85 @@ function NavigationLinks({ closeDrawer, collapsed, items }: NavigationLinksProps
   });
 }
 
+interface SettingsNavigationProps {
+  closeDrawer: boolean;
+  collapsed: boolean;
+  expanded: boolean;
+  onToggle: () => void;
+}
+
+function SettingsNavigation({
+  closeDrawer,
+  collapsed,
+  expanded,
+  onToggle,
+}: SettingsNavigationProps) {
+  const pathname = usePathname();
+  const isActive = pathname === "/settings" || pathname.startsWith("/settings/");
+
+  return (
+    <div>
+      <button
+        type="button"
+        aria-expanded={collapsed ? false : expanded}
+        aria-label={collapsed ? "设置" : undefined}
+        title={collapsed ? "设置" : undefined}
+        onClick={onToggle}
+        className={cn(
+          "flex h-11 w-full items-center gap-3 rounded-xl px-3 text-sm font-medium transition-colors",
+          collapsed && "justify-center px-0",
+          isActive
+            ? "bg-[#91c4ee]/30 text-[#2b2f36] shadow-[inset_0_0_0_1px_rgba(145,196,238,0.25)]"
+            : "text-[#667791] hover:bg-[#91c4ee]/20 hover:text-[#2b2f36]",
+        )}
+      >
+        <Settings aria-hidden="true" className="size-[18px]" />
+        {collapsed ? null : (
+          <>
+            <span className="flex-1 text-left">设置</span>
+            <ChevronDown
+              aria-hidden="true"
+              className={cn("size-4 transition-transform", expanded && "rotate-180")}
+            />
+          </>
+        )}
+      </button>
+      {expanded && !collapsed ? (
+        <div className="mt-1 grid gap-1 pl-4">
+          {SETTINGS_NAVIGATION_ITEMS.map((item) => {
+            const Icon = item.icon;
+            const itemActive = pathname === item.href;
+            const link = (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={itemActive ? "page" : undefined}
+                className={cn(
+                  "flex h-10 items-center gap-3 rounded-xl px-3 text-sm font-medium transition-colors",
+                  itemActive
+                    ? "bg-[#91c4ee]/25 text-[#2b2f36]"
+                    : "text-[#667791] hover:bg-[#91c4ee]/20 hover:text-[#2b2f36]",
+                )}
+              >
+                <Icon aria-hidden="true" className="size-4" />
+                <span>{item.label}</span>
+              </Link>
+            );
+
+            return closeDrawer ? (
+              <SheetClose key={item.href} asChild>
+                {link}
+              </SheetClose>
+            ) : (
+              link
+            );
+          })}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 interface AppShellProps {
   children: React.ReactNode;
   showInternalPages: boolean;
@@ -79,8 +165,11 @@ interface AppShellProps {
 }
 
 export function AppShell({ children, showInternalPages, showWebChat }: AppShellProps) {
+  const pathname = usePathname();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const settingsRouteActive = pathname === "/settings" || pathname.startsWith("/settings/");
+  const [settingsExpanded, setSettingsExpanded] = useState(settingsRouteActive);
   const visibleItems = NAVIGATION_ITEMS.filter((item) => {
     if (item.key === "chat") {
       return showWebChat;
@@ -88,6 +177,12 @@ export function AppShell({ children, showInternalPages, showWebChat }: AppShellP
 
     return showInternalPages || (item.key !== "logs" && item.key !== "memory");
   });
+
+  useEffect(() => {
+    if (pathname === "/settings" || pathname.startsWith("/settings/")) {
+      setSettingsExpanded(true);
+    }
+  }, [pathname]);
 
   return (
     <Sheet open={mobileDrawerOpen} onOpenChange={setMobileDrawerOpen}>
@@ -109,11 +204,19 @@ export function AppShell({ children, showInternalPages, showWebChat }: AppShellP
       <SheetContent aria-describedby={undefined}>
         <div className="flex h-16 items-center border-b border-[#d9e6f5] px-5">
           <SheetTitle className="text-base font-black tracking-[0.08em] text-[#2b2f36]">
-            悠酱
+            yuiju
           </SheetTitle>
         </div>
         <nav className="grid gap-1.5 p-3" aria-label="移动端主导航">
           <NavigationLinks closeDrawer collapsed={false} items={visibleItems} />
+          {showInternalPages ? (
+            <SettingsNavigation
+              closeDrawer
+              collapsed={false}
+              expanded={settingsExpanded}
+              onToggle={() => setSettingsExpanded((expanded) => !expanded)}
+            />
+          ) : null}
         </nav>
       </SheetContent>
 
@@ -130,7 +233,9 @@ export function AppShell({ children, showInternalPages, showWebChat }: AppShellP
           )}
         >
           {sidebarCollapsed ? null : (
-            <span className="pl-2 text-base font-black tracking-[0.08em] text-[#2b2f36]">悠酱</span>
+            <span className="pl-2 text-base font-black tracking-[0.08em] text-[#2b2f36]">
+              yuiju
+            </span>
           )}
           <Button
             type="button"
@@ -149,6 +254,21 @@ export function AppShell({ children, showInternalPages, showWebChat }: AppShellP
         </div>
         <nav className="grid gap-1.5 p-2" aria-label="主导航">
           <NavigationLinks closeDrawer={false} collapsed={sidebarCollapsed} items={visibleItems} />
+          {showInternalPages ? (
+            <SettingsNavigation
+              closeDrawer={false}
+              collapsed={sidebarCollapsed}
+              expanded={settingsExpanded}
+              onToggle={() => {
+                if (sidebarCollapsed) {
+                  setSidebarCollapsed(false);
+                  setSettingsExpanded(true);
+                  return;
+                }
+                setSettingsExpanded((expanded) => !expanded);
+              }}
+            />
+          ) : null}
         </nav>
       </aside>
 

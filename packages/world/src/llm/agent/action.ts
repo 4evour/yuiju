@@ -19,7 +19,9 @@ import {
   reviewPlanChangesTool,
   todayEventSearchTool,
 } from "@yuiju/utils";
+import { getPromptCustomizationOverrides } from "@yuiju/utils/db/operations/prompt-customization";
 import { getStrongModel } from "@yuiju/utils/llm/models";
+import { getPromptCustomizationContent } from "@yuiju/utils/prompt/prompt-customization";
 import { Output, stepCountIs } from "ai";
 import dayjs from "dayjs";
 import { z } from "zod";
@@ -36,7 +38,10 @@ export async function chooseActionAgent(
   actionMemoryList: BehaviorRecord[],
   planState: PlanState,
 ): Promise<ActionAgentDecision | undefined> {
-  const coreMemory = await readCoreMemory();
+  const [coreMemory, promptOverrides] = await Promise.all([
+    readCoreMemory(),
+    getPromptCustomizationOverrides(["character", "world", "chooseAction"]),
+  ]);
   const systemPrompt = chooseActionPrompt({
     actionList,
     characterState: context.characterStateData,
@@ -50,6 +55,9 @@ export async function chooseActionAgent(
     coreMemory: coreMemory ?? undefined,
     longTermPlanTitle: planState.longTermPlan?.title,
     shortTermPlanTitles: planState.shortTermPlans.map((plan) => plan.title),
+    characterPrompt: getPromptCustomizationContent("character", promptOverrides),
+    worldPrompt: getPromptCustomizationContent("world", promptOverrides),
+    chooseActionPrompt: getPromptCustomizationContent("chooseAction", promptOverrides),
   });
 
   for (let i = 0; i < RETRY_COUNT; i++) {

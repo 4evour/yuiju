@@ -10,9 +10,10 @@ import { generateStructuredOutput } from "@yuiju/utils/llm/generate-structured-o
 import { getChatModel } from "@yuiju/utils/llm/models";
 import { createToolCallLoggingHooks } from "@yuiju/utils/llm/tool-call-logger";
 import { diarySearchTool, todayEventSearchTool } from "@yuiju/utils/llm/tools/memory-search";
-import { getCharacterCardPrompt } from "@yuiju/utils/prompt/character-card";
+import { defaultCharacterPrompt } from "@yuiju/utils/prompt/character-card";
 import { chatReplyRulesPrompt, messageHistorySchemaPrompt } from "@yuiju/utils/prompt/message";
 import { buildProactiveGroupMessagePrompt } from "@yuiju/utils/prompt/proactive-message";
+import { defaultWorldPrompt } from "@yuiju/utils/prompt/world-view";
 import type { ActionMetadata } from "@yuiju/utils/types/action";
 import type {
   CharacterStateData,
@@ -96,7 +97,8 @@ async function shareActionCompletionToGroup(
         },
       },
       instructions: [
-        getCharacterCardPrompt(),
+        defaultCharacterPrompt,
+        defaultWorldPrompt,
         messageHistorySchemaPrompt,
         chatReplyRulesPrompt,
         stickers.promptSection,

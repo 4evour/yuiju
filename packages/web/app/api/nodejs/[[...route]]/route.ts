@@ -5,6 +5,7 @@ import { diaryRoute } from "./diary";
 import { filesRoute } from "./files";
 import { homeRoute } from "./home";
 import { logsRoute } from "./logs";
+import { promptsRoute } from "./prompts";
 import { stateRoute } from "./state";
 
 export const runtime = "nodejs";
@@ -21,6 +22,7 @@ app.route("/diary", diaryRoute);
 app.route("/state", stateRoute);
 app.route("/logs", logsRoute);
 app.route("/files", filesRoute);
+app.route("/prompts", promptsRoute);
 
 // 全局错误处理
 app.onError((err, context) => {
@@ -36,3 +38,5 @@ app.onError((err, context) => {
 
 export const GET = handle(app);
 export const POST = handle(app);
+export const PUT = handle(app);
+export const DELETE = handle(app);

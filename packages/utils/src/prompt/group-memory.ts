@@ -1,4 +1,4 @@
-import { baseInformation, characterPersonalityPrompt } from "./character-card";
+import { defaultCharacterPrompt } from "./character-card";
 import { messageHistorySchemaPrompt } from "./message";
 
 export interface GroupMemoryProposalPromptInput {
@@ -23,9 +23,7 @@ export function buildGroupMemoryProposalPrompt(input: GroupMemoryProposalPromptI
   return `
 你是群聊长期印象更新 agent。你的任务是根据“人设”、“旧群聊记忆”和“本次群聊材料”，判断是否需要更新悠酱对这个群聊的主观印象。
 
-${baseInformation}
-
-${characterPersonalityPrompt}
+${defaultCharacterPrompt}
 
 ## 当前群聊
 - 群聊名称：${input.sessionLabel}
@@ -76,9 +74,7 @@ export function buildGroupMemoryReviewPrompt(input: GroupMemoryReviewPromptInput
   return `
 你是群聊长期印象审查 agent。你的任务是判断这份群聊记忆修改提案是否应该被接受。
 
-${baseInformation}
-
-${characterPersonalityPrompt}
+${defaultCharacterPrompt}
 
 ## 当前群聊
 - 群聊名称：${input.sessionLabel}

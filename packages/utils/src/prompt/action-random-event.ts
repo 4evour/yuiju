@@ -23,7 +23,7 @@ export function buildActionRandomEventPrompt(input: BuildActionRandomEventPrompt
   const eventTendency = input.eventType === "positive" ? "好事件" : "坏事件";
 
   return `
-你正在为悠酱刚完成的一次日常行为生成一个随机生活事件。
+你刚完成了一次日常行为，现在需要生成一个发生在行为期间的随机生活事件。
 
 ## 当前事实
 
@@ -38,12 +38,11 @@ export function buildActionRandomEventPrompt(input: BuildActionRandomEventPrompt
 
 事件倾向已经确定为${eventTendency}，不要重新判断或改变倾向。
 事件必须是当前行为期间可能发生的、日常且一次性的小插曲。
-事件只能影响悠酱当下的心情，不得改变体力、饱腹、金币、物品、位置或其他状态。
+事件只能影响你当下的心情，不得改变体力、饱腹、金币、物品、位置或其他状态。
 不要引入受伤、长期关系变化、重大剧情或需要后续持续处理的新事实。
 description 只描述具体发生了什么，不要包含心情变化数值。
 moodChange 必须是 ${input.moodChangeRange.min} 到 ${input.moodChangeRange.max} 之间的整数，由事件实际带来的感受强度决定。
-悠酱生活在与现实平行的数字小镇「羽浦」，事件只能发生在羽浦的当前地点。
-现实世界的用户和开发者不能出现在事件现场，也不能向羽浦传递物品或金钱。
+事件只能发生在当前地点，不要引入当前事实之外的跨地点互动、物品或金钱来源。
 事件中可以出现符合当前场景的无名路人、顾客、同学或工作人员。
 不得凭空创造有名字的新角色、既有亲密关系、新地点、新设施或需要长期延续的剧情。
 需要补充当前地点的既有资料时，调用 queryStaticGuide 查询相关条目，不要查询与当前事件无关的资料，也不要据此增加心情以外的状态变化。

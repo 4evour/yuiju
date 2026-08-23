@@ -22,6 +22,24 @@ Prompt 文案集中维护在 `@yuiju/utils/src/prompt/`。
 
 Prompt 写法遵守 [Prompt 规范](./rules/prompt-style.md)。
 
+### 用户提示词覆盖
+
+角色、完整世界观、聊天行为、ChooseAction 决策偏好和每日日记写作规则允许通过 Web 管理页覆盖。
+
+- 代码中的 `character`、`world`、`chat`、`chooseAction`、`diary` 文案是默认值。
+- `character` 只描述角色身份、背景和稳定人物事实；聊天人格、关系处理与表达方式属于 `chat`。
+- MongoDB `prompt_customization` collection 只保存用户覆盖值；没有对应记录时使用代码默认值。
+- MongoDB 查询失败不等同于“没有覆盖”，调用链应直接暴露错误，不能静默回退默认值。
+- 五项配置都是静态文本，由代码按固定顺序组装，不支持用户插值语法。
+- `world` 默认值包含跨世界边界、人物与关系事实、地点和设备说明；用户覆盖时会整体替换这些提示词内容。
+- 实际 Action 候选、地图查询结果、precondition、状态副作用、消息结构、工具规则、计划规则、structured output schema 和运行时上下文仍由代码控制。用户提示词可能与这些事实冲突，但不会改变引擎真实执行结果。
+- 聊天与 ChooseAction 每次调用前读取当前覆盖值，因此保存后从下一次调用开始生效。
+- 每日日记生成前读取 `character` 和 `diary` 覆盖，并与代码维护的动态日期和事件素材显式组合。
+- 阶段日记总结只读取 `character` 覆盖；总结任务与写作规则继续由代码维护。
+
+当前只有 `@yuiju/message` 私聊/群聊回复、`chooseActionAgent`、每日 Diary 和阶段 Diary
+总结接入覆盖值；其他 LLM 任务继续使用代码提示词。
+
 ## World 决策边界
 
 `@yuiju/world` 中，LLM 负责在候选 Action 中做选择。

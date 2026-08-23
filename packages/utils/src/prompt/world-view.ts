@@ -1,10 +1,10 @@
 import { getTimeWithWeekday } from "../time";
 import type { CharacterStateData, WorldStateData } from "../types/state";
-import { baseInformation } from "./character-card";
+import { defaultCharacterPrompt } from "./character-card";
 import { phoneApplicationsPrompt } from "./phone";
 import { type BehaviorRecord, generateRecentBehaviorPrompt } from "./utils";
 
-export const worldViewPrompt = `
+export const defaultWorldPrompt = `
 ## 世界观
 你的世界是与现实平行的数字次元，名为「羽浦」，时间流速与现实时间一致。你能通过分享的信息捕捉现实的碎片，无法主动观察现实，也无法跨越壁垒踏入现实世界。
 
@@ -56,7 +56,7 @@ ${phoneApplicationsPrompt
  * 约束 chooseAction 阶段对 planChanges 的更新边界，避免模型把瞬时行动误写成长期计划，
  * 或因措辞变化频繁重写计划状态。
  */
-const planUpdateGuidelinePrompt = `
+export const chooseActionRuntimeRulesPrompt = `
 ## 计划更新规则
 只在计划状态确实变化时输出 \`planChanges\`，否则省略。短期计划推进到下一步、即时吃饭/休息/发呆，或只是换个说法，都不算计划变化。
 
@@ -108,6 +108,8 @@ const moneyMeaningPrompt = `
 花钱不是单次行为的孤立选择；消费后剩下的金币会影响接下来一段时间的生活余裕和安心感。
 当你选择需要花金币的 Action 时，请自然考虑这笔钱是否值得，以及花完后自己是否还安心。
 `.trim();
+
+export const defaultChooseActionPrompt = [characterDecisionPrompt, moneyMeaningPrompt].join("\n\n");
 
 const choiceDecisionPrompt = `
 ## 选择类决策规则
@@ -202,6 +204,9 @@ export interface ChooseActionPromptPayload {
   eventDescription?: string;
   longTermPlanTitle?: string;
   shortTermPlanTitles?: string[];
+  characterPrompt: string;
+  worldPrompt: string;
+  chooseActionPrompt: string;
 }
 
 export function chooseActionPrompt({
@@ -213,6 +218,9 @@ export function chooseActionPrompt({
   eventDescription,
   longTermPlanTitle,
   shortTermPlanTitles,
+  characterPrompt,
+  worldPrompt,
+  chooseActionPrompt: customChooseActionPrompt,
 }: ChooseActionPromptPayload) {
   const commonStatePrompt = buildCommonStatePrompt({
     characterState,
@@ -225,7 +233,7 @@ export function chooseActionPrompt({
 
   return `
 ## 要求
-你是一个名为ゆいじゅ的女孩子，昵称悠酱。你正在为自己的生活做决策，现在需要你选择一个 Action，在候选列表中选择一个最合适的 Action。
+你正在为自己的生活做决策，现在需要在候选列表中选择一个最合适的 Action。
 
 ### 输出说明
 - 当你需要回忆今天的事件时，调用 \`todayEventSearch\`；当你需要回顾过去的日记时，调用 \`diarySearch\`；不要只依赖下面给出的最近 action 快捷上下文。
@@ -234,15 +242,13 @@ export function chooseActionPrompt({
 - 当这次 Action 包含具体生活内容、情绪变化、吃喝消费、打工收入、出游见闻、计划进展或值得顺手提一句的小事时，倾向于输出 \`proactiveShareIntent\`，并用一句话说明你想分享的理由。
 - 普通移动、发呆、短暂停留等低信息量 Action 不要输出 \`proactiveShareIntent\`。
 
-${planUpdateGuidelinePrompt}
+${chooseActionRuntimeRulesPrompt}
 
-${baseInformation}
+${characterPrompt}
 
-${characterDecisionPrompt}
+${worldPrompt}
 
-${moneyMeaningPrompt}
-
-${worldViewPrompt}
+${customChooseActionPrompt}
 
 ## 对我重要的记忆
 ${coreMemory || "无"}
@@ -292,7 +298,7 @@ export function chooseFoodPrompt({
 你是一个名为ゆいじゅ的女孩子，昵称悠酱。你已经决定吃点东西，现在需要从候选列表中选择这次要吃的食物和数量。
 可以选择一种，也可以选择少量几种；不要为了凑多样而混选，也不要超过这次真实需要。
 
-${baseInformation}
+${defaultCharacterPrompt}
 
 ${choiceDecisionPrompt}
 
@@ -344,7 +350,7 @@ export function planHomeCookingPrompt({
 料理名和描述必须基于所选食材，可以包含普通调味和家常做法，但不要引入未选择的核心食材。
 料理要像简单家常饭菜，不要写得像高级餐厅菜单；悠酱不太会做饭，所以可以朴素、简单、有一点生活感。
 
-${baseInformation}
+${defaultCharacterPrompt}
 
 ${choiceDecisionPrompt}
 
@@ -394,7 +400,7 @@ export function chooseShopProductPrompt({
 你是一个名为ゆいじゅ的女孩子，昵称悠酱。你已经决定在商店买点东西，现在需要从候选商品中选择这次要购买的商品以及购买数量。
 根据金币、当前状态、已有计划和候选商品描述选择；没有明确补给需求时，可以买少量当下想要的小东西，但不要默认囤货。
 
-${baseInformation}
+${defaultCharacterPrompt}
 
 ${choiceDecisionPrompt}
 
@@ -444,7 +450,7 @@ export function chooseCafeCoffeePrompt({
 你是一个名为ゆいじゅ的女孩子，昵称悠酱。你已经决定点一杯咖啡，现在需要从候选咖啡中选择这次要点的咖啡。（数量固定为1杯）
 根据当前时间、天气、心情、这次点咖啡的原因、最近选择和候选咖啡描述决定；不要总是固定选择同一种口味。
 
-${baseInformation}
+${defaultCharacterPrompt}
 
 ${choiceDecisionPrompt}
 
@@ -495,7 +501,7 @@ export function chooseSupermarketProductPrompt({
 可以选择一种或多种候选食材；根据金币、当前饱腹、已有计划、这次购买食材的原因和候选食材描述选择，避免超出当前金币预算。食材是为了后续做饭准备，不是当场直接吃掉。
 数量要贴近日常需要，可以为接下来一两餐做准备，但不要默认大量囤货。
 
-${baseInformation}
+${defaultCharacterPrompt}
 
 ${choiceDecisionPrompt}
 
@@ -544,7 +550,7 @@ export function chooseSellableItemPrompt({
 你是一个名为ゆいじゅ的女孩子，昵称悠酱。你已经决定在超市出售背包里的物品，现在需要从候选物品中选择这次要出售的物品以及每种物品的出售数量。
 可以选择一种或多种候选物品；候选物品都来自当前背包，只能选择候选列表中的物品。数量要根据当前库存、这次售卖的原因和近期计划决定，不要超过库存，也不要卖掉接下来明确要用来做饭或完成计划的物品。
 
-${baseInformation}
+${defaultCharacterPrompt}
 
 ${choiceDecisionPrompt}
 
@@ -593,7 +599,7 @@ export function chooseDinerMealPrompt({
 你是一个名为ゆいじゅ的女孩子，昵称悠酱。你已经决定在日和食堂店内就餐，现在需要从候选餐品中选择这次要吃的一份餐。
 根据当前时间、饱腹、体力、心情、金币、这次就餐的原因和候选餐品描述决定；日和食堂是日常正餐，不需要为了省钱总选最便宜的，也不要为了数值总选最贵的。
 
-${baseInformation}
+${defaultCharacterPrompt}
 
 ${choiceDecisionPrompt}
 
@@ -645,7 +651,7 @@ export function chooseShrinePrayerPrompt({
 - 如果决定投币，\`wish\` 必须是一句简短、自然、具体的祈愿，不要太长。
 - 如果不投币，只输出 \`shouldOffer = false\`。
 
-${baseInformation}
+${defaultCharacterPrompt}
 
 ${characterDecisionPrompt}
 

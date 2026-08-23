@@ -8,6 +8,7 @@ export * from "./person-memory";
 export * from "./phone";
 export * from "./plan-review";
 export * from "./proactive-message";
+export * from "./prompt-customization";
 export * from "./world-guide";
 export * from "./world-map";
 export * from "./world-view";

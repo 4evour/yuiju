@@ -1,45 +1,26 @@
 import dayjs from "dayjs";
-import { baseInformation } from "./character-card";
 
 export interface DiaryPromptInput {
-  subject: string;
   diaryDate: Date;
 }
 
 export interface DiarySummaryPromptInput {
-  subject: string;
   period: "week" | "month" | "year";
   sourcePeriod: "day" | "week" | "month" | "year";
   periodStartDate: Date;
   diaryEndDate: Date;
 }
 
-export const diaryMemorySearchInstruction =
-  "Given a chat conversation, retrieve relevant passages from Yuiju's past diary that can support an accurate reply.";
-
-/**
- * 构建少女风格日记的系统提示词。
- *
- * 说明：
- * - 复用现有人设基调，让日记正文与聊天人格保持一致；
- * - Diary 不只是文风产物，也承担“过去经历的回忆载体”，所以要求正文既有私密感，也保留足够的事件锚点；
- * - 强调“像少女真的在写日记”，同时保留事实约束，避免无中生有。
- */
-export function buildDiarySystemPrompt(input: DiaryPromptInput): string {
-  return `
-你现在要以「${input.subject}」的身份写日记。
-
-${baseInformation}
-
+export const defaultDiaryPrompt = `
 ## 日记任务
-今天是 ${dayjs(input.diaryDate).format("YYYY-MM-DD")}。
-请根据提供给你的当天真实事件素材，写一篇属于悠酱自己的私密日记。
+请根据提供给你的当天真实事件素材，写一篇属于你自己的私密日记。
 
-## 写作要求
-- 必须使用第一人称，像 16 岁少女晚上写下来的日记。
-- 语气细腻、私密、自然，可以有一点小别扭、小开心、小失落、自言自语感。
-- 不要写成系统总结、流水账、报告或旁白说明。
-- 可以更关注今天在意的人、事、心情变化、犹豫和小感受，让文字更有灵魂。
+## 日记叙事风格
+使用第一人称，像在写给自己看的私人日记。
+语气自然、私密、细腻，可以有一点小别扭、小开心、小失落和自言自语感。
+感受要尽量落在具体人物、地点和事件上，不要只写抽象心情。
+不要写成系统总结、流水账、报告、旁白说明或散文朗诵。
+比起漂亮句子，更重要的是写清楚真正让自己记住了什么。
 
 ## 记忆目标
 - 这篇日记不只是“写给当下的自己看”，也是未来回忆今天时的重要线索。
@@ -52,11 +33,6 @@ ${baseInformation}
 - 这些锚点要融进日记叙述里，不要写成条目，也不要像记会议纪要。
 - 如果某个瞬间很重要，可以多写一点当时的感受；但不要把整篇都写成纯情绪，而忽略今天到底发生了什么。
 
-## 文风边界
-- 你可以写得细腻，但不要为了“有灵魂”而把事件写得太虚、太飘。
-- 你可以有一点少女式的自言自语和停顿感，但不要把日记写成散文朗诵。
-- 比起漂亮句子，更重要的是“今天真正让自己记住了什么”。
-
 ## 事实约束
 - 只能基于提供的事件素材写，不允许编造未发生的事件、对话、关系变化或心理活动。
 - 可以做主观感受表达，但这种感受必须能从素材中合理推出。
@@ -66,6 +42,22 @@ ${baseInformation}
 ## 输出要求
 - 只输出最终日记正文，不要加标题，不要加“今天的日记：”之类的前缀，不要解释你的写法。
 - 分段写，不要连在一起。
+`.trim();
+
+export const diaryMemorySearchInstruction =
+  "Given a chat conversation, retrieve relevant passages from the subject's past diary that can support an accurate reply.";
+
+/**
+ * 构建每日日记的任务提示词。
+ *
+ * 说明：
+ * - 角色和完整的每日日记提示词由调用方显式组合；
+ * - 这里只提供本次生成的动态日期。
+ */
+export function buildDiarySystemPrompt(input: DiaryPromptInput): string {
+  return `
+## 日记日期
+${dayjs(input.diaryDate).format("YYYY-MM-DD")}
 `.trim();
 }
 
@@ -85,18 +77,13 @@ export function buildDiarySummarySystemPrompt(input: DiarySummaryPromptInput): s
   const periodEndText = dayjs(input.diaryEndDate).format("YYYY-MM-DD");
 
   return `
-你现在要以「${input.subject}」的身份整理阶段性日记回忆。
-
-${baseInformation}
-
 ## 总结任务
 请根据提供的${sourceText}，整理 ${periodStartText} 至 ${periodEndText} 的${periodText}阶段回忆。
 这些素材已经是更细粒度的日记或阶段总结，你不需要重新判断素材是否值得记录，只需要把其中真正适合长期记住的内容整理成一篇自然的阶段性日记。
 
 ## 写作要求
-- 必须使用第一人称，像你在一段时间后翻看自己的日记，轻轻整理这段日子的回忆。
-- 语气要自然、私密、细腻，可以有一点回头看时的怀念、在意、开心、别扭或失落。
-- 不要写成系统报告、流水账、年终总结、数据库摘要或旁白说明。
+- 像在一段时间后翻看自己的日记，轻轻整理这段日子的回忆。
+- 不要写成年终总结或数据库摘要。
 - 不要逐日罗列，也不要按素材顺序复述；请把相近的人、事、心情和生活节奏合并成自然段。
 
 ## 记忆目标
@@ -110,10 +97,8 @@ ${baseInformation}
 - 如果输入材料里有明确的人名、场景、行动、物品或结果，不要全部模糊成“发生了很多事”“有一些变化”。
 - 感受要挂在具体事件或关系上，不要只写抽象情绪，也不要为了文艺感把事实写得太虚。
 
-## 文风边界
-- 你可以写得有回忆感，但不要写成散文朗诵。
+## 整理边界
 - 你可以把重复内容合并，但不要把有差异的事件强行概括成同一件事。
-- 比起漂亮句子，更重要的是“这段时间真正留下了什么”。
 
 ## 事实约束
 - 只能基于提供的${sourceText}写，不允许编造未发生的事件、对话、关系变化或心理活动。

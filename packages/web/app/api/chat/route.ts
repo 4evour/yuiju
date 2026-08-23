@@ -1,10 +1,11 @@
-import { getCharacterCardPrompt, getRedis } from "@yuiju/utils";
-import { getYuijuConfig } from "@yuiju/utils/config/config";
+import { getRedis } from "@yuiju/utils";
 import { getFlashModel } from "@yuiju/utils/llm/models";
+import { defaultCharacterPrompt } from "@yuiju/utils/prompt/character-card";
+import { defaultChatPrompt } from "@yuiju/utils/prompt/message";
+import { defaultWorldPrompt } from "@yuiju/utils/prompt/world-view";
 import { convertToModelMessages, stepCountIs, streamText, type UIMessage } from "ai";
 import { isPublicDeployment } from "@/lib/public-deployment";
 
-const DEFAULT_USER_NAME = "yixiaojiu";
 const MAX_HISTORY = 20;
 
 const PUBLIC_DAILY_TOTAL_LIMIT = 2000;
@@ -125,8 +126,6 @@ export async function POST(request: Request) {
   }
 
   const payload = body as { messages?: unknown; userName?: unknown };
-  const trimmedUserName = typeof payload.userName === "string" ? payload.userName.trim() : "";
-  const userName = trimmedUserName || DEFAULT_USER_NAME;
 
   const incomingMessages = Array.isArray(payload.messages)
     ? (payload.messages as UIMessage<MessageMetadata>[])
@@ -148,7 +147,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const systemPrompt = getCharacterCardPrompt();
+  const systemPrompt = [defaultCharacterPrompt, defaultWorldPrompt, defaultChatPrompt].join("\n\n");
 
   const result = await streamText({
     model: getFlashModel(),

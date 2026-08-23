@@ -9,9 +9,11 @@ import {
   updateCoreMemoryFromEpisodes,
   upsertMemoryDiary,
 } from "@yuiju/utils";
+import { getPromptCustomizationOverrides } from "@yuiju/utils/db/operations/prompt-customization";
 import { getLangfuseTelemetry } from "@yuiju/utils/llm/langfuse-telemetry";
 import { getFlashModel } from "@yuiju/utils/llm/models";
 import { indexDailyDiary } from "@yuiju/utils/memory/diary-vector-index";
+import { getPromptCustomizationContent } from "@yuiju/utils/prompt/prompt-customization";
 import { generateText } from "ai";
 import dayjs from "dayjs";
 import { logger } from "@/utils/logger";
@@ -32,10 +34,10 @@ function estimateDiaryMaterialChars(materials: DiarySummaryMaterial[]): number {
 }
 
 async function writeDiaryText(input: {
-  subject: string;
   diaryDate: Date;
   materials: DiarySummaryMaterial[];
 }): Promise<string> {
+  const promptOverrides = await getPromptCustomizationOverrides(["character", "diary"]);
   const result = await generateText({
     model: getFlashModel(),
     telemetry: getLangfuseTelemetry(),
@@ -44,20 +46,18 @@ async function writeDiaryText(input: {
         enable_thinking: false,
       },
     },
-    instructions: buildDiarySystemPrompt({
-      subject: input.subject,
-      diaryDate: input.diaryDate,
-    }),
-    prompt: [
-      "以下是今天真实发生过的素材，请严格基于这些内容写日记。",
-      JSON.stringify(
-        input.materials.map((item) => ({
-          type: item.type,
-          happenedAt: item.happenedAt,
-          content: item.content,
-        })),
-      ),
-    ].join("\n"),
+    instructions: [
+      getPromptCustomizationContent("character", promptOverrides),
+      getPromptCustomizationContent("diary", promptOverrides),
+      buildDiarySystemPrompt({ diaryDate: input.diaryDate }),
+    ].join("\n\n"),
+    prompt: JSON.stringify(
+      input.materials.map((item) => ({
+        type: item.type,
+        happenedAt: item.happenedAt,
+        content: item.content,
+      })),
+    ),
   });
 
   return result.text.trim();
@@ -195,7 +195,6 @@ async function generateDiaryFromEpisodes(input: {
   }
 
   const diaryText = await writeDiaryText({
-    subject: input.subject,
     diaryDate: input.diaryDate,
     materials,
   });

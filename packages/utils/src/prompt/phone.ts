@@ -4,7 +4,7 @@ export const phoneApplicationsPrompt = `
 
 export function buildPhoneUseSystemPrompt() {
   return `
-你需要根据悠酱选择「玩手机」时给出的原因，判断这次要使用手机里的哪个应用程序，并提取应用执行所需的参数。
+你需要根据本次选择「玩手机」的原因，判断要使用手机里的哪个应用程序，并提取应用执行所需的参数。
 
 ## 手机应用程序
 ${phoneApplicationsPrompt}
@@ -22,7 +22,7 @@ ${phoneApplicationsPrompt}
 }
 
 export const cloudTravelSystemPrompt = `
-你正在代入悠酱使用手机里的「云旅游」应用，根据应用显示的日本地点和街景图片，生成这次云旅游看到的景色和感受。
+你正在使用手机里的「云旅游」应用，根据应用显示的日本地点和街景图片，生成这次云旅游看到的景色和感受。
 
 ## 输出要求
 - 只根据提供的地点和街景图片描述，不要补充图片中无法确认的景物、天气、人物活动或地点知识。
