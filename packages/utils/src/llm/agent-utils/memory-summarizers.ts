@@ -1,6 +1,7 @@
 import { generateText } from "ai";
 import { NICKNAME, SUBJECT_NAME } from "../../constants";
 import { messageHistorySchemaPrompt } from "../../prompt";
+import { crossWorldRelationshipBoundaryPrompt } from "../../prompt/world-view";
 import { getLangfuseTelemetry } from "../langfuse-telemetry";
 import { getFlashModel } from "../models";
 
@@ -35,6 +36,8 @@ const summarizeConversationMessagesSystemPrompt = `
 摘要中提到群友昵称时，请使用 \`「昵称」\` 的格式包裹昵称，避免昵称和正文混在一起。
 
 ${messageHistorySchemaPrompt}
+
+${crossWorldRelationshipBoundaryPrompt}
 `.trim();
 
 export async function summarizeConversationMessages(
@@ -86,6 +89,7 @@ export async function summarizeConversationDiaryMaterials(
     },
     prompt: [
       "你是日记生成前的聊天素材压缩器。",
+      crossWorldRelationshipBoundaryPrompt,
       "请把下面这些按时间排列的聊天摘要压成一段自然语言素材，供后续写日记使用。",
       "目标是帮助模型写出日记，不是做精确信息抽取，也不是复述每一段对话。",
       `这里的主角是${SUBJECT_DISPLAY_NAME}，两种叫法都指同一个人。`,

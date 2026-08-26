@@ -14,6 +14,7 @@ import { getLangfuseTelemetry } from "@yuiju/utils/llm/langfuse-telemetry";
 import { getFlashModel } from "@yuiju/utils/llm/models";
 import { indexDailyDiary } from "@yuiju/utils/memory/diary-vector-index";
 import { getPromptCustomizationContent } from "@yuiju/utils/prompt/prompt-customization";
+import { crossWorldRelationshipBoundaryPrompt } from "@yuiju/utils/prompt/world-view";
 import { generateText } from "ai";
 import dayjs from "dayjs";
 import { logger } from "@/utils/logger";
@@ -49,6 +50,7 @@ async function writeDiaryText(input: {
     instructions: [
       getPromptCustomizationContent("character", promptOverrides),
       getPromptCustomizationContent("diary", promptOverrides),
+      crossWorldRelationshipBoundaryPrompt,
       buildDiarySystemPrompt({ diaryDate: input.diaryDate }),
     ].join("\n\n"),
     prompt: JSON.stringify(

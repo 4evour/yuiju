@@ -1,3 +1,5 @@
+import { crossWorldRelationshipBoundaryPrompt } from "./world-view";
+
 export interface CoreMemoryProposalPromptInput {
   memoryDate: string;
   existingMemoryText: string;
@@ -22,6 +24,8 @@ ${input.existingMemoryText}
 \`\`\`json
 ${input.episodeMaterialJson}
 \`\`\`
+
+${crossWorldRelationshipBoundaryPrompt}
 
 ## 判断规则
 - 核心记忆记录的是你亲身经历过、并且从你的选择、表达、情绪变化或持续关注中能看出你确实很在意的事情。
@@ -70,6 +74,8 @@ ${input.episodeMaterialJson}
 \`\`\`json
 ${input.proposalJson}
 \`\`\`
+
+${crossWorldRelationshipBoundaryPrompt}
 
 ## 审查规则
 - 对比旧核心记忆、当天 Episode 和候选 content，检查所有新增或修订内容是否有当天 Episode 依据。

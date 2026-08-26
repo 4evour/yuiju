@@ -1,4 +1,5 @@
 import type { AgentPlanChange, PlanState } from "../types";
+import { crossWorldRelationshipBoundaryPrompt } from "./world-view";
 
 export interface PlanChangeReviewChatContextPromptInput {
   scene: "private" | "group";
@@ -14,6 +15,8 @@ export interface BuildPlanChangeReviewUserPromptInput {
 
 export const planChangeReviewSystemPrompt = `
 你是计划变更审查 agent。你的任务是判断候选计划变更是否应该被接受。
+
+${crossWorldRelationshipBoundaryPrompt}
 
 ## 审查规则
 - 只根据聊天上下文、候选计划变更，以及必要时工具查询到的状态来判断，不要脑补额外背景。

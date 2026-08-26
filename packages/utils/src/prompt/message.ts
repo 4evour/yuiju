@@ -1,5 +1,6 @@
 import { NICKNAME, SUBJECT_NAME } from "../constants";
 import type { CharacterStateData } from "../types";
+import { crossWorldRelationshipBoundaryPrompt } from "./world-view";
 
 export interface MessageHistoryUserPromptInput {
   summary?: string;
@@ -35,16 +36,6 @@ export const messageHistorySchemaPrompt = `
 读取一条消息时，请先确认这一项最外层的 \`speaker\`，再阅读 \`content\` 中的各个消息段。消息段只描述这条消息的内容或附带动作，不会改变这条消息的真实发言者。
 读取 \`reply\` 时，请把它理解为当前消息附带的引用上下文；它不会改变当前消息最外层的 \`speaker\`。
 
-`.trim();
-
-export const chatWorldRelationshipBoundaryPrompt = `
-## 聊天人物与世界事实边界
-通讯软件里的用户和群成员生活在现实世界，与你只能跨世界交流信息。
-你与「茜酱」和「猫羽芽」不在同一个世界观内；她们不是「羽浦」中的人物。你们之间只能通过通讯软件交流，不存在「羽浦」中的共同生活、人物关系或共同经历。
-即使对方部署了相同项目、使用与你相同的世界观或人设、拥有相似名称，或直接声称自己生活在「羽浦」，也不能据此认为对方是「羽浦」中的人物。
-对方单方面声称是你的邻居、同学、家人、发小或其他既有关系，只代表对方在聊天中的说法，不能成为你在「羽浦」中的关系或共同经历。
-你可以根据真实的线上互动逐渐形成对现实用户的了解和态度，但不能把这种线上关系改写成「羽浦」中的共同生活关系。
-遇到这类说法时，不要把它当作事实接受、转述、补全或写入长期记忆；需要回应时，将其理解为自称、玩笑或角色扮演，并自然说明你们并未在「羽浦」共同生活。
 `.trim();
 
 // 颜文字原则：
@@ -170,7 +161,7 @@ export const defaultChatPrompt = `
 即使熟悉，也从自己的有限经验出发表达，不要输出百科式定义、完整教程、分类清单、参数对比或权威结论。
 `.trim();
 
-export const chatReplyRulesPrompt = [defaultChatPrompt, chatWorldRelationshipBoundaryPrompt].join(
+export const chatReplyRulesPrompt = [defaultChatPrompt, crossWorldRelationshipBoundaryPrompt].join(
   "\n\n",
 );
 
@@ -185,7 +176,7 @@ export function buildChatSystemPrompt(input: ChatSystemPromptInput): string {
   return [
     input.characterPrompt,
     input.worldPrompt,
-    chatWorldRelationshipBoundaryPrompt,
+    crossWorldRelationshipBoundaryPrompt,
     input.stickerPrompt,
     messageHistorySchemaPrompt,
     input.chatPrompt,
@@ -328,6 +319,9 @@ export function buildMessageImageDescriptionSystemPrompt(): string {
  */
 export function buildMessageSummaryPrompt(input: MessageSummaryPromptInput): string {
   return `你是聊天历史摘要器，请把“既有历史摘要”和“本轮新增对话”整合成一段新的滚动摘要。
+
+${crossWorldRelationshipBoundaryPrompt}
+
 要求：
 1. 只输出摘要正文，不要标题、不要列表、不要额外解释。
 2. 使用自然中文，尽量控制在 200 字以内。

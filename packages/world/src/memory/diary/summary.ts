@@ -10,6 +10,7 @@ import { getPromptCustomizationOverrides } from "@yuiju/utils/db/operations/prom
 import { getLangfuseTelemetry } from "@yuiju/utils/llm/langfuse-telemetry";
 import { getFlashModel } from "@yuiju/utils/llm/models";
 import { getPromptCustomizationContent } from "@yuiju/utils/prompt/prompt-customization";
+import { crossWorldRelationshipBoundaryPrompt } from "@yuiju/utils/prompt/world-view";
 import { generateText } from "ai";
 import dayjs from "dayjs";
 import { logger } from "@/utils/logger";
@@ -32,6 +33,7 @@ async function writeDiarySummaryText(input: {
     },
     instructions: [
       getPromptCustomizationContent("character", promptOverrides),
+      crossWorldRelationshipBoundaryPrompt,
       buildDiarySummarySystemPrompt({
         period: input.period,
         periodStartDate: input.periodStartDate,
