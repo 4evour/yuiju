@@ -40,7 +40,8 @@ Web 页面体验 [https://yuiju-web.yixiaojiu.top](https://yuiju-web.yixiaojiu.t
 # Get Started
 
 - [开发上手指南](./docs/onboarding.md)
-- [项目部署文档](https://yuiju-site.yixiaojiu.top/deployment/)
+- [Docker 一键部署](https://yuiju-site.yixiaojiu.top/deployment/docker)
+- [PM2 部署文档](https://yuiju-site.yixiaojiu.top/deployment/pm2)
 - [开发文档索引](./docs/README.md)
 
 # Architecture
@@ -49,6 +50,6 @@ Web 页面体验 [https://yuiju-web.yixiaojiu.top](https://yuiju-web.yixiaojiu.t
 
 # 相关文档
 
-部署介绍请查看 [yuiju 文档站点](https://yuiju-site.yixiaojiu.top/deployment/)。仓库内开发文档统一从 [docs/README.md](./docs/README.md) 进入。
+普通用户部署请查看 [Docker 一键部署](https://yuiju-site.yixiaojiu.top/deployment/docker)，源码服务器部署请查看 [PM2 部署文档](https://yuiju-site.yixiaojiu.top/deployment/pm2)。仓库内开发文档统一从 [docs/README.md](./docs/README.md) 进入。
 
 各包 README 只描述对应包的当前职责、入口和注意事项；历史设计草稿不作为当前实现事实。

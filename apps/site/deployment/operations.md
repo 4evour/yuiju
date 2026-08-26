@@ -52,4 +52,4 @@ pnpm install
 pnpm run restart
 ```
 
-`yuiju-web` 的启动命令包含构建步骤，因此重启 Web 时会使用更新后的代码重新构建。如果构建失败，查看 `yuiju-web` 日志定位问题。
+`pnpm run restart` 会先构建 Web，再重启全部 PM2 进程。如果构建失败，现有进程不会进入重启步骤，应根据终端中的构建错误修正问题。

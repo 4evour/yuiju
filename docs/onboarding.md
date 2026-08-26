@@ -42,7 +42,14 @@
 cp yuiju.config.json.example yuiju.config.json
 ```
 
-2. 至少确认以下配置项：
+根目录示例默认适用于 Docker Compose。本地源码启动前需要修改：
+
+- `app.memoryDir`：当前机器上的绝对路径。
+- `database.mongoUri`：本机 MongoDB 使用 `mongodb://localhost:27017/yuiju?authSource=admin`。
+- `database.redisUrl`：本机 Redis 使用 `redis://localhost:6379`。
+- `message.onebot.endpoint`：本机 OneBot 使用 `ws://localhost:3001`。
+
+2. 继续确认以下配置项：
 
 - `app.publicDeployment`：是否启用对外展示模式
 - `database.mongoUri`：MongoDB 连接地址
@@ -114,7 +121,7 @@ pnpm run test:world
 
 - `yuiju-message`：消息服务（`pnpm run start:message`）
 - `yuiju-world`：世界引擎（`pnpm run start:world`）
-- `yuiju-web`：Web 服务（`pnpm run build:web && pnpm run start:web`）
+- `yuiju-web`：Web 服务（`pnpm run start:web`，由根目录 PM2 命令提前完成构建）
 - `yuiju-python`：Python 服务（`pnpm run start:python`）
 
 ### 4.2 常用部署命令
@@ -196,4 +203,4 @@ pnpm run type-check
 - 部署机器需要提前准备好项目根目录的 `yuiju.config.json`，至少补全 `database.mongoUri`、`database.redisUrl`、`llm.models` 等关键配置。
 - 当前根目录 `package.json` 已声明 `pm2` 开发依赖，推荐通过 `pnpm run start` / `pnpm run stop` / `pnpm run restart` 使用仓库脚本。
 - `ecosystem.config.js` 中当前配置了 `autorestart: false`，若需要异常自动拉起，需要按运维策略调整。
-- `yuiju-web` 在 PM2 中会先执行构建再启动；如果只想更新前端服务，建议先确认构建环境可用，再执行 `pm2 restart yuiju-web`。
+- 根目录的 `pnpm run start` 和 `pnpm run restart` 会先构建 Web，再调用 PM2。直接执行 `pm2 restart yuiju-web` 不会重新构建，需要先运行 `pnpm run build:web`。

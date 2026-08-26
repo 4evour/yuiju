@@ -9,6 +9,7 @@ node_modules
 logs
 packages/message/logs
 packages/world/logs
+packages/source/aigc/pixel/generate
 packages/source/dataset/opensource
 Dockerfile*
 docker-compose*.yml

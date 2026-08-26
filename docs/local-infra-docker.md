@@ -44,8 +44,10 @@ cp yuiju.config.json.example yuiju.config.json
 
 确认以下配置项：
 
+- `app.memoryDir`: 当前机器上的绝对路径
 - `database.mongoUri`: `mongodb://localhost:27017/yuiju?authSource=admin`
 - `database.redisUrl`: `redis://localhost:6379`
+- `message.onebot.endpoint`: OneBot 在本机运行时使用 `ws://localhost:3001`
 
 ## 3. 启动项目服务（开发）
 

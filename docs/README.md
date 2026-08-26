@@ -6,7 +6,6 @@
 
 - [新人上手指南](./onboarding.md)：本地开发、配置和启动流程。
 - [本地基础依赖 Docker](./local-infra-docker.md)：只启动 MongoDB / Redis。
-- [Docker 一键部署](./docker-one-click.md)：用单镜像运行 `world + web + message`。
 
 ## 架构与边界
 

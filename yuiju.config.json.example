@@ -1,10 +1,10 @@
 {
   "app": {
-    "memoryDir": "/absolute/path/to/yuiju/memory"
+    "memoryDir": "/data/memory"
   },
   "database": {
-    "mongoUri": "mongodb://localhost:27017/yuiju?authSource=admin",
-    "redisUrl": "redis://localhost:6379"
+    "mongoUri": "mongodb://mongodb:27017/yuiju?authSource=admin",
+    "redisUrl": "redis://redis:6379"
   },
   "llm": {
     "models": {
@@ -43,7 +43,7 @@
     "web": {
       "enabled": false,
       "ownerId": "web-user",
-      "ownerName": "主人"
+      "ownerName": "翊小久"
     },
     "proactive": {
       "onebotGroupTargetId": 838986741,
@@ -51,7 +51,7 @@
     },
     "onebot": {
       "selfId": "xxx",
-      "endpoint": "ws://localhost:3001",
+      "endpoint": "ws://host.docker.internal:3001",
       "token": "xxx",
       "whiteList": [1918418506],
       "ownerList": [1918418506],

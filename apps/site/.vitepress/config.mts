@@ -23,6 +23,7 @@ export default defineConfig({
           text: "项目部署",
           items: [
             { text: "部署概览", link: "/deployment/" },
+            { text: "Docker 一键部署", link: "/deployment/docker" },
             { text: "准备运行环境", link: "/deployment/preparation" },
             { text: "项目配置", link: "/deployment/configuration" },
             { text: "使用 PM2 部署", link: "/deployment/pm2" },

@@ -2,23 +2,7 @@ name: yuiju
 
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        NODE_BASE_IMAGE: ${NODE_BASE_IMAGE:-node:22-bookworm-slim}
-        YUIJU_PUBLIC_DEPLOYMENT: ${YUIJU_PUBLIC_DEPLOYMENT:-0}
-        YUIJU_MEMORY_DIR: ${YUIJU_MEMORY_DIR:-~/.local/share/yuiju/memory}
-        YUIJU_MONGO_URI: ${YUIJU_MONGO_URI:-mongodb://mongodb:27017/yuiju?authSource=admin}
-        YUIJU_REDIS_URL: ${YUIJU_REDIS_URL:-redis://redis:6379}
-        YUIJU_NAPCAT_HOST: ${YUIJU_NAPCAT_HOST:-host.docker.internal}
-        YUIJU_NAPCAT_PORT: ${YUIJU_NAPCAT_PORT:-3001}
-        YUIJU_DEEPSEEK_API_KEY: ${YUIJU_DEEPSEEK_API_KEY:-xxx}
-        YUIJU_SILICONFLOW_API_KEY: ${YUIJU_SILICONFLOW_API_KEY:-xxx}
-        YUIJU_MOONSHOT_API_KEY: ${YUIJU_MOONSHOT_API_KEY:-xxx}
-        YUIJU_NAPCAT_ACCESS_TOKEN: ${YUIJU_NAPCAT_ACCESS_TOKEN:-xxx}
-    image: yuiju:latest
-    container_name: yuiju-app
+    image: ghcr.io/yixiaojiu/yuiju:${YUIJU_VERSION:-latest}
     restart: unless-stopped
     depends_on:
       mongodb:
@@ -29,27 +13,16 @@ services:
       - "3010:3010"
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    environment:
-      YUIJU_PUBLIC_DEPLOYMENT: ${YUIJU_PUBLIC_DEPLOYMENT:-0}
-      YUIJU_MEMORY_DIR: ${YUIJU_MEMORY_DIR:-~/.local/share/yuiju/memory}
-      YUIJU_MONGO_URI: ${YUIJU_MONGO_URI:-mongodb://mongodb:27017/yuiju?authSource=admin}
-      YUIJU_REDIS_URL: ${YUIJU_REDIS_URL:-redis://redis:6379}
-      YUIJU_NAPCAT_HOST: ${YUIJU_NAPCAT_HOST:-host.docker.internal}
-      YUIJU_NAPCAT_PORT: ${YUIJU_NAPCAT_PORT:-3001}
-      YUIJU_DEEPSEEK_API_KEY: ${YUIJU_DEEPSEEK_API_KEY:-xxx}
-      YUIJU_SILICONFLOW_API_KEY: ${YUIJU_SILICONFLOW_API_KEY:-xxx}
-      YUIJU_MOONSHOT_API_KEY: ${YUIJU_MOONSHOT_API_KEY:-xxx}
-      YUIJU_NAPCAT_ACCESS_TOKEN: ${YUIJU_NAPCAT_ACCESS_TOKEN:-xxx}
+    env_file:
+      - path: .env
+        required: false
     volumes:
       - ./yuiju.config.json:/app/yuiju.config.json:ro
-      - ./packages/source/picture:/app/packages/source/picture:ro
+      - ./data/memory:/data/memory
 
   mongodb:
-    image: mongo:7
-    container_name: yuiju-mongodb
+    image: mongo:8.3.8
     restart: unless-stopped
-    ports:
-      - "27017:27017"
     volumes:
       - yuiju-mongodb-data:/data/db
     healthcheck:
@@ -67,11 +40,8 @@ services:
       retries: 10
 
   redis:
-    image: redis:7-alpine
-    container_name: yuiju-redis
+    image: redis:8.10.0-alpine
     restart: unless-stopped
-    ports:
-      - "6379:6379"
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
       - yuiju-redis-data:/data

@@ -10,10 +10,9 @@
 pnpm install --frozen-lockfile
 pnpm run lint
 pnpm run type-check
-pnpm run build:web
 ```
 
-`build:web` 会在构建时读取 `yuiju.config.json`。如果配置无法通过运行时 schema 校验，构建会失败，需要根据配置错误修正对应字段。
+后续的 `pnpm run start` 会构建 Web，并在构建时读取 `yuiju.config.json`。如果配置无法通过运行时 schema 校验，启动会在进入 PM2 之前失败，需要根据配置错误修正对应字段。
 
 ## 启动全部进程
 
@@ -23,13 +22,13 @@ pnpm run build:web
 pnpm run start
 ```
 
-该命令读取 `ecosystem.config.js`，启动以下进程：
+该命令先构建 Web，再读取 `ecosystem.config.js` 启动以下进程：
 
 - `yuiju-message`
 - `yuiju-world`
 - `yuiju-web`
 
-`yuiju-web` 的启动脚本会再次执行 Next.js 构建，然后监听 `3010` 端口。PM2 显示进程在线前，需要等待这次构建完成。
+`yuiju-web` 直接启动已经生成的 Next.js 构建产物，并监听 `3010` 端口。构建失败时 PM2 不会启动或重启进程。
 
 ## 检查进程状态
 

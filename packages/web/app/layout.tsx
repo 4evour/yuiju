@@ -11,6 +11,8 @@ export const metadata: Metadata = {
   description: "AI 驱动的角色自主生活模拟可视化界面",
 };
 
+export const dynamic = "force-dynamic";
+
 export default function RootLayout({
   children,
 }: Readonly<{

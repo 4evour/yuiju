@@ -101,6 +101,13 @@ docker run -d \
 cp yuiju.config.json.example yuiju.config.json
 ```
 
+根目录示例使用 Docker 容器地址。通过 PM2 从源码运行时，需要在 `yuiju.config.json` 中改为宿主机地址：
+
+- `app.memoryDir`：宿主机上的绝对路径。
+- `database.mongoUri`：本机 MongoDB 使用 `mongodb://127.0.0.1:27017/yuiju`。
+- `database.redisUrl`：本机 Redis 使用 `redis://127.0.0.1:6379`。
+- `message.onebot.endpoint`：OneBot 在本机运行时使用 `ws://127.0.0.1:3001`。
+
 `yuiju.config.json` 包含数据库凭据、LLM API Key 和消息平台密钥，通常不应提交到 Git。接下来按照[项目配置](./configuration)逐项填写。
 
 ## 准备本地目录
