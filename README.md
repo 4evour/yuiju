@@ -1,55 +1,94 @@
-# yuiju
-
 <p align="center">
   <img src="packages/source/picture/repo_avatar.webp" alt="ゆいじゅ（悠酱）" width="150" />
 </p>
 
-幻想打造一个 ゆいじゅ 生活的世界。
+<h1 align="center">Yuiju</h1>
 
-# 项目介绍
+<p align="center">
+  <strong>让角色拥有自己的生活</strong>
+</p>
 
-yuiju 是一个 LLM 驱动的虚拟角色自主生活模拟项目。
+<p align="center">
+  一个由 LLM 驱动、在持续世界中自主生活的虚拟角色项目。
+</p>
 
-它不是一个以问答和任务执行为中心的 AI 助手，而是尝试构建一个“有自己生活”的 AI 角色：角色会在持续推进的虚拟世界中感知时间、天气、地点和自身状态，自主决策并执行行为，形成可追溯的生活轨迹、记忆、日记和计划。
+<p align="center">
+  <a href="https://yuiju-site.yixiaojiu.top/">项目文档</a>
+  ·
+  <a href="https://yuiju-web.yixiaojiu.top">在线体验</a>
+  ·
+  <a href="https://yuiju-site.yixiaojiu.top/deployment/docker">开始部署</a>
+  ·
+  <a href="https://www.bilibili.com/video/BV1fRR2BYEb1">演示视频</a>
+</p>
 
-用户可以通过 QQ、飞书等消息入口与角色交流，但对话不是项目的全部。聊天只是用户观察和介入角色生活的窗口；角色的回复、近况和主动分享，都来自她在世界中真实发生过的经历，而不是临时生成的一段人设文本。
+<p align="center">
+  <a href="./LICENSE">
+    <img src="https://img.shields.io/badge/license-AGPL--3.0--or--later-blue.svg?style=flat-square" alt="AGPL-3.0-or-later License" />
+  </a>
+</p>
 
-项目的目标是探索一种更接近“虚拟生命”的 AI 伙伴形态：她不是随叫随到的工具，而是在自己的世界里持续生活，并偶尔与你相遇。
+## Yuiju 是什么
 
-> philosophy: 不做 AI 智能助手，做有自己生活的“人”
+Yuiju 不是一个以问答和任务执行为中心的 AI 助手。它尝试构建一个有自己生活的虚拟角色：角色会感知时间、天气、地点和自身状态，自主选择并执行行为，逐渐形成连续的经历、记忆、日记和计划。
 
-飞书文档🔗 [yuiju 项目介绍](https://my.feishu.cn/docx/EPmhd2SwmoPSjoxnmAGc9T7TnSb)
+用户可以通过 QQ、飞书和 Web 观察或介入角色的生活。聊天只是彼此相遇的窗口；角色的近况、回复和主动分享，来自她在世界里真正经历过的事情。
 
-[Bilibili 视频](https://www.bilibili.com/video/BV1fRR2BYEb1)
-
-Web 页面体验 [https://yuiju-web.yixiaojiu.top](https://yuiju-web.yixiaojiu.top)
+> 不做 AI 智能助手，做有自己生活的“人”。
 
 <p align="center">
   <img src="packages/source/picture/无辜-这会是个好项目吗.webp" alt="ゆいじゅ（悠酱）" width="250" />
 </p>
 
-## 特性
+## 核心能力
 
-- **通过QQ/飞书聊天：** 支持私聊与群聊
-- **像游戏一样构建角色生活：** 项目用地点、时间、天气、状态和事件构建虚拟世界，让角色在其中吃饭、上学、散步、打工、做饭和休息；角色的近况与回复来自自己的生活经历，而不是每次被问起时临时现编。
-- **动态天气系统：** 世界会有天气变化，天气会成为角色生活和表达的一部分，让日常不只是固定脚本。
-- **日记与回忆：** 角色可以根据自己的经历整理日记，让“记得今天”变成具体内容。
-- **计划与目标：** 角色可以拥有长期和短期计划，不只是被动回应用户的当下输入。
-- **自然主动分享：** 当生活里发生值得说的事时，角色可以在合适的时候主动分享，而不是永远等用户开口。
+- **持续运行的世界：** 时间、天气、地点和环境状态会持续变化，不依赖用户发消息才开始运转。
+- **自主生活的角色：** 角色会根据自身状态和当前环境选择行为，在世界里上学、散步、打工、做饭或休息。
+- **可追溯的经历：** 行为会留下记录，并继续参与后续的记忆、日记和消息生成。
+- **长期记忆与计划：** 角色能够整理生活经历，形成记忆、日记以及长期和短期计划。
+- **自然的外部交流：** 支持 QQ、飞书和 Web，覆盖私聊、群聊以及合适时机的主动分享。
+- **可观察的运行状态：** Web 界面用于查看角色状态、行为轨迹、记忆和日记。
 
-# Get Started
+## 快速开始
 
-- [开发上手指南](./docs/onboarding.md)
-- [Docker 一键部署](https://yuiju-site.yixiaojiu.top/deployment/docker)
-- [PM2 部署文档](https://yuiju-site.yixiaojiu.top/deployment/pm2)
-- [开发文档索引](./docs/README.md)
+推荐使用 Docker Compose 部署完整服务：
 
-# Architecture
+```bash
+git clone https://github.com/yixiaojiu/yuiju.git
+cd yuiju
+cp yuiju.config.json.example yuiju.config.json
+```
 
-![](./docs/architecture.png)
+打开 `yuiju.config.json`，填写 LLM、OneBot 或飞书等实际配置，然后启动：
 
-# 相关文档
+```bash
+docker compose up -d
+```
 
-普通用户部署请查看 [Docker 一键部署](https://yuiju-site.yixiaojiu.top/deployment/docker)，源码服务器部署请查看 [PM2 部署文档](https://yuiju-site.yixiaojiu.top/deployment/pm2)。仓库内开发文档统一从 [docs/README.md](./docs/README.md) 进入。
+启动完成后访问 `http://localhost:3010`。
 
-各包 README 只描述对应包的当前职责、入口和注意事项；历史设计草稿不作为当前实现事实。
+完整步骤、配置说明和更新方式请阅读 [Docker 一键部署](https://yuiju-site.yixiaojiu.top/deployment/docker)。如果更习惯源码服务器部署，也可以使用 [PM2 部署](https://yuiju-site.yixiaojiu.top/deployment/pm2)。
+
+## 运行架构
+
+World 持续推进环境与角色行为，Redis 保存实时状态，MongoDB 保存行为、消息、记忆和日记等可追溯记录。Message 接收外部消息并组织角色已有的状态与经历，最终通过 QQ、飞书等平台表达出来；Web 则提供观察世界运行情况的界面。
+
+![Yuiju 运行架构](./apps/site/public/development/images/architecture.png)
+
+更详细的模块职责和执行流程见 [技术架构](https://yuiju-site.yixiaojiu.top/development/architecture)。
+
+## 文档
+
+| 我想要……                      | 从这里开始                                                            |
+| ----------------------------- | --------------------------------------------------------------------- |
+| 快速运行自己的 Yuiju          | [Docker 一键部署](https://yuiju-site.yixiaojiu.top/deployment/docker) |
+| 在服务器上通过源码运行        | [PM2 部署](https://yuiju-site.yixiaojiu.top/deployment/pm2)           |
+| 了解全部配置项                | [项目配置](https://yuiju-site.yixiaojiu.top/deployment/configuration) |
+| 阅读代码或参与开发            | [开发指南](https://yuiju-site.yixiaojiu.top/development/)             |
+| 理解 World、Message 和 Memory | [技术架构](https://yuiju-site.yixiaojiu.top/development/architecture) |
+
+## 更多内容
+
+- [Yuiju 项目介绍](https://my.feishu.cn/docx/EPmhd2SwmoPSjoxnmAGc9T7TnSb)
+- [Bilibili 演示视频](https://www.bilibili.com/video/BV1fRR2BYEb1)
+- [在线体验](https://yuiju-web.yixiaojiu.top)

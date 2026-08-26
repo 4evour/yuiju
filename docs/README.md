@@ -1,19 +1,8 @@
-# 开发文档索引
+# 仓库内部资料
 
-本目录只维护当前仍可作为开发依据的文档。历史方案、调研笔记和未落地设计需要放到 `docs/archive/`，不能直接作为当前实现事实引用。
+面向开发者的使用和架构文档统一发布在 [Yuiju 文档站](https://yuiju-site.yixiaojiu.top/development/)。本目录只保留 AI Coding 规则、可编辑的图稿源文件和历史资料。
 
-## 开始开发
-
-- [新人上手指南](./onboarding.md)：本地开发、配置和启动流程。
-- [本地基础依赖 Docker](./local-infra-docker.md)：只启动 MongoDB / Redis。
-
-## 架构与边界
-
-- [技术实现介绍](./introduction/tech-introduction/index.md)：项目整体结构和核心流程。
-- [LLM 协定](./llm-contract.md)：LLM 决策、Prompt、schema 和消息生成边界。
-- [第三方依赖](./third-party-dependencies.md)：外部服务、运行时依赖和配置来源。
-
-## 代码规则
+## AI Coding 规则
 
 - [代码规范](./rules/implementation-style.md)
 - [重构风格规则](./rules/refactor-style.md)
@@ -22,4 +11,6 @@
 
 ## 历史资料
 
-[历史资料归档](./archive/README.md) 中的内容只代表当时的草稿、调研或阶段性设计。引用这些内容前，必须先对照当前代码和活跃文档确认是否仍然成立。
+`archive/` 中的内容只代表当时的草稿、调研或阶段性设计，不能作为当前实现依据。
+
+`architecture.excalidraw` 是文档站架构图的可编辑源文件。
