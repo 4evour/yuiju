@@ -9,34 +9,28 @@ import { reviewPlanChanges } from "./review-plan-changes";
 import { agentPlanChangeToolSchema } from "./schema";
 
 export interface CreateChatPlanChangesProposalToolInput {
-  scene: "private" | "group";
   summary?: string;
   historyJson: string;
 }
 
 async function reviewAndApplyChatPlanChanges(input: {
   planChanges: AgentPlanChange[];
-  scene: "private" | "group";
   summary?: string;
   historyJson: string;
 }) {
-  const sceneText = input.scene === "private" ? "私聊" : "群聊";
-  const logPrefix = input.scene === "private" ? "[message.plan.private]" : "[message.plan.group]";
-
-  logger.info(`${logPrefix} ${sceneText}计划变更提案`, {
+  logger.info("[message.plan] 聊天计划变更提案", {
     planChanges: input.planChanges,
   });
   const reviewResult = await reviewPlanChanges({
     planChanges: input.planChanges,
     chatContext: {
-      scene: input.scene,
       summary: input.summary,
       historyJson: input.historyJson,
     },
   });
 
   if (!reviewResult.approved) {
-    logger.info(`${logPrefix} ${sceneText}计划变更提案未通过审查`, {
+    logger.info("[message.plan] 聊天计划变更提案未通过审查", {
       reason: reviewResult.reason,
       issues: reviewResult.issues,
       planChanges: input.planChanges,
@@ -54,14 +48,14 @@ async function reviewAndApplyChatPlanChanges(input: {
     happenedAt: new Date(),
     isDev: isDev(),
     source: "chat",
-    changeReasonPrefix: `本次${sceneText}`,
+    changeReasonPrefix: "本次聊天",
   });
 
   for (const planEpisode of planEpisodes) {
     await saveMemoryEpisode(planEpisode);
   }
 
-  logger.info(`${logPrefix} ${sceneText}计划变更已应用`, {
+  logger.info("[message.plan] 聊天计划变更已应用", {
     changes: appliedPlanChanges,
   });
 }
@@ -75,14 +69,10 @@ export function createChatPlanChangesProposalTool(input: CreateChatPlanChangesPr
     execute: async ({ planChanges }) => {
       reviewAndApplyChatPlanChanges({
         planChanges,
-        scene: input.scene,
         summary: input.summary,
         historyJson: input.historyJson,
       }).catch((error) => {
-        const logPrefix =
-          input.scene === "private" ? "[message.plan.private]" : "[message.plan.group]";
-
-        logger.error(`${logPrefix} 处理计划变更提案失败`, {
+        logger.error("[message.plan] 处理聊天计划变更提案失败", {
           planChanges,
           error,
         });

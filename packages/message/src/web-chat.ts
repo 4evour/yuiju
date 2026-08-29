@@ -100,10 +100,10 @@ export async function chatThroughWebChannel(input: WebChatMessageInput): Promise
     return projectStoredWebChatResult(beginResult.message);
   }
 
-  let result: Awaited<ReturnType<typeof llmManager.chatWithLLM>>;
+  let result: Awaited<ReturnType<typeof llmManager.chat>>;
   try {
     await llmManager.recordPrivateMessage(sourceMessage);
-    result = await llmManager.chatWithLLM(sourceMessage);
+    result = await llmManager.chat(sourceMessage);
   } catch (error) {
     await completeWebChatMessage(sourceMessage.sessionId, input.messageId, { status: "failed" });
     throw error;
@@ -119,7 +119,7 @@ export async function chatThroughWebChannel(input: WebChatMessageInput): Promise
     await completeWebChatMessage(sourceMessage.sessionId, input.messageId, { status: "failed" });
     return { status: "failed" };
   }
-  if (!llmManager.isLatestPrivateChatRequest(sourceMessage.sessionId, result.requestId)) {
+  if (!llmManager.isLatestChatRequest(sourceMessage.sessionId, result.requestId)) {
     await completeWebChatMessage(sourceMessage.sessionId, input.messageId, {
       status: "superseded",
     });

@@ -513,20 +513,22 @@ export class ChatSessionManager<TMessage extends StoredSatoriChatMessage> {
     messages: TMessage[];
   }): Promise<string | null> {
     const transcript = JSON.stringify(this.buildHistoryItems(input.messages), null, 2);
+    const summaryPrompt = buildMessageSummaryPrompt({
+      sessionLabel: input.sessionLabel,
+      previousSummary: input.previousSummary,
+      transcript,
+    });
 
     const result = await generateText({
       model: getFlashModel(),
       telemetry: getLangfuseTelemetry(),
+      instructions: summaryPrompt.instructions,
       providerOptions: {
         flash: {
           enable_thinking: false,
         },
       },
-      prompt: buildMessageSummaryPrompt({
-        sessionLabel: input.sessionLabel,
-        previousSummary: input.previousSummary,
-        transcript,
-      }),
+      prompt: summaryPrompt.prompt,
     });
 
     const summaryText = result.text.trim();

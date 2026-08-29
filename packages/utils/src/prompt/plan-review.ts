@@ -2,7 +2,6 @@ import type { AgentPlanChange, PlanState } from "../types";
 import { crossWorldRelationshipBoundaryPrompt } from "./world-view";
 
 export interface PlanChangeReviewChatContextPromptInput {
-  scene: "private" | "group";
   summary?: string;
   historyJson: string;
 }
@@ -45,10 +44,7 @@ function formatChatContext(chatContext?: PlanChangeReviewChatContextPromptInput)
     return "（无）";
   }
 
-  const sceneText = chatContext.scene === "private" ? "私聊" : "群聊";
-
-  return `场景：${sceneText}
-会话摘要：${chatContext.summary || "（无）"}
+  return `会话摘要：${chatContext.summary || "（无）"}
 最近聊天记录：
 \`\`\`json
 ${chatContext.historyJson}

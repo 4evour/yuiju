@@ -76,8 +76,8 @@ export async function replyToStoredGroupMessage(input: {
   }
 
   try {
-    const groupChatResult = await llmManager.chatInGroup(storedMessage);
-    if (groupChatResult.status === "cancelled") {
+    const chatResult = await llmManager.chat(storedMessage);
+    if (chatResult.status === "cancelled") {
       logger.info("[message.reply.group] 群聊回复生成已取消，不发送消息", {
         sessionId: storedMessage.sessionId,
         groupName: storedMessage.sessionLabel,
@@ -85,30 +85,30 @@ export async function replyToStoredGroupMessage(input: {
       });
       return;
     }
-    if (groupChatResult.status === "failed") {
+    if (chatResult.status === "failed") {
       return;
     }
 
-    if (!llmManager.isLatestGroupChatRequest(storedMessage.sessionId, groupChatResult.requestId)) {
+    if (!llmManager.isLatestChatRequest(storedMessage.sessionId, chatResult.requestId)) {
       logger.info("[message.reply.group] 群聊回复结果已过期，不发送消息", {
         sessionId: storedMessage.sessionId,
         groupName: storedMessage.sessionLabel,
-        requestId: groupChatResult.requestId,
+        requestId: chatResult.requestId,
       });
       return;
     }
 
-    if (!groupChatResult.shouldReply) {
+    if (!chatResult.shouldReply) {
       logger.info("[message.reply.group] 不回复", {
         sessionId: storedMessage.sessionId,
         groupName: storedMessage.sessionLabel,
-        requestId: groupChatResult.requestId,
-        reason: groupChatResult.noReplyReason || "未提供原因",
+        requestId: chatResult.requestId,
+        reason: chatResult.noReplyReason || "未提供原因",
       });
       return;
     }
 
-    const reply = groupChatResult.reply.trim();
+    const reply = chatResult.reply.trim();
     if (!reply) {
       return;
     }

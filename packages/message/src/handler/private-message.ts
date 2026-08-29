@@ -91,7 +91,7 @@ export async function replyToStoredPrivateMessage(input: {
   const sessionLabel = getProtocolMessageSenderName(storedMessage);
 
   try {
-    const chatResult = await llmManager.chatWithLLM(storedMessage);
+    const chatResult = await llmManager.chat(storedMessage);
     if (chatResult.status === "cancelled") {
       logger.info("[message.reply.private] 私聊回复生成已取消，不发送消息", {
         sessionId: storedMessage.sessionId,
@@ -104,7 +104,7 @@ export async function replyToStoredPrivateMessage(input: {
       return;
     }
 
-    if (!llmManager.isLatestPrivateChatRequest(storedMessage.sessionId, chatResult.requestId)) {
+    if (!llmManager.isLatestChatRequest(storedMessage.sessionId, chatResult.requestId)) {
       logger.info("[message.reply.private] 私聊回复结果已过期，不发送消息", {
         sessionId: storedMessage.sessionId,
         sessionLabel,

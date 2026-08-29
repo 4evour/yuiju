@@ -20,18 +20,11 @@ import dayjs from "dayjs";
 import { logger } from "@/utils/logger";
 
 const SLEEP_DIARY_ROLLOVER_HOUR = 6;
-const CONVERSATION_SUMMARY_CHAR_BUDGET = 20_000;
 
 export interface GenerateDailyMemoriesForDateInput {
   diaryDate: Date;
   subject?: string;
   isDev: boolean;
-}
-
-function estimateDiaryMaterialChars(materials: DiarySummaryMaterial[]): number {
-  return materials.reduce((total, material) => {
-    return total + material.type.length + material.happenedAt.length + material.content.length;
-  }, 0);
 }
 
 async function writeDiaryText(input: {
@@ -44,7 +37,7 @@ async function writeDiaryText(input: {
     telemetry: getLangfuseTelemetry(),
     providerOptions: {
       flash: {
-        enable_thinking: false,
+        enable_thinking: true,
       },
     },
     instructions: [
@@ -53,13 +46,22 @@ async function writeDiaryText(input: {
       crossWorldRelationshipBoundaryPrompt,
       buildDiarySystemPrompt({ diaryDate: input.diaryDate }),
     ].join("\n\n"),
-    prompt: JSON.stringify(
-      input.materials.map((item) => ({
-        type: item.type,
-        happenedAt: item.happenedAt,
-        content: item.content,
-      })),
-    ),
+    prompt: JSON.stringify({
+      worldFacts: input.materials
+        .filter((item) => item.type !== "conversation" && item.type !== "conversation_summary")
+        .map((item) => ({
+          type: item.type,
+          happenedAt: item.happenedAt,
+          content: item.content,
+        })),
+      onlineConversations: input.materials
+        .filter((item) => item.type === "conversation" || item.type === "conversation_summary")
+        .map((item) => ({
+          type: item.type,
+          happenedAt: item.happenedAt,
+          content: item.content,
+        })),
+    }),
   });
 
   return result.text.trim();
@@ -85,7 +87,7 @@ async function loadEpisodesForDate(input: {
  * 说明：
  * - Episode 写入时已经把关键信息放进 summaryText；
  * - 非聊天事件直接保留摘要；
- * - 聊天事件不再展开原始消息，只在聊天摘要总量过大时整体压缩一次。
+ * - 聊天事件不再展开原始消息，统一压缩成带有线上发言归因的日记素材。
  */
 export async function buildDiaryMaterials(
   episodes: IMemoryEpisode[],
@@ -111,8 +113,8 @@ export async function buildDiaryMaterials(
     });
 
   const finalConversationMaterials =
-    estimateDiaryMaterialChars(conversationMaterials) <= CONVERSATION_SUMMARY_CHAR_BUDGET
-      ? conversationMaterials
+    conversationMaterials.length === 0
+      ? []
       : [await summarizeConversationDiaryMaterials(conversationMaterials)];
 
   return [...nonConversationMaterials, ...finalConversationMaterials].sort((left, right) => {
