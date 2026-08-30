@@ -268,11 +268,6 @@ export class LLMManager {
       const toolNames = Object.keys(tools) as Array<keyof typeof tools>;
       const result = await generateStructuredOutput({
         model: getChatModel(),
-        providerOptions: {
-          chat: {
-            enable_thinking: true,
-          },
-        },
         instructions: systemPrompt,
         messages: [
           {

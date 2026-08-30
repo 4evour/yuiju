@@ -64,11 +64,6 @@ export async function chooseActionAgent(
     try {
       const { output } = await generateStructuredOutput({
         model: getStrongModel(),
-        providerOptions: {
-          strong: {
-            enable_thinking: true,
-          },
-        },
         tools: {
           todayEventSearch: todayEventSearchTool,
           diarySearch: diarySearchTool,

@@ -228,13 +228,9 @@ export async function runCloudTravel(location: string | null) {
     : await findRandomJapanStreetView();
   const { text } = await generateText({
     model: getVisionModel(),
+    reasoning: "none",
     telemetry: getLangfuseTelemetry(),
     instructions: [defaultCharacterPrompt, cloudTravelSystemPrompt].join("\n\n"),
-    providerOptions: {
-      vision: {
-        enable_thinking: false,
-      },
-    },
     maxOutputTokens: 400,
     messages: [
       {

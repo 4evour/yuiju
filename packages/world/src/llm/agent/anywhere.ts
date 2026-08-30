@@ -36,11 +36,7 @@ export async function chooseFoodAgent(
     try {
       const { output } = await generateStructuredOutput({
         model: getFlashModel(),
-        providerOptions: {
-          flash: {
-            enable_thinking: false,
-          },
-        },
+        reasoning: "none",
         output: Output.object({
           schema: z.object({
             selectedList: z

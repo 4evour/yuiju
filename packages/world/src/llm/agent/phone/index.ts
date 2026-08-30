@@ -12,12 +12,8 @@ export type PhoneApplication = z.infer<typeof phoneApplicationSchema>;
 export async function generatePhoneUsePlanFromReason(actionReason: string) {
   const { output } = await generateStructuredOutput({
     model: getFlashModel(),
+    reasoning: "none",
     instructions: buildPhoneUseSystemPrompt(),
-    providerOptions: {
-      flash: {
-        enable_thinking: false,
-      },
-    },
     prompt: `
 ## Action reason
 ${actionReason}

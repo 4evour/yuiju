@@ -41,11 +41,7 @@ export async function planHomeCookingAgent(
     try {
       const { output } = await generateStructuredOutput({
         model: getFlashModel(),
-        providerOptions: {
-          flash: {
-            enable_thinking: false,
-          },
-        },
+        reasoning: "none",
         output: Output.object({
           schema: z.object({
             ingredients: z

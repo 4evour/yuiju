@@ -36,11 +36,7 @@ export async function chooseShrinePrayerAgent(
     try {
       const { output } = await generateStructuredOutput({
         model: getFlashModel(),
-        providerOptions: {
-          flash: {
-            enable_thinking: false,
-          },
-        },
+        reasoning: "none",
         output: Output.object({
           schema: z.object({
             shouldOffer: z.boolean().describe("这次是否投币参拜"),

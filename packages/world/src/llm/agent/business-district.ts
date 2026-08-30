@@ -47,11 +47,7 @@ export async function chooseShopProductAgent(
     try {
       const { output } = await generateStructuredOutput({
         model: getFlashModel(),
-        providerOptions: {
-          flash: {
-            enable_thinking: false,
-          },
-        },
+        reasoning: "none",
         output: Output.object({
           schema: z.object({
             value: z.enum(productList.map((item) => item.value)).describe("选择的商品名称"),
@@ -102,11 +98,7 @@ export async function chooseCafeCoffeeAgent(
     try {
       const { output } = await generateStructuredOutput({
         model: getFlashModel(),
-        providerOptions: {
-          flash: {
-            enable_thinking: false,
-          },
-        },
+        reasoning: "none",
         output: Output.object({
           schema: z.object({
             value: z.enum(coffeeList.map((item) => item.value)).describe("选择的咖啡名称"),
@@ -157,11 +149,7 @@ export async function chooseSupermarketProductAgent(
     try {
       const { output } = await generateStructuredOutput({
         model: getFlashModel(),
-        providerOptions: {
-          flash: {
-            enable_thinking: false,
-          },
-        },
+        reasoning: "none",
         output: Output.object({
           schema: z.object({
             selectedList: z
@@ -218,11 +206,7 @@ export async function chooseSellableItemAgent(
     try {
       const { output } = await generateStructuredOutput({
         model: getFlashModel(),
-        providerOptions: {
-          flash: {
-            enable_thinking: false,
-          },
-        },
+        reasoning: "none",
         output: Output.object({
           schema: z.object({
             selectedList: z
@@ -279,11 +263,7 @@ export async function chooseDinerMealAgent(
     try {
       const { output } = await generateStructuredOutput({
         model: getFlashModel(),
-        providerOptions: {
-          flash: {
-            enable_thinking: false,
-          },
-        },
+        reasoning: "none",
         output: Output.object({
           schema: z.object({
             value: z.enum(mealList.map((item) => item.value)).describe("选择的餐品名称"),
