@@ -2,7 +2,7 @@ import type { Session } from "@satorijs/core";
 import { NICKNAME, SUBJECT_NAME } from "@yuiju/utils/constants/character";
 import type { StoredSatoriGroupMessage } from "@/utils/message/types";
 
-export const ATTENTION_WINDOW_MS = 120 * 1000;
+export const ATTENTION_WINDOW_MS = 15 * 1000;
 export const NECESSITY_THRESHOLD = 80;
 export const BACKOFF_DELAYS_MS = [15, 30, 60, 120, 240, 300].map((seconds) => seconds * 1000);
 

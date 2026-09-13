@@ -7,8 +7,7 @@ export type PlannerReplyerChatAction =
       type: "reply";
       targetMessageId: string;
       setQuote: boolean;
-      intention: string;
-      expressionDirection: string;
+      replyContext: string;
       stickerIntent?: string;
     }
   | { type: "sendSticker" }

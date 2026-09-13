@@ -8,6 +8,7 @@ import {
 import { getLangfuseTelemetry } from "@yuiju/utils/llm/langfuse-telemetry";
 import { getFlashModel } from "@yuiju/utils/llm/models";
 import {
+  CHAT_SESSION_RECOVERY_MAX_IDLE_MS,
   deleteChatSessionConversationBackups,
   readChatSessionConversationBackups,
   saveChatSessionConversationBackup,
@@ -34,12 +35,6 @@ import type {
   RollingSummaryChunkState,
   SessionHistoryContext,
 } from "./types";
-
-/**
- * 服务启动后，恢复对话的最长间隔时间。
- * 5min
- */
-const CONVERSATION_RECOVERY_MAX_IDLE_MS = 5 * 60 * 1000;
 
 /**
  * 群聊/私聊共享的聊天会话状态管理。
@@ -203,7 +198,7 @@ export class ChatSessionManager<TMessage extends StoredSatoriChatMessage> {
     let restoredSessionCount = 0;
 
     for (const [sessionId, backup] of Object.entries(backups)) {
-      if (Date.now() - backup.updatedAt > CONVERSATION_RECOVERY_MAX_IDLE_MS) {
+      if (Date.now() - backup.updatedAt > CHAT_SESSION_RECOVERY_MAX_IDLE_MS) {
         discardedSessionIds.push(sessionId);
         continue;
       }

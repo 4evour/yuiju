@@ -502,8 +502,7 @@ class PlannerReplyerGroupChatManager {
       const replyText = await generateChatReply({
         recentMessages,
         targetMessageId: action.targetMessageId,
-        intention: action.intention,
-        expressionDirection: action.expressionDirection,
+        replyContext: action.replyContext,
         abortSignal: controller.signal,
       });
       execution.replyerDurationMs = Date.now() - replyerStartedAt;
@@ -519,7 +518,6 @@ class PlannerReplyerGroupChatManager {
         stickerKey = await selectChatSticker({
           recentMessages,
           intention: action.stickerIntent,
-          expressionDirection: action.expressionDirection,
           replyText,
           abortSignal: controller.signal,
         });

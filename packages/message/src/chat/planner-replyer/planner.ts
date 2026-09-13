@@ -90,12 +90,17 @@ export async function runChatPlanner(input: {
   };
   const tools = {
     reply: tool({
-      description: "确定现在要发送文字回复，只提供回复目标、单一意图和表达方向。",
+      description:
+        "确定现在要发送文字回复，提供回复目标、引用行为，以及 Replyer 完成本次回复所需的最小充分上下文。",
       inputSchema: z.object({
         targetMessageId: z.string().min(1).describe("主要承接的真实消息 ID"),
         set_quote: z.boolean().describe("第一条文字消息是否引用目标消息"),
-        intention: z.string().min(1).describe("这一刻真正想表达的一个重点"),
-        expressionDirection: z.string().min(1).describe("态度、亲疏、力度、认真程度和消息粒度"),
+        reply_context: z
+          .string()
+          .min(1)
+          .describe(
+            "供 Replyer 使用的最小充分内部上下文；只汇总删除后会影响本次回复的事实和主观立场，不设计成品台词、表达方式或回复步骤",
+          ),
         stickerIntent: z.string().min(1).optional().describe("文字后附带表情包的反应意图"),
       }),
       execute: async (action) =>
@@ -103,8 +108,7 @@ export async function runChatPlanner(input: {
           type: "reply",
           targetMessageId: action.targetMessageId,
           setQuote: action.set_quote,
-          intention: action.intention,
-          expressionDirection: action.expressionDirection,
+          replyContext: action.reply_context,
           stickerIntent: action.stickerIntent,
         }),
     }),
@@ -155,7 +159,7 @@ export async function runChatPlanner(input: {
       hasToolCall("poke"),
       hasToolCall("wait"),
     ],
-    providerOptions: { flash: { enable_thinking: false } },
+    providerOptions: { flash: { enable_thinking: true } },
     telemetry: getLangfuseTelemetry(),
   });
   const maxInputTokens = Math.max(0, ...result.steps.map((step) => step.usage.inputTokens ?? 0));

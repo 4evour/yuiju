@@ -8,6 +8,8 @@ export interface ChatSessionConversationBackup<TMessage> {
   messages: TMessage[];
 }
 
+export const CHAT_SESSION_RECOVERY_MAX_IDLE_MS = 5 * 60 * 1000;
+
 export const REDIS_KEY_MESSAGE_GROUP_CONVERSATION_BACKUP = isDev()
   ? "dev:yuiju:message:group:conversation-backup"
   : "yuiju:message:group:conversation-backup";

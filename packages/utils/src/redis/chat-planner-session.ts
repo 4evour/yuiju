@@ -1,5 +1,6 @@
 import type { ModelMessage } from "ai";
 import { isDev } from "../env";
+import { CHAT_SESSION_RECOVERY_MAX_IDLE_MS } from "./chat-session";
 import { getRedis } from "./client";
 
 export interface ChatPlannerTurn {
@@ -31,4 +32,25 @@ export async function saveChatPlannerSession(
   session: ChatPlannerSession,
 ): Promise<void> {
   await getRedis().hset(REDIS_KEY, sessionId, JSON.stringify(session));
+}
+
+export async function restoreChatPlannerSessions(): Promise<{
+  restoredSessionCount: number;
+  discardedSessionCount: number;
+}> {
+  const entries = Object.entries(await getRedis().hgetall(REDIS_KEY));
+  const now = Date.now();
+  const discardedSessionIds = entries.flatMap(([sessionId, value]) => {
+    const session = JSON.parse(value) as ChatPlannerSession;
+    return now - session.updatedAt > CHAT_SESSION_RECOVERY_MAX_IDLE_MS ? [sessionId] : [];
+  });
+
+  if (discardedSessionIds.length) {
+    await getRedis().hdel(REDIS_KEY, ...discardedSessionIds);
+  }
+
+  return {
+    restoredSessionCount: entries.length - discardedSessionIds.length,
+    discardedSessionCount: discardedSessionIds.length,
+  };
 }

@@ -10,8 +10,7 @@ import type { StoredSatoriGroupMessage } from "@/utils/message/types";
 export async function generateChatReply(input: {
   recentMessages: readonly StoredSatoriGroupMessage[];
   targetMessageId: string;
-  intention: string;
-  expressionDirection: string;
+  replyContext: string;
   abortSignal: AbortSignal;
 }): Promise<string> {
   const [overrides, characterState] = await Promise.all([
@@ -35,25 +34,15 @@ export async function generateChatReply(input: {
       worldPrompt: getPromptCustomizationContent("world", overrides),
       replyPrompt: getPromptCustomizationContent("chatReply", overrides),
     }),
-    prompt: `
-【当前状态】
-${JSON.stringify(characterState, null, 2)}
-
-【最近真实群聊】
-${historyJson}
-
-【回复目标】
-${input.targetMessageId}
-
-【唯一表达意图】
-${input.intention}
-
-【表达方向】
-${input.expressionDirection}
-
-直接输出最终会发送的普通文本，不要解释。
-`.trim(),
+    prompt: [
+      `【当前心情】\n${characterState.mood}`,
+      `【最近真实群聊】\n${historyJson}`,
+      `【回复目标】\n${input.targetMessageId}`,
+      `【Planner 提供的完整回复上下文】\n${input.replyContext}`,
+      "直接回应目标消息，输出最终会发送的普通文本，不要解释。",
+    ].join("\n\n"),
     abortSignal: input.abortSignal,
+    providerOptions: { chat: { enable_thinking: true } },
     telemetry: getLangfuseTelemetry(),
   });
 

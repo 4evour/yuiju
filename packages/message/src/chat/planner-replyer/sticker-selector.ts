@@ -8,7 +8,6 @@ import type { StoredSatoriGroupMessage } from "@/utils/message/types";
 export async function selectChatSticker(input: {
   recentMessages: readonly StoredSatoriGroupMessage[];
   intention: string;
-  expressionDirection?: string;
   replyText?: string;
   abortSignal: AbortSignal;
 }): Promise<string> {
@@ -30,7 +29,6 @@ export async function selectChatSticker(input: {
         2,
       )}`,
       `【本次反应意图】\n${input.intention}`,
-      input.expressionDirection ? `【表达方向】\n${input.expressionDirection}` : "",
       input.replyText ? `【已经生成的文字】\n${input.replyText}` : "",
       `【候选表情包】\n${candidates
         .map((sticker) => `${sticker.key}: ${sticker.description}`)

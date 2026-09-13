@@ -5,6 +5,7 @@ import { connectDB, initializePersonMemoryHeat } from "@yuiju/utils";
 import { getYuijuConfig } from "@yuiju/utils/config/config";
 import { ExperimentId, experimentManager } from "@yuiju/utils/experiment/experiment-manager";
 import { initializeLangfuseTelemetry } from "@yuiju/utils/llm/langfuse-telemetry";
+import { restoreChatPlannerSessions } from "@yuiju/utils/redis/chat-planner-session";
 import { chatManager } from "./chat/manager";
 import { groupMessageHandler } from "./handler/group-message";
 import { messageRecallHandler } from "./handler/message-recall";
@@ -85,6 +86,8 @@ async function main() {
   // 初始化表情
   await stickerState.initialize();
   await chatManager.restoreConversationBackups();
+  const plannerSessionRecovery = await restoreChatPlannerSessions();
+  logger.info("[message.planner-replyer] Planner Session 恢复完成", plannerSessionRecovery);
   startMessageInternalApi({ onebot, lark });
   await satori.start();
   logger.info("[message.server] 消息服务启动完成");
