@@ -34,7 +34,7 @@ export async function runChatPlanner(input: {
   const [plannerSession, characterState, overrides, personProfileContext] = await Promise.all([
     getChatPlannerSession(input.sessionId),
     initCharacterStateData(),
-    getPromptCustomizationOverrides(["character", "world", "chatBehavior"]),
+    getPromptCustomizationOverrides(["world", "chatBehavior"]),
     buildPersonProfileContext(input.pendingMessages),
   ]);
   const historyJson = JSON.stringify(
@@ -146,7 +146,6 @@ export async function runChatPlanner(input: {
   const result = await generateText({
     model: getFlashModel(),
     instructions: buildChatPlannerSystemPrompt({
-      characterPrompt: getPromptCustomizationContent("character", overrides),
       worldPrompt: getPromptCustomizationContent("world", overrides),
       behaviorPrompt: getPromptCustomizationContent("chatBehavior", overrides),
     }),
