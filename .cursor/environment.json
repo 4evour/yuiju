@@ -1,0 +1,17 @@
+{
+  "name": "Yuiju",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "user": "root",
+  "install": "export PATH=\"/usr/local/bin:$PATH\" && corepack enable && corepack prepare pnpm@10.14.0 --activate && pnpm install --frozen-lockfile && node .cursor/gen-config.mjs && pnpm run build:web",
+  "start": "bash .cursor/start.sh",
+  "terminals": [
+    {
+      "name": "web",
+      "command": "export PATH=\"/usr/local/bin:$PATH\" && pnpm run start:web"
+    }
+  ],
+  "ports": [3010]
+}
