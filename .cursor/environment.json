@@ -13,5 +13,10 @@
       "command": "export PATH=\"/usr/local/bin:$PATH\" && pnpm run start:web"
     }
   ],
-  "ports": [3010]
+  "ports": [
+    {
+      "name": "web",
+      "port": 3010
+    }
+  ]
 }
