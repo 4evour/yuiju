@@ -22,5 +22,25 @@ config.database = {
   redisUrl: "redis://127.0.0.1:6379",
 };
 
+// 当提供 DEEPSEEK_API_KEY（建议放在 Cloud Agent Secrets）时，把所有 LLM 档位指向 DeepSeek。
+// 不把密钥写进仓库：这里只从环境变量读取，缺失时保留示例占位符。
+const deepseekApiKey = process.env.DEEPSEEK_API_KEY;
+if (deepseekApiKey) {
+  const deepseekSource = {
+    baseUrl: "https://api.deepseek.com",
+    apiKey: deepseekApiKey,
+    model: "deepseek-flash",
+  };
+  config.llm = {
+    models: {
+      chat: [deepseekSource],
+      strong: [deepseekSource],
+      flash: [deepseekSource],
+      vision: [deepseekSource],
+    },
+  };
+  console.log("[gen-config] DEEPSEEK_API_KEY detected, configured all LLM tiers to deepseek-flash");
+}
+
 writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`);
 console.log(`[gen-config] wrote development config to ${configPath}`);
